@@ -1,0 +1,8 @@
+*.mode*
+*.pyc
+.DS_Store
+.directory
+/node_modules
+
+.vscode
+.angular
