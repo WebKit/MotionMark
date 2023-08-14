@@ -1,13 +1,37 @@
+<!--
+  Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no">
 
-    <title>MotionMark 1.0 - developer</title>
+    <title>MotionMark developer</title>
 
-    <link rel="stylesheet" href="resources/runner/animometer.css">
-    <link rel="stylesheet" href="resources/debug-runner/animometer.css">
+    <link rel="stylesheet" href="resources/runner/motionmark.css">
+    <link rel="stylesheet" href="resources/debug-runner/motionmark.css">
 
     <script src="resources/strings.js"></script>
     <script src="resources/extensions.js"></script>
@@ -15,8 +39,8 @@
 
     <script src="resources/runner/tests.js" charset="utf-8"></script>
     <script src="resources/debug-runner/tests.js" charset="utf-8"></script>
-    <script src="resources/runner/animometer.js"></script>
-    <script src="resources/debug-runner/animometer.js" charset="utf-8"></script>
+    <script src="resources/runner/motionmark.js"></script>
+    <script src="resources/debug-runner/motionmark.js" charset="utf-8"></script>
 
     <script src="resources/runner/benchmark-runner.js"></script>
     <script src="resources/debug-runner/d3.min.js"></script>
@@ -25,7 +49,10 @@
 <body class="showing-intro">
     <main>
         <section id="intro" class="selected">
-            <h1>MotionMark</h1>
+            <header>
+                <h1>MotionMark</h1>
+                <h2>version <span class="version"></span></h2>
+            </header>
             <div class="body">
                 <div>
                     <div id="suites">
@@ -57,11 +84,9 @@
                                 <li>
                                     <h3>Adjusting the test complexity:</h3>
                                     <ul>
-                                        <li><label><input name="controller" type="radio" value="fixed"> Keep at a fixed complexity</label></li>
-                                        <li><label><input name="controller" type="radio" value="step"> Keep at a fixed complexity, then make a big step</label></li>
-                                        <li><label><input name="controller" type="radio" value="adaptive"> Maintain target FPS</label></li>
                                         <li><label><input name="controller" type="radio" value="ramp" checked> Ramp</label></li>
-                                        <li><label><input name="controller" type="radio" value="ramp30"> Ramp @ 30fps</label></li>
+                                        <li><label><input name="controller" type="radio" value="fixed"> Keep at a fixed complexity</label></li>
+                                        <li><label><input name="controller" type="radio" value="adaptive"> Maintain target FPS</label></li>
                                     </ul>
                                 </li>
                                 <li>
@@ -109,6 +134,7 @@
                     <span class="medium">on a medium screen (laptop, tablet)</span>
                     <span class="large">on a large screen (desktop)</span>
                 </div>
+                <div>version <span class="version"></span></div>
                 <p class="score" onclick="benchmarkController.showDebugInfo()"></p>
                 <p class="confidence"></p>
                 <div id="results-tables" class="table-container">
@@ -157,13 +183,11 @@
                     <form name="complexity-graph-options">
                         <ul class="series">
                             <li><label><input type="checkbox" name="series-raw" checked> Series raw</label></li>
-                            <li><label><input type="checkbox" name="series-average"> Series average</label></li>
                         </ul>
                         <ul>
                             <li><label><input type="checkbox" name="regression-time-score"> Controller score</label></li>
                             <li><label><input type="checkbox" name="bootstrap-score" checked> Bootstrap score and histogram</label></li>
                             <li><label><input type="checkbox" name="complexity-regression-aggregate-raw" checked> Regression, series raw</label><span id="complexity-regression-aggregate-raw"></span></li>
-                            <li><label><input type="checkbox" name="complexity-regression-aggregate-average"> Regression, series average</label><span id="complexity-regression-aggregate-average"></span></li>
                         </ul>
                     </form>
                 </nav>

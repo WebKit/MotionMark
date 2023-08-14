@@ -1,10 +1,35 @@
+/*
+ * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 Utilities.extendObject(Strings.text, {
     samples: "Samples",
     complexity: "Time Complexity",
     frameRate: "FPS",
     confidenceInterval: "80% Confidence Interval",
     mergedRawComplexity: "Raw Complexity",
-    graph: "Graph"
+    graph: "Graph",
+    title: "MotionMark %s developer",
 });
 
 
@@ -166,10 +191,6 @@ Suites.push(new Suite("HTML suite",
             name: "CSS bouncing tagged images"
         },
         {
-            url: "dom/leaves.html",
-            name: "Leaves 2.0"
-        },
-        {
             url: "dom/focus.html",
             name: "Focus 2.0"
         },
@@ -242,11 +263,103 @@ Suites.push(new Suite("SVG suite",
     ]
 ));
 
+Suites.push(new Suite("Leaves suite",
+    [
+        {
+            url: "dom/leaves.html?style=simple",
+            name: "Translate-only Leaves"
+        },
+        {
+            url: "dom/leaves.html?style=scale",
+            name: "Translate + Scale Leaves"
+        },
+        {
+            url: "dom/leaves.html?style=opacity",
+            name: "Translate + Opacity Leaves"
+        }
+    ]
+));
+
+Suites.push(new Suite("Multiply suite",
+    [
+        {
+            url: "dom/multiply.html?style=opacity",
+            name: "Multiply: CSS opacity only"
+        },
+        {
+            url: "dom/multiply.html?style=display",
+            name: "Multiply: CSS display only"
+        },
+        {
+            url: "dom/multiply.html?style=visibility",
+            name: "Multiply: CSS visibility only"
+        }
+    ]
+));
+
+Suites.push(new Suite("Text suite",
+    [
+        {
+            url: "text/design.html?corpus=latin",
+            name: "Design: Latin only (12 items)"
+        },
+        {
+            url: "text/design.html?corpus=cjk",
+            name: "Design: CJK only (12 items)"
+        },
+        {
+            url: "text/design.html?corpus=arabic",
+            name: "Design: RTL and complex scripts only (12 items)"
+        },
+        {
+            url: "text/design-6.html?corpus=latin",
+            name: "Design: Latin only (6 items)"
+        },
+        {
+            url: "text/design-6.html?corpus=cjk",
+            name: "Design: CJK only (6 items)"
+        },
+        {
+            url: "text/design-6.html?corpus=arabic",
+            name: "Design: RTL and complex scripts only (6 items)"
+        },
+    ]
+));
+
+Suites.push(new Suite("Suits suite",
+    [
+        {
+            url: "svg/suits.html?style=clip",
+            name: "Suits: clip only"
+        },
+        {
+            url: "svg/suits.html?style=shape",
+            name: "Suits: shape only"
+        },
+        {
+            url: "svg/suits.html?style=rotation",
+            name: "Suits: clip, shape, rotation"
+        },
+        {
+            url: "svg/suits.html?style=gradient",
+            name: "Suits: clip, shape, gradient"
+        },
+        {
+            url: "svg/suits.html?style=static",
+            name: "Suits: static"
+        },
+    ]
+));
+
 Suites.push(new Suite("3D Graphics",
     [
         {
-            url: "3d/webgl.html",
-            name: "WebGL"
+            url: "3d/triangles-webgl.html",
+            name: "Triangles (WebGL)"
+        },
+        {
+            url: "3d/triangles-webgpu.html",
+            name: "Triangles (WebGPU)"
         },
     ]
 ));

@@ -29,7 +29,7 @@ var Suite = function(name, tests) {
 
 var Suites = [];
 
-Suites.push(new Suite("Animometer",
+Suites.push(new Suite("MotionMark",
     [
         {
             url: "master/multiply.html",
@@ -60,11 +60,11 @@ Suites.push(new Suite("Animometer",
             name: "Images"
         },
         {
-            url: "master/text.html",
+            url: "master/design.html",
             name: "Design"
         },
         {
-            url: "master/svg-particles.html",
+            url: "master/suits.html",
             name: "Suits"
         },
     ]

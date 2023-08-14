@@ -1,3 +1,27 @@
+/*
+ * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 Utilities.extendObject(window.benchmarkController, {
     updateGraphData: function(testResult, testData, options)
     {
@@ -13,7 +37,7 @@ Utilities.extendObject(window.benchmarkController, {
 
         // Convert from compact JSON output to propertied data
         var samplesWithProperties = {};
-        [Strings.json.controller, Strings.json.complexity, Strings.json.complexityAverage].forEach(function(seriesName) {
+        [Strings.json.controller, Strings.json.complexity].forEach(function(seriesName) {
             var series = testData[Strings.json.samples][seriesName];
             samplesWithProperties[seriesName] = series.toArray();
         })
@@ -68,7 +92,7 @@ Utilities.extendObject(window.benchmarkController, {
         svg.append("circle")
             .attr("cx", xScale(data.segment1[1][0]))
             .attr("cy", yScale(data.segment1[1][1]))
-            .attr("r", 5);
+            .attr("r", 3);
         this._addRegressionLine(svg, xScale, yScale, data.segment1, data.stdev);
         this._addRegressionLine(svg, xScale, yScale, data.segment2, data.stdev);
     },
@@ -134,7 +158,6 @@ Utilities.extendObject(window.benchmarkController, {
 
         // regression
         this._addRegression(result[Strings.json.complexity], svg.append("g").attr("class", "regression raw"), xScale, yScale);
-        this._addRegression(result[Strings.json.complexityAverage], svg.append("g").attr("class", "regression average"), xScale, yScale);
 
         var bootstrapResult = result[Strings.json.complexity][Strings.json.bootstrap];
         if (bootstrapResult) {
@@ -178,21 +201,6 @@ Utilities.extendObject(window.benchmarkController, {
             .attr("x2", function(d) { return xScale(d.complexity) + 3; })
             .attr("y1", function(d) { return yScale(d.frameLength) + 3; })
             .attr("y2", function(d) { return yScale(d.frameLength) - 3; });
-
-        group = svg.append("g")
-            .attr("class", "series average")
-            .selectAll("circle")
-                .data(data[Strings.json.complexityAverage])
-                .enter();
-        group.append("circle")
-            .attr("cx", function(d) { return xScale(d.complexity); })
-            .attr("cy", function(d) { return yScale(d.frameLength); })
-            .attr("r", 3)
-        group.append("line")
-            .attr("x1", function(d) { return xScale(d.complexity); })
-            .attr("x2", function(d) { return xScale(d.complexity); })
-            .attr("y1", function(d) { return yScale(d.frameLength - d.stdev); })
-            .attr("y2", function(d) { return yScale(d.frameLength + d.stdev); });
 
         // Cursor
         var cursorGroup = svg.append("g").attr("class", "cursor hidden");
@@ -442,6 +450,17 @@ Utilities.extendObject(window.benchmarkController, {
                 }
                 // inflection point
                 regressionGroup.append("circle")
+                    .attr("cx", x(regression.segment2[0][0]))
+                    .attr("cy", yRight(regression.segment2[0][1]))
+                    .attr("r", 3);
+                regressionGroup.append("line")
+                    .attr("class", "association")
+                    .attr("stroke-dasharray", "5, 3")
+                    .attr("x1", x(regression.segment2[0][0]))
+                    .attr("x2", x(regression.segment2[0][0]))
+                    .attr("y1", yRight(regression.segment2[0][1]))
+                    .attr("y2", yLeft(regression.complexity));
+                regressionGroup.append("circle")
                     .attr("cx", x(regression.segment1[1][0]))
                     .attr("cy", yLeft(regression.complexity))
                     .attr("r", 5);
@@ -544,11 +563,9 @@ Utilities.extendObject(window.benchmarkController, {
     onComplexityGraphOptionsChanged: function() {
         var form = document.forms["complexity-graph-options"].elements;
         benchmarkController._showOrHideNodes(form["series-raw"].checked, "#complexity-graph .series.raw");
-        benchmarkController._showOrHideNodes(form["series-average"].checked, "#complexity-graph .series.average");
         benchmarkController._showOrHideNodes(form["regression-time-score"].checked, "#complexity-graph .mean.complexity");
         benchmarkController._showOrHideNodes(form["bootstrap-score"].checked, "#complexity-graph .bootstrap");
         benchmarkController._showOrHideNodes(form["complexity-regression-aggregate-raw"].checked, "#complexity-graph .regression.raw");
-        benchmarkController._showOrHideNodes(form["complexity-regression-aggregate-average"].checked, "#complexity-graph .regression.average");
     },
 
     onTimeGraphOptionsChanged: function() {
@@ -592,11 +609,7 @@ Utilities.extendObject(window.benchmarkController, {
             mean = mean.join("");
         } else {
             var complexityRegression = testResult[Strings.json.complexity];
-            var complexityAverageRegression = testResult[Strings.json.complexityAverage];
-
             document.getElementById("complexity-regression-aggregate-raw").textContent = complexityRegression.complexity.toFixed(2) + ", ±" + complexityRegression.stdev.toFixed(2) + "ms";
-            document.getElementById("complexity-regression-aggregate-average").textContent = complexityAverageRegression.complexity.toFixed(2) + ", ±" + complexityAverageRegression.stdev.toFixed(2) + "ms";
-
             var bootstrap = complexityRegression[Strings.json.bootstrap];
             if (bootstrap) {
                 score = bootstrap.median.toFixed(2);

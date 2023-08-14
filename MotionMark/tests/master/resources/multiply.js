@@ -1,3 +1,27 @@
+/*
+ * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 (function() {
 
 var MultiplyStage = Utilities.createSubclass(Stage,
@@ -8,10 +32,19 @@ var MultiplyStage = Utilities.createSubclass(Stage,
         this._offsetIndex = 0;
     }, {
 
+    visibleCSS: [
+        ["visibility", "hidden", "visible"],
+        ["opacity", 0, 1],
+        ["display", "none", "block"]
+    ],
+    totalRows: 45,
+
     initialize: function(benchmark, options)
     {
         Stage.prototype.initialize.call(this, benchmark, options);
-        var tileSize = Math.round(this.size.height / 25);
+        var tileSize = Math.round(this.size.height / this.totalRows);
+        if (options.visibleCSS)
+            this.visibleCSS = options.visibleCSS;
 
         // Fill the scene with elements
         var x = Math.round((this.size.width - tileSize) / 2);
@@ -59,7 +92,8 @@ var MultiplyStage = Utilities.createSubclass(Stage,
         tile.style.top = y + 'px';
         tile.style.width = tileSize + 'px';
         tile.style.height = tileSize + 'px';
-        tile.style.visibility = "hidden";
+        var visibleCSS = this.visibleCSS[this.tiles.length % this.visibleCSS.length];
+        tile.style[visibleCSS[0]] = visibleCSS[1];
 
         var distance = 1 / tileSize * this.size.multiply(0.5).subtract(new Point(x + halfTileSize, y + halfTileSize)).length();
         this.tiles.push({
@@ -67,7 +101,8 @@ var MultiplyStage = Utilities.createSubclass(Stage,
             rotate: rotateDeg,
             step: Math.max(3, distance / 1.5),
             distance: distance,
-            active: false
+            active: false,
+            visibleCSS: visibleCSS,
         });
     },
 
@@ -92,7 +127,7 @@ var MultiplyStage = Utilities.createSubclass(Stage,
         for (var i = 0; i < this._offsetIndex; ++i) {
             var tile = this.tiles[i];
             tile.active = true;
-            tile.element.style.visibility = "";
+            tile.element.style[tile.visibleCSS[0]] = tile.visibleCSS[2];
             tile.rotate += tile.step;
             tile.element.style.transform = "rotate(" + tile.rotate + "deg)";
 
@@ -101,8 +136,9 @@ var MultiplyStage = Utilities.createSubclass(Stage,
         }
 
         for (var i = this._offsetIndex; i < this.tiles.length && this.tiles[i].active; ++i) {
-            this.tiles[i].active = false;
-            this.tiles[i].element.style.visibility = "hidden";
+            var tile = this.tiles[i];
+            tile.active = false;
+            tile.element.style[tile.visibleCSS[0]] = tile.visibleCSS[1];
         }
     }
 });
