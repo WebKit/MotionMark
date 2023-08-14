@@ -49,6 +49,7 @@ var Strings = {
         score: "score",
         scoreLowerBound: "scoreLowerBound",
         scoreUpperBound: "scoreUpperBound",
+        fps: "fps",
         bootstrap: "bootstrap",
         measurements: {
             average: "average",
