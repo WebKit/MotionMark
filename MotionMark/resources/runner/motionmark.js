@@ -419,8 +419,7 @@ window.benchmarkRunnerClient = {
     }
 };
 
-window.sectionsManager =
-{
+window.sectionsManager = {
     showSection: function(sectionIdentifier, pushState)
     {
         var sections = document.querySelectorAll("main > section");
@@ -485,7 +484,8 @@ window.benchmarkController = {
         benchmarkController.addOrientationListenerIfNecessary();
     },
 
-    determineCanvasSize: function() {
+    determineCanvasSize: function()
+    {
         var match = window.matchMedia("(max-device-width: 760px)");
         if (match.matches) {
             document.body.classList.add("small");
@@ -507,7 +507,8 @@ window.benchmarkController = {
         document.body.classList.add("large");
     },
 
-    addOrientationListenerIfNecessary: function() {
+    addOrientationListenerIfNecessary: function()
+    {
         if (!("orientation" in window))
             return;
 

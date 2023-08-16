@@ -158,8 +158,7 @@ Utilities.extendObject(window.sectionsManager, {
     }
 });
 
-window.optionsManager =
-{
+window.optionsManager = {
     valueForOption: function(name)
     {
         var formElement = document.forms["benchmark-options"].elements[name];
@@ -251,8 +250,7 @@ window.optionsManager =
     }
 };
 
-window.suitesManager =
-{
+window.suitesManager = {
     _treeElement: function()
     {
         return document.querySelector("#suites > .tree");
@@ -695,6 +693,7 @@ Utilities.extendObject(window.benchmarkController, {
         sectionsManager.showSection("test-graph", true);
         this.updateGraphData(testResult, testData, benchmarkRunnerClient.results.options);
     },
+
     detectSystemFrameRate: function()
     {
         let last = 0;
@@ -736,5 +735,4 @@ Utilities.extendObject(window.benchmarkController, {
 
         requestAnimationFrame(tick);
     }
-
 });
