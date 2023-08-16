@@ -81,7 +81,8 @@ Controller = Utilities.createClass(
         this.initialComplexity = 1;
     }, {
 
-    set isFrameLengthEstimatorEnabled(enabled) {
+    set isFrameLengthEstimatorEnabled(enabled)
+    {
         this._isFrameLengthEstimatorEnabled = enabled;
     },
 
@@ -100,14 +101,16 @@ Controller = Utilities.createClass(
         this.mark(Strings.json.samplingStartTimeOffset, startTimestamp);
     },
 
-    mark: function(comment, timestamp, data) {
+    mark: function(comment, timestamp, data)
+    {
         data = data || {};
         data.time = timestamp;
         data.index = this._sampler.sampleCount;
         this._marks[comment] = data;
     },
 
-    containsMark: function(comment) {
+    containsMark: function(comment)
+    {
         return comment in this._marks;
     },
 
@@ -217,6 +220,7 @@ Controller = Utilities.createClass(
             this._marks[markName].time -= this._startTimestamp;
         return this._marks;
     },
+
     _processControllerSamples: function()
     {
         var controllerSamples = new SampleData;
@@ -569,11 +573,13 @@ RampController = Utilities.createSubclass(Controller,
         this._possibleMaximumComplexity = this._maximumComplexity;
     },
 
-    _getComplexity: function(samples, i) {
+    _getComplexity: function(samples, i)
+    {
         return samples[1][i];
     },
 
-    _getFrameLength: function(samples, i) {
+    _getFrameLength: function(samples, i)
+    {
         return samples[0][i] - samples[0][i - 1];
     },
 
