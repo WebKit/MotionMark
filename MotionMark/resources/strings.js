@@ -28,6 +28,10 @@ var Strings = {
         testName: "Test Name",
         score: "Score",
         title: "MotionMark %s",
+        determininingFrameRate: "Detecting Frame Rate…",
+        runBenchmark: "Run Benchmark",
+        usingFrameRate: "Framerate %sfps",
+        frameRateDetectionFailure: "Failed to determine framerate, using 60fps",
     },
     json: {
         version: "version",

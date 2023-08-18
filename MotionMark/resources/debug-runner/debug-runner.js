@@ -528,7 +528,7 @@ window.suitesManager = {
 }
 
 Utilities.extendObject(window.benchmarkController, {
-    initialize: function()
+    initialize: async function()
     {
         document.title = Strings.text.title.replace("%s", Strings.version);
         document.querySelectorAll(".version").forEach(function(e) {
@@ -550,8 +550,6 @@ Utilities.extendObject(window.benchmarkController, {
         suitesManager.createElements();
         suitesManager.updateUIFromLocalStorage();
         suitesManager.updateEditsElementsState();
-
-        benchmarkController.detectSystemFrameRate();
 
         var dropTarget = document.getElementById("drop-target");
         function stopEvent(e) {
@@ -597,6 +595,36 @@ Utilities.extendObject(window.benchmarkController, {
             reader.readAsText(file);
             document.title = "File: " + reader.filename;
         }, false);
+
+        this.frameRateDetectionComplete = false;
+        this.updateStartButtonState();
+
+        let progressElement = document.querySelector("#frame-rate-detection span");
+
+        let targetFrameRate;
+        try {
+            targetFrameRate = await benchmarkController.determineFrameRate(progressElement);
+        } catch (e) {
+        }
+        
+        this.frameRateDeterminationComplete(targetFrameRate);
+    },
+
+    frameRateDeterminationComplete: function(targetFrameRate)
+    {
+        let frameRateLabelContent = Strings.text.usingFrameRate.replace("%s", targetFrameRate);
+        
+        if (!targetFrameRate) {
+            frameRateLabelContent = Strings.text.frameRateDetectionFailure;
+            targetFrameRate = 60;
+        }
+
+        document.getElementById("frame-rate-detection").textContent = frameRateLabelContent;
+        document.getElementById("system-frame-rate").value = targetFrameRate;
+        document.getElementById("frame-rate").value = targetFrameRate;
+
+        this.frameRateDetectionComplete = true;
+        this.updateStartButtonState();
     },
 
     updateStartButtonState: function()
@@ -606,7 +634,8 @@ Utilities.extendObject(window.benchmarkController, {
             startButton.disabled = true;
             return;
         }
-        startButton.disabled = !suitesManager.isAtLeastOneTestSelected();
+        
+        startButton.disabled = (!suitesManager.isAtLeastOneTestSelected()) || !this.frameRateDetectionComplete;
     },
 
     onBenchmarkOptionsChanged: function(event)
@@ -692,47 +721,5 @@ Utilities.extendObject(window.benchmarkController, {
         sectionsManager.setSectionHeader("test-graph", testName);
         sectionsManager.showSection("test-graph", true);
         this.updateGraphData(testResult, testData, benchmarkRunnerClient.results.options);
-    },
-
-    detectSystemFrameRate: function()
-    {
-        let last = 0;
-        let average = 0;
-        let count = 0;
-
-        const finish = function()
-        {
-            const commonFrameRates = [15, 30, 45, 60, 90, 120, 144];
-            const distanceFromFrameRates = commonFrameRates.map(rate => {
-                return Math.abs(Math.round(rate - average));
-            });
-            let shortestDistance = Number.MAX_VALUE;
-            let targetFrameRate = undefined;
-            for (let i = 0; i < commonFrameRates.length; i++) {
-                if (distanceFromFrameRates[i] < shortestDistance) {
-                    targetFrameRate = commonFrameRates[i];
-                    shortestDistance = distanceFromFrameRates[i];
-                }
-            }
-            targetFrameRate = targetFrameRate || 60;
-            document.getElementById("frame-rate-detection").textContent = `Detected system frame rate as ${targetFrameRate} FPS`;
-            document.getElementById("system-frame-rate").value = targetFrameRate;
-            document.getElementById("frame-rate").value = Math.round(targetFrameRate * 5 / 6);
-        }
-
-        const tick = function(timestamp)
-        {
-            average -= average / 30;
-            average += 1000. / (timestamp - last) / 30;
-            document.querySelector("#frame-rate-detection span").textContent = Math.round(average);
-            last = timestamp;
-            count++;
-            if (count < 300)
-                requestAnimationFrame(tick);
-            else
-                finish();
-        }
-
-        requestAnimationFrame(tick);
     }
 });
