@@ -66,7 +66,7 @@ Controller = Utilities.createClass(
         // In start() the timestamps are offset by the start timestamp
         this._startTimestamp = 0;
         this._endTimestamp = options["test-interval"];
-        this._targetFrameRate = options["frame-rate"] || 60;
+        this._targetFrameRate = options["frame-rate"];
         // Default data series: timestamp, complexity, estimatedFrameLength
         var sampleSize = options["sample-capacity"] || (this._targetFrameRate * options["test-interval"] / 1000);
         this._sampler = new Sampler(options["series-count"] || 3, sampleSize, this);
@@ -339,7 +339,7 @@ AdaptiveController = Utilities.createSubclass(Controller,
 RampController = Utilities.createSubclass(Controller,
     function(benchmark, options)
     {
-        this.targetFPS = options["frame-rate"] || 60;
+        this.targetFPS = options["frame-rate"];
 
         // The tier warmup takes at most 5 seconds
         options["sample-capacity"] = (options["test-interval"] / 1000 + 5) * this.targetFPS;
