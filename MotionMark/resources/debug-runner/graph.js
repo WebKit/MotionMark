@@ -46,7 +46,7 @@ Utilities.extendObject(window.benchmarkController, {
             samplesWithProperties[seriesName] = series.toArray();
         })
 
-        this._targetFrameRate = options["frame-rate"] || 60;
+        this._targetFrameRate = options["frame-rate"];
 
         this.createTimeGraph(testResult, samplesWithProperties[Strings.json.controller], testData[Strings.json.marks], testData[Strings.json.controller], options, margins, size);
         this.onTimeGraphOptionsChanged();
@@ -225,7 +225,7 @@ Utilities.extendObject(window.benchmarkController, {
             this._addRegressionLine(group, xScale, yScale, [[bootstrapResult.median, yMin], [bootstrapResult.median, yMax]], [bootstrapResult.confidenceLow, bootstrapResult.confidenceHigh], true);
             group.append("circle")
                 .attr("cx", xScale(bootstrapResult.median))
-                .attr("cy", yScale(msPerSecond / 60))
+                .attr("cy", yScale(msPerSecond / this._targetFrameRate))
                 .attr("r", 5);
         }
 
