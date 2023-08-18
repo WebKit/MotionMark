@@ -161,11 +161,11 @@ Utilities.extendObject(window.benchmarkController, {
         const axisHeight = size.height - margins.top - margins.bottom;
 
         // The y axis is frameLength in ms, inverted with the axis labels showing fps.
-		const minFrameRate = this._targetFrameRate / 4;
-		const maxFrameRate = this._targetFrameRate * 1.5;
+        const minFrameRate = this._targetFrameRate / 4;
+        const maxFrameRate = this._targetFrameRate * 1.5;
 
-		const yMin = msPerSecond / minFrameRate;
-		const yMax = msPerSecond / maxFrameRate;
+        const yMin = msPerSecond / minFrameRate;
+        const yMax = msPerSecond / maxFrameRate;
 
         var xScale = d3.scale.linear()
             .range([0, axisWidth])
@@ -236,7 +236,7 @@ Utilities.extendObject(window.benchmarkController, {
                 .data(data[Strings.json.complexity])
                 .enter();
 
-		group.append("line")
+        group.append("line")
             .attr("x1", function(d) { return xScale(d.complexity) - 3; })
             .attr("x2", function(d) { return xScale(d.complexity) + 3; })
             .attr("y1", function(d) { return yScale(d.frameLength) - 3; })
@@ -336,8 +336,8 @@ Utilities.extendObject(window.benchmarkController, {
 
         const minFrameRate = this._targetFrameRate / 2;
         const maxFrameRate = this._targetFrameRate * 1.5;
-		const yRightMin = msPerSecond / minFrameRate;
-		const yRightMax = msPerSecond / maxFrameRate;
+        const yRightMin = msPerSecond / minFrameRate;
+        const yRightMax = msPerSecond / maxFrameRate;
 
         var yRight = d3.scale.linear()
                 .range([axisHeight, graphTop])
