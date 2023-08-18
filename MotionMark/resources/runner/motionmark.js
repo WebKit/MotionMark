@@ -22,8 +22,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
- ResultsDashboard = Utilities.createClass(
-    function(version, options, testData)
+
+class ResultsDashboard {
+    constructor(version, options, testData)
     {
         this._iterationsSamplers = [];
         this._options = options;
@@ -35,14 +36,14 @@
             this._iterationsSamplers = testData;
             this._processData();
         }
-    }, {
+    }
 
-    push: function(suitesSamplers)
+    push(suitesSamplers)
     {
         this._iterationsSamplers.push(suitesSamplers);
-    },
+    }
 
-    _processData: function()
+    _processData()
     {
         this._results = {};
         this._results[Strings.json.results.iterations] = [];
@@ -89,13 +90,14 @@
         this._results[Strings.json.score] = Statistics.sampleMean(iterationsScores.length, iterationsScores.reduce(function(a, b) { return a + b; }));
         this._results[Strings.json.scoreLowerBound] = this._results[Strings.json.results.iterations][0][Strings.json.scoreLowerBound];
         this._results[Strings.json.scoreUpperBound] = this._results[Strings.json.results.iterations][0][Strings.json.scoreUpperBound];
-    },
+    }
 
-    calculateScore: function(data)
+    calculateScore(data)
     {
         var result = {};
         data[Strings.json.result] = result;
         var samples = data[Strings.json.samples];
+        const desiredFrameLength = 1000 / this._targetFrameRate;
 
         function findRegression(series, profile) {
             var minIndex = Math.round(.025 * series.length);
@@ -112,7 +114,7 @@
 
             var complexityIndex = series.fieldMap[Strings.json.complexity];
             var frameLengthIndex = series.fieldMap[Strings.json.frameLength];
-            var regressionOptions = { desiredFrameLength: 1000/this._targetFrameRate };
+            var regressionOptions = { desiredFrameLength: desiredFrameLength };
             if (profile)
                 regressionOptions.preferredProfile = profile;
             return {
@@ -237,12 +239,12 @@
             result[Strings.json.scoreLowerBound] = result[Strings.json.score] - averageFrameLength.standardDeviation();
             result[Strings.json.scoreUpperBound] = result[Strings.json.score] + averageFrameLength.standardDeviation();
         }
-    },
+    }
 
     get data()
     {
         return this._iterationsSamplers;
-    },
+    }
 
     get results()
     {
@@ -250,44 +252,44 @@
             return this._results[Strings.json.results.iterations];
         this._processData();
         return this._results[Strings.json.results.iterations];
-    },
+    }
 
     get options()
     {
         return this._options;
-    },
+    }
 
     get version()
     {
         return this._version;
-    },
+    }
 
-    _getResultsProperty: function(property)
+    _getResultsProperty(property)
     {
         if (this._results)
             return this._results[property];
         this._processData();
         return this._results[property];
-    },
+    }
 
     get score()
     {
         return this._getResultsProperty(Strings.json.score);
-    },
+    }
 
     get scoreLowerBound()
     {
         return this._getResultsProperty(Strings.json.scoreLowerBound);
-    },
+    }
 
     get scoreUpperBound()
     {
         return this._getResultsProperty(Strings.json.scoreUpperBound);
     }
-});
+}
 
-ResultsTable = Utilities.createClass(
-    function(element, headers)
+class ResultsTable {
+    constructor(element, headers)
     {
         this.element = element;
         this._headers = headers;
@@ -308,14 +310,14 @@ ResultsTable = Utilities.createClass(
         });
 
         this.clear();
-    }, {
+    }
 
-    clear: function()
+    clear()
     {
         this.element.textContent = "";
-    },
+    }
 
-    _addHeader: function()
+    _addHeader()
     {
         var thead = Utilities.createElement("thead", {}, this.element);
         var row = Utilities.createElement("tr", {}, thead);
@@ -330,22 +332,22 @@ ResultsTable = Utilities.createClass(
             if (header.children)
                 th.colSpan = header.children.length;
         });
-    },
+    }
 
-    _addBody: function()
+    _addBody()
     {
         this.tbody = Utilities.createElement("tbody", {}, this.element);
-    },
+    }
 
-    _addEmptyRow: function()
+    _addEmptyRow()
     {
         var row = Utilities.createElement("tr", {}, this.tbody);
         this._flattenedHeaders.forEach(function (header) {
             return Utilities.createElement("td", { class: "suites-separator" }, row);
         });
-    },
+    }
 
-    _addTest: function(testName, testResult, options)
+    _addTest(testName, testResult, options)
     {
         var row = Utilities.createElement("tr", {}, this.tbody);
 
@@ -361,9 +363,9 @@ ResultsTable = Utilities.createClass(
             } else
                 td.innerHTML = header.text(testResult);
         }, this);
-    },
+    }
 
-    _addIteration: function(iterationResult, iterationData, options)
+    _addIteration(iterationResult, iterationData, options)
     {
         var testsResults = iterationResult[Strings.json.results.tests];
         for (var suiteName in testsResults) {
@@ -373,9 +375,9 @@ ResultsTable = Utilities.createClass(
             for (var testName in suiteResult)
                 this._addTest(testName, suiteResult[testName], options, suiteData[testName]);
         }
-    },
+    }
 
-    showIterations: function(dashboard)
+    showIterations(dashboard)
     {
         this.clear();
         this._addHeader();
@@ -386,7 +388,7 @@ ResultsTable = Utilities.createClass(
             this._addIteration(iterationResult, dashboard.data[index], dashboard.options);
         }, this);
     }
-});
+}
 
 window.benchmarkRunnerClient = {
     iterationCount: 1,
