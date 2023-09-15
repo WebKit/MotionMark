@@ -600,15 +600,16 @@ window.benchmarkController = {
     {
         benchmarkController.isInLandscapeOrientation = match.matches;
         if (match.matches)
-            document.querySelector(".start-benchmark p").classList.add("hidden");
+            document.querySelector(".portrait-orientation-check").classList.add("hidden");
         else
-            document.querySelector(".start-benchmark p").classList.remove("hidden");
+            document.querySelector(".portrait-orientation-check").classList.remove("hidden");
+
         benchmarkController.updateStartButtonState();
     },
 
     updateStartButtonState: function()
     {
-        document.getElementById("run-benchmark").disabled = !this.isInLandscapeOrientation;
+        document.getElementById("start-button").disabled = !this.isInLandscapeOrientation;
     },
 
     _startBenchmark: function(suites, options, frameContainerID)

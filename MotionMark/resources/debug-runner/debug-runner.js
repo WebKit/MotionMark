@@ -629,7 +629,7 @@ Utilities.extendObject(window.benchmarkController, {
 
     updateStartButtonState: function()
     {
-        var startButton = document.getElementById("run-benchmark");
+        var startButton = document.getElementById("start-button");
         if ("isInLandscapeOrientation" in this && !this.isInLandscapeOrientation) {
             startButton.disabled = true;
             return;
