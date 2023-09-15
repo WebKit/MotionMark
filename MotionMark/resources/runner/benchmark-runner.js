@@ -1,29 +1,29 @@
-BenchmarkRunnerState = Utilities.createClass(
-    function(suites)
+class BenchmarkRunnerState {
+    constructor(suites)
     {
         this._suites = suites;
         this._suiteIndex = -1;
         this._testIndex = 0;
         this.next();
-    }, {
+    }
 
-    currentSuite: function()
+    currentSuite()
     {
         return this._suites[this._suiteIndex];
-    },
+    }
 
-    currentTest: function()
+    currentTest()
     {
         var suite = this.currentSuite();
         return suite ? suite.tests[this._testIndex] : null;
-    },
+    }
 
-    isFirstTest: function()
+    isFirstTest()
     {
         return !this._testIndex;
-    },
+    }
 
-    next: function()
+    next()
     {
         this._testIndex++;
 
@@ -35,9 +35,9 @@ BenchmarkRunnerState = Utilities.createClass(
         do {
             this._suiteIndex++;
         } while (this._suiteIndex < this._suites.length && this._suites[this._suiteIndex].disabled);
-    },
+    }
 
-    prepareCurrentTest: function(runner, frame)
+    prepareCurrentTest(runner, frame)
     {
         var test = this.currentTest();
         var promise = new SimplePromise;
@@ -49,17 +49,17 @@ BenchmarkRunnerState = Utilities.createClass(
         frame.src = "tests/" + test.url;
         return promise;
     }
-});
+}
 
-BenchmarkRunner = Utilities.createClass(
-    function(suites, frameContainer, client)
+class BenchmarkRunner {
+    constructor(suites, frameContainer, client)
     {
         this._suites = suites;
         this._client = client;
         this._frameContainer = frameContainer;
-    }, {
+    }
 
-    _appendFrame: function()
+    _appendFrame()
     {
         var frame = document.createElement("iframe");
         frame.setAttribute("scrolling", "no");
@@ -67,17 +67,17 @@ BenchmarkRunner = Utilities.createClass(
         this._frameContainer.insertBefore(frame, this._frameContainer.firstChild);
         this._frame = frame;
         return frame;
-    },
+    }
 
-    _removeFrame: function()
+    _removeFrame()
     {
         if (this._frame) {
             this._frame.parentNode.removeChild(this._frame);
             this._frame = null;
         }
-    },
+    }
 
-    _runBenchmarkAndRecordResults: function(state)
+    _runBenchmarkAndRecordResults(state)
     {
         var promise = new SimplePromise;
         var suite = state.currentSuite();
@@ -91,7 +91,7 @@ BenchmarkRunner = Utilities.createClass(
 
         var options = { complexity: test.complexity };
         Utilities.extendObject(options, this._client.options);
-        Utilities.extendObject(options, contentWindow.Utilities.parseParameters());
+        Utilities.extendObject(options, Utilities.parseParameters(contentWindow.location));
 
         var benchmark = new contentWindow.benchmarkClass(options);
         document.body.style.backgroundColor = benchmark.backgroundColor();
@@ -110,9 +110,9 @@ BenchmarkRunner = Utilities.createClass(
         });
 
         return promise;
-    },
+    }
 
-    step: function(state)
+    step(state)
     {
         if (!state) {
             state = new BenchmarkRunnerState(this._suites);
@@ -134,18 +134,18 @@ BenchmarkRunner = Utilities.createClass(
         return state.prepareCurrentTest(this, this._frame).then(function(prepareReturnValue) {
             return this._runBenchmarkAndRecordResults(state);
         }.bind(this));
-    },
+    }
 
-    runAllSteps: function(startingState)
+    runAllSteps(startingState)
     {
         var nextCallee = this.runAllSteps.bind(this);
         this.step(startingState).then(function(nextState) {
             if (nextState)
                 nextCallee(nextState);
         });
-    },
+    }
 
-    runMultipleIterations: function()
+    runMultipleIterations()
     {
         var self = this;
         var currentIteration = 0;
@@ -164,9 +164,9 @@ BenchmarkRunner = Utilities.createClass(
             this._client.willStartFirstIteration();
 
         this.runAllSteps();
-    },
+    }
 
-    _finalize: function()
+    _finalize()
     {
         this._removeFrame();
 
@@ -176,4 +176,4 @@ BenchmarkRunner = Utilities.createClass(
         if (this._runNextIteration)
             this._runNextIteration();
     }
-});
+}

@@ -22,64 +22,63 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-Pseudo =
-{
-    initialRandomSeed: 49734321,
-    randomSeed: 49734321,
 
-    resetRandomSeed: function()
+class Pseudo {
+    initialRandomSeed = 49734321;
+    randomSeed = 49734321;
+
+    static resetRandomSeed()
     {
         Pseudo.randomSeed = Pseudo.initialRandomSeed;
-    },
+    }
 
-    random: function()
+    static random()
     {
-        var randomSeed = Pseudo.randomSeed;
+        let randomSeed = this.randomSeed;
         randomSeed = ((randomSeed + 0x7ed55d16) + (randomSeed << 12))  & 0xffffffff;
         randomSeed = ((randomSeed ^ 0xc761c23c) ^ (randomSeed >>> 19)) & 0xffffffff;
         randomSeed = ((randomSeed + 0x165667b1) + (randomSeed << 5))   & 0xffffffff;
         randomSeed = ((randomSeed + 0xd3a2646c) ^ (randomSeed << 9))   & 0xffffffff;
         randomSeed = ((randomSeed + 0xfd7046c5) + (randomSeed << 3))   & 0xffffffff;
         randomSeed = ((randomSeed ^ 0xb55a4f09) ^ (randomSeed >>> 16)) & 0xffffffff;
-        Pseudo.randomSeed = randomSeed;
+        this.randomSeed = randomSeed;
         return (randomSeed & 0xfffffff) / 0x10000000;
     }
-};
+}
 
-Statistics =
-{
-    sampleMean: function(numberOfSamples, sum)
+class Statistics {
+    static sampleMean(numberOfSamples, sum)
     {
         if (numberOfSamples < 1)
             return 0;
         return sum / numberOfSamples;
-    },
+    }
 
     // With sum and sum of squares, we can compute the sample standard deviation in O(1).
     // See https://rniwa.com/2012-11-10/sample-standard-deviation-in-terms-of-sum-and-square-sum-of-samples/
-    unbiasedSampleStandardDeviation: function(numberOfSamples, sum, squareSum)
+    static unbiasedSampleStandardDeviation(numberOfSamples, sum, squareSum)
     {
         if (numberOfSamples < 2)
             return 0;
         return Math.sqrt((squareSum - sum * sum / numberOfSamples) / (numberOfSamples - 1));
-    },
+    }
 
-    geometricMean: function(values)
+    static geometricMean(values)
     {
         if (!values.length)
             return 0;
         var roots = values.map(function(value) { return Math.pow(value, 1 / values.length); })
         return roots.reduce(function(a, b) { return a * b; });
-    },
+    }
 
     // Cumulative distribution function
-    cdf: function(value, mean, standardDeviation)
+    static cdf(value, mean, standardDeviation)
     {
         return 0.5 * (1 + Statistics.erf((value - mean) / (Math.sqrt(2 * standardDeviation * standardDeviation))));
-    },
+    }
 
     // Approximation of Gauss error function, Abramowitz and Stegun 7.1.26
-    erf: function(value)
+    static erf(value)
     {
           var sign = (value >= 0) ? 1 : -1;
           value = Math.abs(value);
@@ -94,67 +93,72 @@ Statistics =
           var t = 1.0 / (1.0 + p * value);
           var y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-value * value);
           return sign * y;
-    },
+    }
 
-    largestDeviationPercentage: function(low, mean, high)
+    static largestDeviationPercentage(low, mean, high)
     {
         return Math.max(Math.abs(low / mean - 1), (high / mean - 1));
     }
-};
+}
 
-Experiment = Utilities.createClass(
-    function(includeConcern)
+class Experiment {
+    defaults = {
+        CONCERN: 5,
+        CONCERN_SIZE: 100,
+    }
+
+    constructor(includeConcern)
     {
         if (includeConcern)
             this._maxHeap = Heap.createMaxHeap(Experiment.defaults.CONCERN_SIZE);
         this.reset();
-    }, {
+    }
 
-    reset: function()
+    reset()
     {
         this._sum = 0;
         this._squareSum = 0;
         this._numberOfSamples = 0;
         if (this._maxHeap)
             this._maxHeap.init();
-    },
+    }
 
-    get sampleCount()
+    sampleCount()
     {
         return this._numberOfSamples;
-    },
+    }
 
-    sample: function(value)
+    sample(value)
     {
         this._sum += value;
         this._squareSum += value * value;
         if (this._maxHeap)
             this._maxHeap.push(value);
         ++this._numberOfSamples;
-    },
+    }
 
-    mean: function()
+    mean()
     {
         return Statistics.sampleMean(this._numberOfSamples, this._sum);
-    },
+    }
 
-    standardDeviation: function()
+    standardDeviation()
     {
         return Statistics.unbiasedSampleStandardDeviation(this._numberOfSamples, this._sum, this._squareSum);
-    },
+    }
 
-    cdf: function(value)
+    cdf(value)
     {
         return Statistics.cdf(value, this.mean(), this.standardDeviation());
-    },
+    }
 
-    percentage: function()
+    percentage()
     {
         var mean = this.mean();
         return mean ? this.standardDeviation() * 100 / mean : 0;
-    },
+    }
 
-    concern: function(percentage)
+    concern(percentage)
     {
         if (!this._maxHeap)
             return this.mean();
@@ -162,22 +166,16 @@ Experiment = Utilities.createClass(
         var size = Math.ceil(this._numberOfSamples * percentage / 100);
         var values = this._maxHeap.values(size);
         return values.length ? values.reduce(function(a, b) { return a + b; }) / values.length : 0;
-    },
+    }
 
-    score: function(percentage)
+    score(percentage)
     {
         return Statistics.geometricMean([this.mean(), Math.max(this.concern(percentage), 1)]);
     }
-});
-
-Experiment.defaults =
-{
-    CONCERN: 5,
-    CONCERN_SIZE: 100,
 };
 
-Regression = Utilities.createClass(
-    function(samples, getComplexity, getFrameLength, startIndex, endIndex, options)
+class Regression {
+    constructor(samples, getComplexity, getFrameLength, startIndex, endIndex, options)
     {
         var targetFrameRate = options["frame-rate"] || 60;
         var desiredFrameLength = options.desiredFrameLength || 1000/targetFrameRate;
@@ -221,14 +219,14 @@ Regression = Utilities.createClass(
         this.n1 = bestProfile.n1;
         this.n2 = bestProfile.n2;
         this.error = bestProfile.error;
-    }, {
+    }
 
-    valueAt: function(complexity)
+    valueAt(complexity)
     {
         if (this.n1 == 1 || complexity > this.complexity)
             return this.s2 + this.t2 * complexity;
         return this.s1 + this.t1 * complexity;
-    },
+    }
 
     // A generic two-segment piecewise regression calculator. Based on Kundu/Ubhaya
     //
@@ -241,7 +239,7 @@ Regression = Utilities.createClass(
     //
     // x is assumed to be complexity, y is frame length. Can be used for pure complexity-FPS
     // analysis or for ramp controllers since complexity monotonically decreases with time.
-    _calculateRegression: function(samples, getComplexity, getFrameLength, startIndex, endIndex, options)
+    _calculateRegression(samples, getComplexity, getFrameLength, startIndex, endIndex, options)
     {
         if (startIndex == endIndex) {
             // Only one sample point; we can't calculate any regression.
@@ -388,10 +386,8 @@ Regression = Utilities.createClass(
             n2: n2_best
         };
     }
-});
 
-Utilities.extendObject(Regression, {
-    bootstrap: function(samples, iterationCount, processResample, confidencePercentage)
+    static bootstrap(samples, iterationCount, processResample, confidencePercentage)
     {
         var sampleLength = samples.length;
         var resample = new Array(sampleLength);
@@ -419,4 +415,4 @@ Utilities.extendObject(Regression, {
             confidencePercentage: confidencePercentage
         };
     }
-});
+}

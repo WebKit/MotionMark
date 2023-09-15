@@ -22,8 +22,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-Utilities = {
-    _parse: function(str, sep)
+
+class Utilities {
+    static _parse(str, sep)
     {
         var output = {};
         str.split(sep).forEach(function(part) {
@@ -35,51 +36,52 @@ Utilities = {
                 output[item[0]] = value;
           });
         return output;
-    },
+    }
 
-    parseParameters: function()
+    static parseParameters(windowLocation)
     {
-        return this._parse(window.location.search.substr(1), "&");
-    },
+        return this._parse(windowLocation.search.substr(1), "&");
+    }
 
-    parseArguments: function(str)
+    static parseArguments(str)
     {
         return this._parse(str, " ");
-    },
+    }
 
-    extendObject: function(obj1, obj2)
+    static extendObject(obj1, obj2)
     {
         for (var attrname in obj2)
             obj1[attrname] = obj2[attrname];
         return obj1;
-    },
+    }
 
-    copyObject: function(obj)
+    static copyObject(obj)
     {
         return this.extendObject({}, obj);
-    },
+    }
 
-    mergeObjects: function(obj1, obj2)
+    static mergeObjects(obj1, obj2)
     {
         return this.extendObject(this.copyObject(obj1), obj2);
-    },
+    }
 
-    createClass: function(classConstructor, classMethods)
+    // FIXME: This should go away once the benchmark is fully converted to JS class syntax.
+    static createClass(classConstructor, classMethods)
     {
         classConstructor.prototype = classMethods;
         return classConstructor;
-    },
+    }
 
-    createSubclass: function(superclass, classConstructor, classMethods)
+    static createSubclass(superclass, classConstructor, classMethods)
     {
         classConstructor.prototype = Object.create(superclass.prototype);
         classConstructor.prototype.constructor = classConstructor;
         if (classMethods)
             Utilities.extendObject(classConstructor.prototype, classMethods);
         return classConstructor;
-    },
+    }
 
-    createElement: function(name, attrs, parentElement)
+    static createElement(name, attrs, parentElement)
     {
         var element = document.createElement(name);
 
@@ -88,9 +90,9 @@ Utilities = {
 
         parentElement.appendChild(element);
         return element;
-    },
+    }
 
-    createSVGElement: function(name, attrs, xlinkAttrs, parentElement)
+    static createSVGElement(name, attrs, xlinkAttrs, parentElement)
     {
         const svgNamespace = "http://www.w3.org/2000/svg";
         const xlinkNamespace = "http://www.w3.org/1999/xlink";
@@ -105,9 +107,9 @@ Utilities = {
 
         parentElement.appendChild(element);
         return element;
-    },
+    }
 
-    browserPrefix: function()
+    static browserPrefix()
     {
         if (this._browserPrefix !== undefined)
             return this._browserPrefix;
@@ -139,19 +141,19 @@ Utilities = {
         };
 
         return this._browserPrefix;
-    },
+    }
 
-    setElementPrefixedProperty: function(element, property, value)
+    static setElementPrefixedProperty(element, property, value)
     {
         element.style[property] = element.style[this.browserPrefix().js + property[0].toUpperCase() + property.substr(1)] = value;
-    },
+    }
 
-    stripUnwantedCharactersForURL: function(inputString)
+    static stripUnwantedCharactersForURL(inputString)
     {
         return inputString.replace(/\W/g, '');
-    },
+    }
 
-    convertObjectToQueryString: function(object)
+    static convertObjectToQueryString(object)
     {
         var queryString = [];
         for (var property in object) {
@@ -159,9 +161,9 @@ Utilities = {
                 queryString.push(encodeURIComponent(property) + "=" + encodeURIComponent(object[property]));
         }
         return "?" + queryString.join("&");
-    },
+    }
 
-    convertQueryStringToObject: function(queryString)
+    static convertQueryStringToObject(queryString)
     {
         queryString = queryString.substring(1);
         if (!queryString)
@@ -173,25 +175,25 @@ Utilities = {
             object[components[0]] = components[1];
         });
         return object;
-    },
+    }
 
-    progressValue: function(value, min, max)
+    static progressValue(value, min, max)
     {
         return (value - min) / (max - min);
-    },
+    }
 
-    lerp: function(value, min, max)
+    static lerp(value, min, max)
     {
         return min + (max - min) * value;
-    },
+    }
 
-    toFixedNumber: function(number, precision)
+    static toFixedNumber(number, precision)
     {
         if (number.toFixed)
             return Number(number.toFixed(precision));
         return number;
     }
-};
+}
 
 Array.prototype.swap = function(i, j)
 {
@@ -252,171 +254,173 @@ Array.prototype.shuffle = function()
     return this;
 }
 
-Point = Utilities.createClass(
-    function(x, y)
+class Point {
+
+    static zero = new Point(0, 0);
+    
+    constructor(x, y)
     {
         this.x = x;
         this.y = y;
-    }, {
+    }
 
     // Used when the point object is used as a size object.
     get width()
     {
         return this.x;
-    },
+    }
 
     // Used when the point object is used as a size object.
     get height()
     {
         return this.y;
-    },
+    }
 
     // Used when the point object is used as a size object.
     get center()
     {
         return new Point(this.x / 2, this.y / 2);
-    },
+    }
 
-    str: function()
+    str()
     {
         return "x = " + this.x + ", y = " + this.y;
-    },
+    }
 
-    add: function(other)
+    add(other)
     {
         if(isNaN(other.x))
             return new Point(this.x + other, this.y + other);
         return new Point(this.x + other.x, this.y + other.y);
-    },
+    }
 
-    subtract: function(other)
+    subtract(other)
     {
         if(isNaN(other.x))
             return new Point(this.x - other, this.y - other);
         return new Point(this.x - other.x, this.y - other.y);
-    },
+    }
 
-    multiply: function(other)
+    multiply(other)
     {
         if(isNaN(other.x))
             return new Point(this.x * other, this.y * other);
         return new Point(this.x * other.x, this.y * other.y);
-    },
+    }
 
-    move: function(angle, velocity, timeDelta)
+    move(angle, velocity, timeDelta)
     {
         return this.add(Point.pointOnCircle(angle, velocity * (timeDelta / 1000)));
-    },
+    }
 
-    length: function() {
+    length()
+    {
         return Math.sqrt( this.x * this.x + this.y * this.y );
-    },
+    }
 
-    normalize: function() {
+    normalize()
+    {
         var l = Math.sqrt( this.x * this.x + this.y * this.y );
         this.x /= l;
         this.y /= l;
         return this;
     }
-});
 
-Utilities.extendObject(Point, {
-    zero: new Point(0, 0),
-
-    pointOnCircle: function(angle, radius)
+    static pointOnCircle(angle, radius)
     {
         return new Point(radius * Math.cos(angle), radius * Math.sin(angle));
-    },
+    }
 
-    pointOnEllipse: function(angle, radiuses)
+    static pointOnEllipse(angle, radiuses)
     {
         return new Point(radiuses.x * Math.cos(angle), radiuses.y * Math.sin(angle));
-    },
+    }
 
-    elementClientSize: function(element)
+    static elementClientSize(element)
     {
         var rect = element.getBoundingClientRect();
         return new Point(rect.width, rect.height);
     }
-});
+}
 
-Insets = Utilities.createClass(
-    function(top, right, bottom, left)
+class Insets {
+    constructor (top, right, bottom, left)
     {
         this.top = top;
         this.right = right;
         this.bottom = bottom;
         this.left = left;
-    }, {
+    }
 
     get width()
     {
         return this.left + this.right;
-    },
+    }
 
     get height()
     {
         return this.top + this.bottom;
-    },
+    }
 
     get size()
     {
         return new Point(this.width, this.height);
     }
-});
 
-Insets.elementPadding = function(element)
-{
-    var styles = window.getComputedStyle(element);
-    return new Insets(
-        parseFloat(styles.paddingTop),
-        parseFloat(styles.paddingRight),
-        parseFloat(styles.paddingBottom),
-        parseFloat(styles.paddingTop));
+    static elementPadding(element)
+    {
+        const styles = window.getComputedStyle(element);
+        return new Insets(
+            parseFloat(styles.paddingTop),
+            parseFloat(styles.paddingRight),
+            parseFloat(styles.paddingBottom),
+            parseFloat(styles.paddingTop));
+    }
 }
 
-UnitBezier = Utilities.createClass(
-    function(point1, point2)
+class UnitBezier {
+    static epsilon = 1e-5;
+    static derivativeEpsilon = 1e-6;
+
+    constructor(point1, point2)
     {
-        // First and last points in the Bézier curve are assumed to be (0,0) and (!,1)
+        // First and last points in the Bézier curve are assumed to be (0,0) and (1,1)
         this._c = point1.multiply(3);
         this._b = point2.subtract(point1).multiply(3).subtract(this._c);
         this._a = new Point(1, 1).subtract(this._c).subtract(this._b);
-    }, {
+    }
 
-    epsilon: 1e-5,
-    derivativeEpsilon: 1e-6,
 
-    solve: function(x)
+    solve(x)
     {
         return this.sampleY(this.solveForT(x));
-    },
+    }
 
-    sampleX: function(t)
+    sampleX(t)
     {
         return ((this._a.x * t + this._b.x) * t + this._c.x) * t;
-    },
+    }
 
-    sampleY: function(t)
+    sampleY(t)
     {
         return ((this._a.y * t + this._b.y) * t + this._c.y) * t;
-    },
+    }
 
-    sampleDerivativeX: function(t)
+    sampleDerivativeX(t)
     {
         return(3 * this._a.x * t + 2 * this._b.x) * t + this._c.x;
-    },
+    }
 
-    solveForT: function(x)
+    solveForT(x)
     {
-        var t0, t1, t2, x2, d2, i;
+        let t0, t1, t2, x2, d2, i;
 
         for (t2 = x, i = 0; i < 8; ++i) {
             x2 = this.sampleX(t2) - x;
-            if (Math.abs(x2) < this.epsilon)
+            if (Math.abs(x2) < UnitBezier.epsilon)
                 return t2;
             d2 = this.sampleDerivativeX(t2);
-            if (Math.abs(d2) < this.derivativeEpsilon)
+            if (Math.abs(d2) < UnitBezier.derivativeEpsilon)
                 break;
             t2 = t2 - x2 / d2;
         }
@@ -432,7 +436,7 @@ UnitBezier = Utilities.createClass(
 
         while (t0 < t1) {
             x2 = this.sampleX(t2);
-            if (Math.abs(x2 - x) < this.epsilon)
+            if (Math.abs(x2 - x) < UnitBezier.epsilon)
                 return t2;
             if (x > x2)
                 t0 = t2;
@@ -443,7 +447,7 @@ UnitBezier = Utilities.createClass(
 
         return t2;
     }
-});
+}
 
 SimplePromise = Utilities.createClass(
     function()
@@ -483,14 +487,14 @@ SimplePromise = Utilities.createClass(
     }
 });
 
-var Heap = Utilities.createClass(
-    function(maxSize, compare)
+class Heap {
+    constructor(maxSize, compare)
     {
         this._maxSize = maxSize;
         this._compare = compare;
         this._size = 0;
         this._values = new Array(this._maxSize);
-    }, {
+    }
 
     // This is a binary heap represented in an array. The root element is stored
     // in the first element in the array. The root is followed by its two children.
@@ -503,25 +507,25 @@ var Heap = Utilities.createClass(
     // LEFT         1       3       5       7       9       11      13
     // RIGHT        2       4       6       8       10      12      14
     // ===========================================================================
-    _parentIndex: function(i)
+    _parentIndex(i)
     {
         return i > 0 ? Math.floor((i - 1) / 2) : -1;
-    },
+    }
 
-    _leftIndex: function(i)
+    _leftIndex(i)
     {
         var leftIndex = i * 2 + 1;
         return leftIndex < this._size ? leftIndex : -1;
-    },
+    }
 
-    _rightIndex: function(i)
+    _rightIndex(i)
     {
         var rightIndex = i * 2 + 2;
         return rightIndex < this._size ? rightIndex : -1;
-    },
+    }
 
     // Return the child index that may violate the heap property at index i.
-    _childIndex: function(i)
+    _childIndex(i)
     {
         var left = this._leftIndex(i);
         var right = this._rightIndex(i);
@@ -530,19 +534,19 @@ var Heap = Utilities.createClass(
             return this._compare(this._values[left], this._values[right]) > 0 ? left : right;
 
         return left != -1 ? left : right;
-    },
+    }
 
-    init: function()
+    init()
     {
         this._size = 0;
-    },
+    }
 
-    top: function()
+    top()
     {
         return this._size ? this._values[0] : NaN;
-    },
+    }
 
-    push: function(value)
+    push(value)
     {
         if (this._size == this._maxSize) {
             // If size is bounded and the new value can be a parent of the top()
@@ -553,18 +557,18 @@ var Heap = Utilities.createClass(
         }
         this._values[this._size++] = value;
         this._bubble(this._size - 1);
-    },
+    }
 
-    pop: function()
+    pop()
     {
         if (!this._size)
             return NaN;
 
         this._values[0] = this._values[--this._size];
         this._sink(0);
-    },
+    }
 
-    _bubble: function(i)
+    _bubble(i)
     {
         // Fix the heap property at index i given that parent is the only node that
         // may violate the heap property.
@@ -574,9 +578,9 @@ var Heap = Utilities.createClass(
 
             this._values.swap(pi, i);
         }
-    },
+    }
 
-    _sink: function(i)
+    _sink(i)
     {
         // Fix the heap property at index i given that each of the left and the right
         // sub-trees satisfies the heap property.
@@ -586,9 +590,9 @@ var Heap = Utilities.createClass(
 
             this._values.swap(ci, i);
         }
-    },
+    }
 
-    str: function()
+    str()
     {
         var out = "Heap[" + this._size + "] = [";
         for (var i = 0; i < this._size; ++i) {
@@ -597,97 +601,97 @@ var Heap = Utilities.createClass(
                 out += ", ";
         }
         return out + "]";
-    },
+    }
 
-    values: function(size) {
+    values(size)
+    {
         // Return the last "size" heap elements values.
         var values = this._values.slice(0, this._size);
         return values.sort(this._compare).slice(0, Math.min(size, this._size));
     }
-});
 
-Utilities.extendObject(Heap, {
-    createMinHeap: function(maxSize)
+    static createMinHeap(maxSize)
     {
         return new Heap(maxSize, function(a, b) { return b - a; });
-    },
+    }
 
-    createMaxHeap: function(maxSize) {
+    static createMaxHeap(maxSize)
+    {
         return new Heap(maxSize, function(a, b) { return a - b; });
     }
-});
+}
 
-var SampleData = Utilities.createClass(
-    function(fieldMap, data)
+class SampleData {
+    constructor(fieldMap, data)
     {
         this.fieldMap = fieldMap || {};
         this.data = data || [];
-    }, {
+    }
 
     get length()
     {
         return this.data.length;
-    },
+    }
 
-    addField: function(name, index)
+    addField(name, index)
     {
         this.fieldMap[name] = index;
-    },
+    }
 
-    push: function(datum)
+    push(datum)
     {
         this.data.push(datum);
-    },
+    }
 
-    sort: function(sortFunction)
+    sort(sortFunction)
     {
         this.data.sort(sortFunction);
-    },
+    }
 
-    slice: function(begin, end)
+    slice(begin, end)
     {
         return new SampleData(this.fieldMap, this.data.slice(begin, end));
-    },
+    }
 
-    forEach: function(iterationFunction)
+    forEach(iterationFunction)
     {
         this.data.forEach(iterationFunction);
-    },
+    }
 
-    createDatum: function()
+    createDatum()
     {
         return [];
-    },
+    }
 
-    getFieldInDatum: function(datum, fieldName)
+    getFieldInDatum(datum, fieldName)
     {
         if (typeof datum === 'number')
             datum = this.data[datum];
         return datum[this.fieldMap[fieldName]];
-    },
+    }
 
-    setFieldInDatum: function(datum, fieldName, value)
+    setFieldInDatum(datum, fieldName, value)
     {
         if (typeof datum === 'number')
             datum = this.data[datum];
         return datum[this.fieldMap[fieldName]] = value;
-    },
+    }
 
-    at: function(index)
+    at(index)
     {
         return this.data[index];
-    },
+    }
 
-    toArray: function()
+    toArray()
     {
-        var array = [];
+        let array = [];
 
         this.data.forEach(function(datum) {
-            var newDatum = {};
+            let newDatum = {};
             array.push(newDatum);
 
-            for (var fieldName in this.fieldMap) {
-                var value = this.getFieldInDatum(datum, fieldName);
+            for (let fieldName in this.fieldMap) {
+                let value = this.getFieldInDatum(datum, fieldName);
                 if (value !== null && value !== undefined)
                     newDatum[fieldName] = value;
             }
@@ -695,4 +699,4 @@ var SampleData = Utilities.createClass(
 
         return array;
     }
-});
+}
