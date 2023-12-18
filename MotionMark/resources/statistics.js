@@ -180,46 +180,39 @@ Regression = Utilities.createClass(
     function(samples, getComplexity, getFrameLength, startIndex, endIndex, options)
     {
         const desiredFrameLength = options.desiredFrameLength;
-        var bestProfile;
+        var profile;
 
         if (!options.preferredProfile || options.preferredProfile == Strings.json.profiles.slope) {
-            var slope = this._calculateRegression(samples, getComplexity, getFrameLength, startIndex, endIndex, {
+            profile = this._calculateRegression(samples, getComplexity, getFrameLength, startIndex, endIndex, {
                 shouldClip: true,
                 s1: desiredFrameLength,
                 t1: 0
             });
-            if (!bestProfile || slope.error < bestProfile.error) {
-                bestProfile = slope;
-                this.profile = Strings.json.profiles.slope;
-            }
+            this.profile = Strings.json.profiles.slope;
         }
-        if (!options.preferredProfile || options.preferredProfile == Strings.json.profiles.flat) {
-            var flat = this._calculateRegression(samples, getComplexity, getFrameLength, startIndex, endIndex, {
+        else if (options.preferredProfile == Strings.json.profiles.flat) {
+            profile = this._calculateRegression(samples, getComplexity, getFrameLength, startIndex, endIndex, {
                 shouldClip: true,
                 s1: desiredFrameLength,
                 t1: 0,
                 t2: 0
             });
-
-            if (!bestProfile || flat.error < bestProfile.error) {
-                bestProfile = flat;
-                this.profile = Strings.json.profiles.flat;
-            }
+            this.profile = Strings.json.profiles.flat;
         }
 
         this.startIndex = Math.min(startIndex, endIndex);
         this.endIndex = Math.max(startIndex, endIndex);
 
-        this.complexity = bestProfile.complexity;
-        this.s1 = bestProfile.s1;
-        this.t1 = bestProfile.t1;
-        this.s2 = bestProfile.s2;
-        this.t2 = bestProfile.t2;
-        this.stdev1 = bestProfile.stdev1;
-        this.stdev2 = bestProfile.stdev2;
-        this.n1 = bestProfile.n1;
-        this.n2 = bestProfile.n2;
-        this.error = bestProfile.error;
+        this.complexity = profile.complexity;
+        this.s1 = profile.s1;
+        this.t1 = profile.t1;
+        this.s2 = profile.s2;
+        this.t2 = profile.t2;
+        this.stdev1 = profile.stdev1;
+        this.stdev2 = profile.stdev2;
+        this.n1 = profile.n1;
+        this.n2 = profile.n2;
+        this.error = profile.error;
     }, {
 
     valueAt: function(complexity)
