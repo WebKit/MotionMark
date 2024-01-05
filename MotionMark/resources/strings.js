@@ -32,6 +32,7 @@ var Strings = {
         runBenchmark: "Run Benchmark",
         usingFrameRate: "Framerate %sfps",
         frameRateDetectionFailure: "Failed to determine framerate, using 60fps",
+        non60FrameRate: "Framerate %sfps. If comparing browsers, be sure to <a href='about.html#set-display-fps'>set your display refresh rate to 60Hz</a>."
     },
     json: {
         version: "version",
