@@ -502,13 +502,16 @@ window.benchmarkController = {
     {
         const frameRateLabel = document.getElementById("frame-rate-label");
 
-        let labelContent = Strings.text.usingFrameRate.replace("%s", frameRate);
+        let labelContent = "";
         if (!frameRate) {
             labelContent = Strings.text.frameRateDetectionFailure;
             frameRate = 60;
-        }
+        } else if (frameRate != 60)
+            labelContent = Strings.text.non60FrameRate.replace("%s", frameRate);
+        else 
+            labelContent = Strings.text.usingFrameRate.replace("%s", frameRate);
 
-        frameRateLabel.textContent = labelContent;
+        frameRateLabel.innerHTML = labelContent;
 
         this.benchmarkDefaultParameters["system-frame-rate"] = frameRate;
         this.benchmarkDefaultParameters["frame-rate"] = frameRate;
