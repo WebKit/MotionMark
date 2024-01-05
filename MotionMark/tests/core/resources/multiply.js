@@ -35,7 +35,7 @@ var MultiplyStage = Utilities.createSubclass(Stage,
     visibleCSS: [
         ["display", "none", "block"]
     ],
-    totalRows: 55,
+    totalRows: 68,
 
     initialize: function(benchmark, options)
     {
