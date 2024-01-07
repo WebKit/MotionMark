@@ -165,6 +165,7 @@ Controller = Utilities.createClass(
                 this._frameLengthEstimator.sample(lastFrameLength);
                 frameLengthEstimate = this._frameLengthEstimator.estimate;
             }
+            this._sampler.record(timestamp, stage.complexity(), frameLengthEstimate);
         } else {
             this.registerFrameTime(lastFrameLength);
             if (this.intervalHasConcluded(timestamp)) {
@@ -174,13 +175,15 @@ Controller = Utilities.createClass(
                     this._frameLengthEstimator.sample(intervalAverageFrameLength);
                     frameLengthEstimate = this._frameLengthEstimator.estimate;
                 }
+                this._sampler.record(timestamp, stage.complexity(), frameLengthEstimate);
+
                 didFinishInterval = true;
                 this.didFinishInterval(timestamp, stage, intervalAverageFrameLength);
                 this._frameLengthEstimator.reset();
-            }
+            } else
+                this._sampler.record(timestamp, stage.complexity(), frameLengthEstimate);                
         }
 
-        this._sampler.record(timestamp, stage.complexity(), frameLengthEstimate);
         this.tune(timestamp, stage, lastFrameLength, didFinishInterval, intervalAverageFrameLength);
     },
 
