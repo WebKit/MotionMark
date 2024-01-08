@@ -131,6 +131,16 @@ Utilities.extendObject(window.benchmarkController, {
         tickValues = tickValues.map((x) => msPerSecond / x);
         return tickValues;
     },
+    
+    _minFrameRate: function()
+    {
+        return this._targetFrameRate / 4;
+    },
+
+    _maxFrameRate: function()
+    {
+        return this._targetFrameRate * 1.5;
+    },
 
     createComplexityGraph: function(result, timeRegressions, data, options, margins, size)
     {
@@ -161,8 +171,8 @@ Utilities.extendObject(window.benchmarkController, {
         const axisHeight = size.height - margins.top - margins.bottom;
 
         // The y axis is frameLength in ms, inverted with the axis labels showing fps.
-        const minFrameRate = this._targetFrameRate / 4;
-        const maxFrameRate = this._targetFrameRate * 1.5;
+        const minFrameRate = this._minFrameRate();
+        const maxFrameRate = this._maxFrameRate();
 
         const yMin = msPerSecond / minFrameRate;
         const yMax = msPerSecond / maxFrameRate;
@@ -334,8 +344,9 @@ Utilities.extendObject(window.benchmarkController, {
                 .domain([0, complexityMax]);
 
 
-        const minFrameRate = this._targetFrameRate / 2;
-        const maxFrameRate = this._targetFrameRate * 1.5;
+        const minFrameRate = this._minFrameRate();
+        const maxFrameRate = this._maxFrameRate();
+
         const yRightMin = msPerSecond / minFrameRate;
         const yRightMax = msPerSecond / maxFrameRate;
 
