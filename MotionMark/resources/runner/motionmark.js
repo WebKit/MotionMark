@@ -116,15 +116,15 @@
             var regressionOptions = { desiredFrameLength: desiredFrameLength };
             if (profile)
                 regressionOptions.preferredProfile = profile;
+
+            var regressionSamples = series.slice(minIndex, maxIndex + 1);
+            var regressionData = regressionSamples.data.map((sample) => [ sample[complexityIndex], sample[frameLengthIndex] ]);
+            var regression = new Regression(regressionData, minIndex, maxIndex, regressionOptions);
             return {
                 minComplexity: minComplexity,
                 maxComplexity: maxComplexity,
-                samples: series.slice(minIndex, maxIndex + 1),
-                regression: new Regression(
-                    series.data,
-                    function (data, i) { return data[i][complexityIndex]; },
-                    function (data, i) { return data[i][frameLengthIndex]; },
-                    minIndex, maxIndex, regressionOptions)
+                samples: regressionSamples,
+                regression: regression,
             };
         }
 

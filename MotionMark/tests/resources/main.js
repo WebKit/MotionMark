@@ -36,7 +36,8 @@ Sampler = Utilities.createClass(
         this.sampleCount = 0;
     }, {
 
-    record: function() {
+    record: function()
+    {
         // Assume that arguments.length == this.samples.length
         for (var i = 0; i < arguments.length; i++) {
             this.samples[i][this.sampleCount] = arguments[i];
@@ -549,8 +550,11 @@ RampController = Utilities.createSubclass(Controller,
             return;
         }
 
-        var regression = new Regression(this._sampler.samples, this._getComplexity, this._getFrameLength,
-            this._sampler.sampleCount - 1, this._rampStartIndex, { desiredFrameLength: this.frameLengthDesired });
+        var regressionData = [];
+        for (var i = this._rampStartIndex; i < this._sampler.sampleCount; ++i)
+            regressionData.push([ this._getComplexity(this._sampler.samples, i), this._getFrameLength(this._sampler.samples, i) ]);
+
+        var regression = new Regression(regressionData, this._sampler.sampleCount - 1, this._rampStartIndex, { desiredFrameLength: this.frameLengthDesired });
         this._rampRegressions.push(regression);
 
         var frameLengthAtMaxComplexity = regression.valueAt(this._maximumComplexity);
