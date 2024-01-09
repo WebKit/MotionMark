@@ -792,6 +792,10 @@ body.showing-test-graph header, body.showing-test-graph nav {
     stroke-width: 1px;
 }
 
+#complexity-graph .raw.series line.mutation {
+    stroke: rgba(255, 255, 255, .15);
+}
+
 #complexity-graph .raw.regression line {
     stroke: rgba(30, 96%, 86%, .6);
 }

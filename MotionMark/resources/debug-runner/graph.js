@@ -250,12 +250,14 @@ Utilities.extendObject(window.benchmarkController, {
             .attr("x1", function(d) { return xScale(d.complexity) - 3; })
             .attr("x2", function(d) { return xScale(d.complexity) + 3; })
             .attr("y1", function(d) { return yScale(d.frameLength) - 3; })
-            .attr("y2", function(d) { return yScale(d.frameLength) + 3; });
-        group.append("line")
+            .attr("y2", function(d) { return yScale(d.frameLength) + 3; })
+            .attr("class", function(d) { return d.frameType === "m" ? 'mutation' : 'animation'; });
+        group.append("line") 
             .attr("x1", function(d) { return xScale(d.complexity) - 3; })
             .attr("x2", function(d) { return xScale(d.complexity) + 3; })
             .attr("y1", function(d) { return yScale(d.frameLength) + 3; })
-            .attr("y2", function(d) { return yScale(d.frameLength) - 3; });
+            .attr("y2", function(d) { return yScale(d.frameLength) - 3; })
+            .attr("class", function(d) { return d.frameType === "m" ? 'mutation' : 'animation'; });
 
         // Cursor
         var cursorGroup = svg.append("g").attr("class", "cursor hidden");

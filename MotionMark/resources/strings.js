@@ -44,10 +44,14 @@ var Strings = {
         samples: "samples",
         dataFieldMap: "dataFieldMap",
         controller: "controller",
+        frameType: "frameType",
         time: "time",
         complexity: "complexity",
         frameLength: "frameLength",
         smoothedFrameLength: "smoothedFrameLength",
+
+        mutationFrameType: "m",
+        animationFrameType: "a",
 
         result: "result",
         configuration: "configuration",

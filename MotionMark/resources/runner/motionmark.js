@@ -111,6 +111,7 @@
                 maxComplexity = series.getFieldInDatum(maxIndex, Strings.json.complexity);
             }
 
+            var frameTypeIndex = series.fieldMap[Strings.json.frameType];
             var complexityIndex = series.fieldMap[Strings.json.complexity];
             var frameLengthIndex = series.fieldMap[Strings.json.frameLength];
             var regressionOptions = { desiredFrameLength: desiredFrameLength };
@@ -118,7 +119,9 @@
                 regressionOptions.preferredProfile = profile;
 
             var regressionSamples = series.slice(minIndex, maxIndex + 1);
-            var regressionData = regressionSamples.data.map((sample) => [ sample[complexityIndex], sample[frameLengthIndex] ]);
+            var animationSamples = regressionSamples.data.filter((sample) => sample[frameTypeIndex] == Strings.json.animationFrameType);
+            var regressionData = animationSamples.map((sample) => [ sample[complexityIndex], sample[frameLengthIndex] ]);
+
             var regression = new Regression(regressionData, minIndex, maxIndex, regressionOptions);
             return {
                 minComplexity: minComplexity,
