@@ -155,6 +155,29 @@ Controller = Utilities.createClass(
         return averageFrameLength;
     },
 
+    _getFrameType: function(samples, i)
+    {
+        return samples[sampleTypeIndex][i];
+    },
+
+    _getComplexity: function(samples, i)
+    {
+        return samples[sampleComplexityIndex][i];
+    },
+
+    _getFrameLength: function(samples, i)
+    {
+        return samples[sampleTimeIndex][i] - samples[sampleTimeIndex][i - 1];
+    },
+    
+    _previousFrameComplexity: function(samples, i)
+    {
+        if (i > 0)
+            return this._getComplexity(samples, i - 1);
+
+        return 0;
+    },
+
     update: function(timestamp, stage)
     {
         const frameType = this._previousFrameComplexity(this._sampler.samples, this._sampler.sampleCount) != stage.complexity() ? Strings.json.mutationFrameType : Strings.json.animationFrameType
@@ -596,29 +619,6 @@ RampController = Utilities.createSubclass(Controller,
         this._rampStartTimestamp = timestamp;
         this._possibleMinimumComplexity = 1;
         this._possibleMaximumComplexity = this._maximumComplexity;
-    },
-
-    _getFrameType: function(samples, i)
-    {
-        return samples[sampleTypeIndex][i];
-    },
-
-    _getComplexity: function(samples, i)
-    {
-        return samples[sampleComplexityIndex][i];
-    },
-
-    _getFrameLength: function(samples, i)
-    {
-        return samples[sampleTimeIndex][i] - samples[sampleTimeIndex][i - 1];
-    },
-    
-    _previousFrameComplexity: function(samples, currentSampleCount)
-    {
-        if (currentSampleCount > 0)
-            return this._getComplexity(samples, currentSampleCount - 1);
-
-        return 0;
     },
 
     processSamples: function(results)
