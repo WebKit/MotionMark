@@ -354,8 +354,24 @@ Suites.push(new Suite("Suits suite",
 Suites.push(new Suite("3D Graphics",
     [
         {
+            url: "3d/triangles-webgl.html?triangleSize=1.0",
+            name: "Triangles (WebGL, large)"
+        },
+        {
+            url: "3d/triangles-webgl.html?triangleSize=0.01",
+            name: "Triangles (WebGL, small)"
+        },
+        {
+            url: "3d/triangles-webgl.html?blended",
+            name: "Triangles (WebGL, blended)"
+        },
+        {
             url: "3d/triangles-webgl.html",
             name: "Triangles (WebGL)"
+        },
+        {
+            url: "3d/triangles-webgl.html?webxr",
+            name: "Triangles (WebXR)"
         },
         {
             url: "3d/triangles-webgpu.html",
