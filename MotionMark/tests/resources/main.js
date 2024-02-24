@@ -891,8 +891,6 @@ Benchmark = Utilities.createClass(
         this._firstFrameMinimumLength = options["first-frame-minimum-length"];
 
         this._stage = stage;
-        this._requestAnimationFrame = rafFunction=> window.requestAnimationFrame(rafFunction)
-
         this._stage.initialize(this, options);
 
         switch (options["time-measurement"])
@@ -962,7 +960,7 @@ Benchmark = Utilities.createClass(
         return promise;
     },
 
-    _animateLoop: function(timestamp,frame)
+    _animateLoop: function(timestamp)
     {
         timestamp = (this._getTimestamp && this._getTimestamp()) || timestamp;
         this._currentTimestamp = timestamp;
@@ -986,15 +984,15 @@ Benchmark = Utilities.createClass(
                 }
             }
 
-            this._stage.animate(0,frame);
+            this._stage.animate(0);
             ++this._frameCount;
-            this._requestAnimationFrame(this._animateLoop);
+            requestAnimationFrame(this._animateLoop);
             return;
         }
 
         this._controller.update(timestamp, this._stage);
-        this._stage.animate(timestamp - this._previousTimestamp,frame);
+        this._stage.animate(timestamp - this._previousTimestamp);
         this._previousTimestamp = timestamp;
-        this._requestAnimationFrame(this._animateLoop);
+        requestAnimationFrame(this._animateLoop);
     }
 });
