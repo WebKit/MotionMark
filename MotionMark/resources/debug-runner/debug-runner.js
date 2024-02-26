@@ -679,6 +679,7 @@ Utilities.extendObject(window.benchmarkController, {
 
     startBenchmarkImmediatelyIfEncoded: function()
     {
+        benchmarkController.determineCanvasSize();
         benchmarkController.options = Utilities.convertQueryStringToObject(location.search);
         if (!benchmarkController.options)
             return false;
