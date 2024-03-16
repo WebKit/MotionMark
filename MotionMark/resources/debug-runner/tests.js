@@ -358,6 +358,10 @@ Suites.push(new Suite("3D Graphics",
             name: "Triangles (WebGL)"
         },
         {
+            url: "3d/triangles-webgl.html?webxr=true",
+            name: "Triangles (WebXR)"
+        },
+        {
             url: "3d/triangles-webgpu.html",
             name: "Triangles (WebGPU)"
         },

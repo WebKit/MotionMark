@@ -37,12 +37,17 @@ WebGLStage = Utilities.createSubclass(Stage,
 
             this._numTriangles = 0;
             this._bufferSize = 0;
-
-            this._gl = this.element.getContext("webgl");
+            this._testOptions = new URLSearchParams(document.location.search);
+            if(this._testOptions.has("webxr")) {
+                this._overrideAnimationLoop(benchmark);
+                this._gl =  this.element.getContext('webgl2',{antialias:true, xrCompatible: true});
+            } else {
+                this._gl = this.element.getContext("webgl");
+            }
             var gl = this._gl;
 
             gl.clearColor(0, 0, 0, 1);
-
+            
             // Create the vertex shader object.
             var vertexShader = gl.createShader(gl.VERTEX_SHADER);
 
@@ -81,6 +86,10 @@ WebGLStage = Utilities.createSubclass(Stage,
 
             // Our program has two inputs. We have a single uniform "color",
             // and one vertex attribute "position".
+            if(this._testOptions.has("blended")) {
+                gl.enable(gl.BLEND);
+                gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
+            }
 
             gl.useProgram(program);
             this._uScale = gl.getUniformLocation(program, "scale");
@@ -96,27 +105,127 @@ WebGLStage = Utilities.createSubclass(Stage,
             this._aColor = gl.getAttribLocation(program, "color");
             gl.enableVertexAttribArray(this._aColor);
 
+            let s = 0.1;
+            if(this._testOptions.has("triangleSize")) {
+                s = parseFloat(this._testOptions.get("triangleSize"));
+            } 
             this._positionData = new Float32Array([
                 // x y z 1
-                   0,  0.1, 0, 1,
-                -0.1, -0.1, 0, 1,
-                 0.1, -0.1, 0, 1
+                0, s, 0, 1,
+                -s, -s, 0, 1,
+                s, -s, 0, 1
             ]);
             this._positionBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this._positionBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, this._positionData, gl.STATIC_DRAW);
 
+            const brightness = 0.1;
             this._colorData = new Float32Array([
-                1, 0, 0, 1,
-                0, 1, 0, 1,
-                0, 0, 1, 1
+                brightness, 0, 0, brightness,
+                0, brightness, 0, brightness,
+                0, 0, brightness, brightness
             ]);
             this._colorBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this._colorBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, this._colorData, gl.STATIC_DRAW);
 
+            if(this._testOptions.has("webxr")) {
+                this._benchmark._requestAnimationFrame = ()=>{};
+                var startButton = this._makeVRButton();
+            }
+
             this._resetIfNecessary();
         },
+
+        _overrideAnimationLoop: function(benchmark) {
+
+            benchmark._oldAnimateLoop = benchmark._animateLoop;
+            benchmark._animateLoop = function(timestamp, xrFrame) {
+                timestamp = (this._getTimestamp && this._getTimestamp()) || timestamp;
+                this._currentTimestamp = timestamp;
+
+                if (this._controller.shouldStop(timestamp)) {
+                    this._finishPromise.resolve(this._controller.results());
+                    return;
+                }
+
+                if (!this._didWarmUp) {
+                    if (!this._previousTimestamp) {
+                        this._previousTimestamp = timestamp;
+                        this._benchmarkStartTimestamp = timestamp;
+                    } else if (timestamp - this._previousTimestamp >= this._warmupLength && this._frameCount >= this._warmupFrameCount) {
+                        this._didWarmUp = true;
+                        this._benchmarkStartTimestamp = timestamp;
+                        this._controller.start(timestamp, this._stage);
+                        this._previousTimestamp = timestamp;
+
+                        while (this._getTimestamp && this._getTimestamp() - timestamp < this._firstFrameMinimumLength) {
+                    }
+                }
+
+                    this._stage.animate(0,xrFrame);
+                    ++this._frameCount;
+                    if(xrFrame) { xrFrame.session.requestAnimationFrame(this._animateLoop); }
+                    return;
+                }
+
+                this._controller.update(timestamp, this._stage);
+                this._stage.animate(timestamp - this._previousTimestamp,xrFrame);
+                this._previousTimestamp = timestamp;
+                xrFrame.session.requestAnimationFrame(this._animateLoop);
+            }.bind(benchmark);
+        },
+
+        _makeVRButton: function() 
+        {
+            var button = document.createElement('div');
+            
+            Object.assign(button.style, {
+                position:'fixed',
+                top:0,
+                left:0,
+                width:'300px',
+                height:'30px',
+                fontSize:'1.5rem',
+                border:'thin solid white',
+                color:'white', 
+                backgroundColor:'black',
+                margin:'20px', 
+                textAlign:'center',
+                borderRadius:'20px'
+            });
+            
+            if(navigator.xr!=null) {
+                button.innerHTML = "Open webXR view";
+                button.addEventListener('click', clickEvent=>{
+                    this._launchXR();
+                });
+            } else button.innerHTML = "WebXR Not supported";
+                
+            document.body.appendChild(button);
+        },
+
+        _launchXR: function()
+        {
+            navigator.xr.requestSession('immersive-vr', {optionalFeatures: []})
+            .then(session=>{
+                var gl = this._gl;
+                session.addEventListener('end', e=>{
+                    this._requestAnimationFrame = (rafFunction,frame)=>
+                    window.requestAnimationFrame(rafFunction ,frame);
+                });
+                const baseLayer = new XRWebGLLayer(session, gl);
+                session.updateRenderState({ baseLayer });
+                session.requestReferenceSpace('local').then(refSpace=>{
+                    this.xrRefSpace = refSpace;
+                    this._benchmark._requestAnimationFrame = (rafFunction)=>{
+                        session.requestAnimationFrame((t,frame)=>rafFunction(t,frame));
+                    };
+                    this._benchmark._requestAnimationFrame(this._benchmark._animateLoop);
+                });
+            });
+        },
+
 
         _getFunctionSource: function(id)
         {
@@ -156,16 +265,56 @@ WebGLStage = Utilities.createSubclass(Stage,
             this._resetIfNecessary();
         },
 
-        animate: function(timeDelta)
+        animate: function(timeDelta, xrFrame)
+        {
+            if(xrFrame) {
+                this.animateXR(timeDelta, xrFrame); 
+            } else {
+                this.animate2D(timeDelta);
+            }
+        },
+
+        animate2D: function(timeDelta)
         {
             var gl = this._gl;
 
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            
+            if (!this._startTime)
+                this._startTime = Stage.dateCounterValue(1000);
+            var elapsedTime = Stage.dateCounterValue(1000) - this._startTime;
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            
+            this._animateInternal(elapsedTime);
+
+        },
+
+        animateXR: function (t,frame) {
+            var gl = this._gl;
 
             if (!this._startTime)
                 this._startTime = Stage.dateCounterValue(1000);
             var elapsedTime = Stage.dateCounterValue(1000) - this._startTime;
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+
+            let pose = frame.getViewerPose(this.xrRefSpace);
+            let glLayer = frame.session.renderState.baseLayer;
+
+            if(pose) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
+
+            for (let view of pose.views) {
+                let viewport = glLayer.getViewport(view);
+                gl.viewport(viewport.x, viewport.y,
+                viewport.width, viewport.height);
+                this._animateInternal(elapsedTime);
+            }  
+        }
+    },
+
+        _animateInternal: function (elapsedTime) {
+            let gl = this._gl;
+            
             for (var i = 0; i < this._numTriangles; ++i) {
 
                 this._uniformData[i * 6 + 1] = elapsedTime;
