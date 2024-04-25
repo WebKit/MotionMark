@@ -558,11 +558,15 @@ window.benchmarkController = {
     determineFrameRate: function(detectionProgressElement)
     {
         return new Promise((resolve, reject) => {
-            let last = 0;
-            let average = 0;
+            let firstTimestamp;
             let count = 0;
 
-            const finish = function()
+            const averageFrameRate = function(timestamp)
+            {
+                return 1000. / ((timestamp - firstTimestamp) / count);
+            }
+
+            const finish = function(average)
             {
                 const commonFrameRates = [15, 30, 45, 60, 90, 120, 144];
                 const distanceFromFrameRates = commonFrameRates.map(rate => {
@@ -585,16 +589,17 @@ window.benchmarkController = {
 
             const tick = function(timestamp)
             {
-                average -= average / 30;
-                average += 1000. / (timestamp - last) / 30;
-                if (detectionProgressElement)
-                    detectionProgressElement.textContent = Math.round(average);
-                last = timestamp;
+                if (!firstTimestamp)
+                    firstTimestamp = timestamp;
+                else if (detectionProgressElement)
+                    detectionProgressElement.textContent = Math.round(averageFrameRate(timestamp));
+
                 count++;
+
                 if (count < 300)
                     requestAnimationFrame(tick);
                 else
-                    finish();
+                    finish(averageFrameRate(timestamp));
             }
 
             requestAnimationFrame(tick);
