@@ -266,15 +266,38 @@ Point = Utilities.createClass(
     },
 
     // Used when the point object is used as a size object.
+    set width(w)
+    {
+        this.x = w;
+    },
+
+    // Used when the point object is used as a size object.
     get height()
     {
         return this.y;
     },
 
     // Used when the point object is used as a size object.
+    set height(h)
+    {
+        this.y = h;
+    },
+
+    // Used when the point object is used as a size object.
     get center()
     {
         return new Point(this.x / 2, this.y / 2);
+    },
+
+    // Used when the point object is used as a size object.
+    area: function() {
+        return this.x * this.y;
+    },
+
+    // Used when the point object is used as a size object.
+    expand(width, height) {
+        this.x += width;
+        this.y += height;
     },
 
     str: function()
@@ -319,6 +342,9 @@ Point = Utilities.createClass(
         return this;
     }
 });
+
+// FIXME: Add a seprate class for Size.
+let Size = Point;
 
 Utilities.extendObject(Point, {
     zero: new Point(0, 0),
