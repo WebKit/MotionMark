@@ -37,7 +37,7 @@ var SimpleLeaf = Utilities.createSubclass(SuperLeaf,
 
     move: function()
     {
-        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
+        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotator.rotateZ();
     }
 });
 
@@ -53,7 +53,7 @@ var ScaleLeaf = Utilities.createSubclass(SuperLeaf,
 
     move: function()
     {
-        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
+        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotator.rotateZ();
     }
 });
 
@@ -69,7 +69,7 @@ var OpacityLeaf = Utilities.createSubclass(SuperLeaf,
 
     move: function()
     {
-        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
+        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotator.rotateZ();
         this.element.style.opacity = this._opacity;
     }
 });

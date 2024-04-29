@@ -34,20 +34,20 @@ BouncingCssShape = Utilities.createSubclass(BouncingParticle,
         switch (stage.fill) {
         case "solid":
         default:
-            this.element.style.backgroundColor = Stage.randomColor();
+            this.element.style.backgroundColor = Random.color();
             break;
 
         case "gradient":
-            this.element.style.background = "linear-gradient(" + Stage.randomColor() + ", " + Stage.randomColor() + ")";
+            this.element.style.background = "linear-gradient(" + Random.color() + ", " + Random.color() + ")";
             break;
         }
 
         if (stage.blend)
-            this.element.style.mixBlendMode = Stage.randomStyleMixBlendMode();
+            this.element.style.mixBlendMode = Random.styleMixBlendMode();
         
         // Some browsers have not un-prefixed the css filter yet.
         if (stage.filter)
-            Utilities.setElementPrefixedProperty(this.element, "filter", Stage.randomStyleFilter());
+            Utilities.setElementPrefixedProperty(this.element, "filter", Random.styleFilter());
 
         this._move();
     }, {
@@ -64,13 +64,13 @@ BouncingCssShape = Utilities.createSubclass(BouncingParticle,
 
     _move: function()
     {
-        this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px)" + this.rotater.rotateZ();
+        this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px)" + this.rotator.rotateZ();
     },
 
     animate: function(timeDelta)
     {
         BouncingParticle.prototype.animate.call(this, timeDelta);
-        this.rotater.next(timeDelta);
+        this.rotator.next(timeDelta);
         this._move();
     }
 });

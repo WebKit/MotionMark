@@ -45,8 +45,8 @@ var FocusElement = Utilities.createClass(
         var distance = Utilities.lerp(this._depth, 0, sizeVariance);
         size -= distance;
 
-        var top = Stage.random(0, stage.size.height - size);
-        var left = Stage.random(0, stage.size.width - size);
+        var top = Random.number(0, stage.size.height - size);
+        var left = Random.number(0, stage.size.width - size);
 
         this.particle = document.createElement("div");
         this.particle.style.width = size + "px";
@@ -56,8 +56,8 @@ var FocusElement = Utilities.createClass(
         this.particle.style.zIndex = Math.round((1 - this._depth) * 10);
 
         var depthMultiplier = Utilities.lerp(1 - this._depth, 0.8, 1);
-        this._sinMultiplier = Pseudo.random() * Stage.randomSign() * depthMultiplier * travelDistance;
-        this._cosMultiplier = Pseudo.random() * Stage.randomSign() * depthMultiplier * travelDistance;
+        this._sinMultiplier = Pseudo.random() * Random.sign() * depthMultiplier * travelDistance;
+        this._cosMultiplier = Pseudo.random() * Random.sign() * depthMultiplier * travelDistance;
 
         this.animate(stage, 0, 0);
     }, {

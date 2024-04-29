@@ -133,8 +133,8 @@ var ImageDataStage = Utilities.createSubclass(Stage,
     },
 
     _refreshElement: function(element) {
-        var top = Stage.randomInt(0, Math.floor((this.size.height - this.imageHeight) / this.imageHeight)) * this.imageHeight;
-        var left = Stage.randomInt(0, Math.floor((this.size.width - this.imageWidth) / this.imageWidth)) * this.imageWidth;
+        var top = Random.integer(0, Math.floor((this.size.height - this.imageHeight) / this.imageHeight)) * this.imageHeight;
+        var left = Random.integer(0, Math.floor((this.size.width - this.imageWidth) / this.imageWidth)) * this.imageWidth;
 
         element.style.top = top + 'px';
         element.style.left = left + 'px';
@@ -170,7 +170,7 @@ var ImageDataStage = Utilities.createSubclass(Stage,
                 context.putImageData(imageData, 0, 0);
             else {
                 this._refreshElement(element);
-                element.getContext("2d").drawImage(Stage.randomElementInArray(this.images), 0, 0, this.imageWidth, this.imageHeight);
+                element.getContext("2d").drawImage(Random.itemInArray(this.images), 0, 0, this.imageWidth, this.imageHeight);
             }
         }
     },

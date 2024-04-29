@@ -42,7 +42,7 @@ BouncingSvgParticle = Utilities.createSubclass(BouncingParticle,
     {
         var transform = "translate(" + this.position.x + ", " + this.position.y + ")";
         if (this._shape != "circle")
-            transform += this.rotater.rotate(this.size.center);
+            transform += this.rotator.rotate(this.size.center);
         this.element.setAttribute("transform", transform);
     },
 

@@ -89,8 +89,8 @@ StaticSuit = Utilities.createSubclass(SuperSuitsParticle,
     reset: function()
     {
         SuperSuitsParticle.prototype.reset.call(this);
-        this.originalPosition = Stage.randomPosition(this.stage.size);
-        this.transformSuffix = " rotate(" + Math.floor(Stage.randomAngle() * 180 / Math.PI) + ",0,0)" + this.transformSuffix;
+        this.originalPosition = Random.position(this.stage.size);
+        this.transformSuffix = " rotate(" + Math.floor(Random.angle() * 180 / Math.PI) + ",0,0)" + this.transformSuffix;
     },
 
     move: function()

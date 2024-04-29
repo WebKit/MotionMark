@@ -37,7 +37,7 @@ window.SuitsParticle = Utilities.createSubclass(Particle,
 
     initialize: function(stage)
     {
-        var shapeId = "#shape-" + Stage.randomInt(1, stage.particleTypeCount);
+        var shapeId = "#shape-" + Random.integer(1, stage.particleTypeCount);
         if (this.isClipPath) {
             this.element = Utilities.createSVGElement("rect", {
                 x: 0,
@@ -63,10 +63,10 @@ window.SuitsParticle = Utilities.createSubclass(Particle,
     {
         Particle.prototype.reset.call(this);
 
-        this.position = Stage.randomElementInArray(this.stage.emitLocation);
+        this.position = Random.itemInArray(this.stage.emitLocation);
 
-        var velocityMagnitude = Stage.random(.5, 2.5);
-        var angle = Stage.randomInt(0, this.stage.emitSteps) / this.stage.emitSteps * Math.PI * 2 + Stage.dateCounterValue(1000) * this.stage.emissionSpin + velocityMagnitude;
+        var velocityMagnitude = Random.number(.5, 2.5);
+        var angle = Random.integer(0, this.stage.emitSteps) / this.stage.emitSteps * Math.PI * 2 + Random.dateCounterValue(1000) * this.stage.emissionSpin + velocityMagnitude;
         this.velocity = new Point(Math.sin(angle), Math.cos(angle))
             .multiply(velocityMagnitude);
 
@@ -81,19 +81,19 @@ window.SuitsParticle = Utilities.createSubclass(Particle,
 
         if (this.hasGradient) {
             var transform = this.stage.element.createSVGTransform();
-            transform.setRotate(Stage.randomInt(0, 359), 0, 0);
+            transform.setRotate(Random.integer(0, 359), 0, 0);
             this.gradient.gradientTransform.baseVal.initialize(transform);
 
             var stops = this.gradient.querySelectorAll("stop");
             stops[0].setAttribute("stop-color", "hsl(" + this.stage.colorOffset + ", 70%, 45%)");
-            stops[1].setAttribute("stop-color", "hsl(" + ((this.stage.colorOffset + Stage.randomInt(50,100)) % 360) + ", 70%, 65%)");
+            stops[1].setAttribute("stop-color", "hsl(" + ((this.stage.colorOffset + Random.integer(50,100)) % 360) + ", 70%, 65%)");
         } else
             this.element.setAttribute("fill", "hsl(" + this.stage.colorOffset + ", 70%, 65%)");
     },
 
     move: function()
     {
-        this.element.setAttribute("transform", "translate(" + this.position.x + "," + this.position.y + ") " + this.rotater.rotate(Point.zero) + this.transformSuffix);
+        this.element.setAttribute("transform", "translate(" + this.position.x + "," + this.position.y + ") " + this.rotator.rotate(Point.zero) + this.transformSuffix);
     }
 });
 
@@ -106,14 +106,14 @@ var SuitsStage = Utilities.createSubclass(ParticlesStage,
     initialize: function(benchmark)
     {
         ParticlesStage.prototype.initialize.call(this, benchmark);
-        this.emissionSpin = Stage.random(0, 3);
-        this.emitSteps = Stage.randomInt(4, 6);
+        this.emissionSpin = Random.number(0, 3);
+        this.emitSteps = Random.integer(4, 6);
         this.emitLocation = [
             new Point(this.size.x * .25, this.size.y * .333),
             new Point(this.size.x * .5, this.size.y * .25),
             new Point(this.size.x * .75, this.size.y * .333)
         ];
-        this.colorOffset = Stage.randomInt(0, 359);
+        this.colorOffset = Random.integer(0, 359);
 
         this.particleTypeCount = document.querySelectorAll(".shape").length;
         this.gradientsDefs = document.getElementById("gradients");

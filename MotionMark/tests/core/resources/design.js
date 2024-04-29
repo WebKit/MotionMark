@@ -98,10 +98,10 @@ var TextStage = Utilities.createSubclass(Stage,
 
     animate: function(timeDelta) 
     {
-        const angle = Stage.dateCounterValue(this.millisecondsPerRotation);
+        const angle = Random.dateCounterValue(this.millisecondsPerRotation);
 
         const gradient = this.gradients[Math.floor(angle / (Math.PI * 2)) % this.gradients.length];
-        const offset = Stage.dateCounterValue(200);
+        const offset = Random.dateCounterValue(200);
         const maxX = Math.sin(angle) * this._maxOffset;
         const maxY = Math.cos(angle) * this._maxOffset;
 

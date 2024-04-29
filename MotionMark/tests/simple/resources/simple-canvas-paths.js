@@ -28,14 +28,14 @@
 
 CanvasLineSegment = Utilities.createClass(
     function(stage) {
-        var radius = Stage.randomInt(10, 100);
-        var center = Stage.randomPosition(stage.size);
-        var delta = Point.pointOnCircle(Stage.randomAngle(), radius/2);
+        var radius = Random.integer(10, 100);
+        var center = Random.position(stage.size);
+        var delta = Point.pointOnCircle(Random.angle(), radius/2);
 
         this._point1 = center.add(delta);
         this._point2 = center.subtract(delta);
-        this._color = Stage.randomColor();
-        this._lineWidth = Stage.randomInt(1, 100);
+        this._color = Random.color();
+        this._lineWidth = Random.integer(1, 100);
     }, {
 
     draw: function(context) {
@@ -51,7 +51,7 @@ CanvasLineSegment = Utilities.createClass(
 CanvasLinePoint = Utilities.createClass(
     function(stage, coordinateMaximumFactor) {
         var pointMaximum = new Point(Math.min(stage.size.x, coordinateMaximumFactor * stage.size.x), Math.min(stage.size.y, coordinateMaximumFactor * stage.size.y));
-        this._point = Stage.randomPosition(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
+        this._point = Random.position(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
     }, {
 
     draw: function(context) {
@@ -61,14 +61,14 @@ CanvasLinePoint = Utilities.createClass(
 
 CanvasQuadraticSegment = Utilities.createClass(
     function(stage) {
-        var maxSize = Stage.randomInt(20, 200);
-        var toCenter = Stage.randomPosition(stage.size).subtract(new Point(maxSize/2, maxSize/2));
+        var maxSize = Random.integer(20, 200);
+        var toCenter = Random.position(stage.size).subtract(new Point(maxSize/2, maxSize/2));
 
-        this._point1 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._point2 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._point3 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._color = Stage.randomColor();
-        this._lineWidth = Stage.randomInt(1, 50);
+        this._point1 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._point2 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._point3 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._color = Random.color();
+        this._lineWidth = Random.integer(1, 50);
     }, {
 
     draw: function(context) {
@@ -83,9 +83,9 @@ CanvasQuadraticSegment = Utilities.createClass(
 
 CanvasQuadraticPoint = Utilities.createClass(
     function(stage, coordinateMaximumFactor) {
-        var pointMaximum = Stage.randomPosition(new Point(Math.min(stage.size.x, coordinateMaximumFactor * stage.size.x), Math.min(stage.size.y, coordinateMaximumFactor * stage.size.y)));
-        this._point1 = Stage.randomPosition(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
-        this._point2 = Stage.randomPosition(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
+        var pointMaximum = Random.position(new Point(Math.min(stage.size.x, coordinateMaximumFactor * stage.size.x), Math.min(stage.size.y, coordinateMaximumFactor * stage.size.y)));
+        this._point1 = Random.position(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
+        this._point2 = Random.position(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
     }, {
 
     draw: function(context) {
@@ -95,15 +95,15 @@ CanvasQuadraticPoint = Utilities.createClass(
 
 CanvasBezierSegment = Utilities.createClass(
     function(stage) {
-        var maxSize = Stage.randomInt(20, 200);
-        var toCenter = Stage.randomPosition(stage.size).subtract(new Point(maxSize/2, maxSize/2));
+        var maxSize = Random.integer(20, 200);
+        var toCenter = Random.position(stage.size).subtract(new Point(maxSize/2, maxSize/2));
 
-        this._point1 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._point2 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._point3 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._point4 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._color = Stage.randomColor();
-        this._lineWidth = Stage.randomInt(1, 50);
+        this._point1 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._point2 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._point3 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._point4 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._color = Random.color();
+        this._lineWidth = Random.integer(1, 50);
     }, {
 
     draw: function(context) {
@@ -118,10 +118,10 @@ CanvasBezierSegment = Utilities.createClass(
 
 CanvasBezierPoint = Utilities.createClass(
     function(stage, coordinateMaximumFactor) {
-        var pointMaximum = Stage.randomPosition(new Point(Math.min(stage.size.x, coordinateMaximumFactor * stage.size.x), Math.min(stage.size.y, coordinateMaximumFactor * stage.size.y)));
-        this._point1 = Stage.randomPosition(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
-        this._point2 = Stage.randomPosition(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
-        this._point3 = Stage.randomPosition(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
+        var pointMaximum = Random.position(new Point(Math.min(stage.size.x, coordinateMaximumFactor * stage.size.x), Math.min(stage.size.y, coordinateMaximumFactor * stage.size.y)));
+        this._point1 = Random.position(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
+        this._point2 = Random.position(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
+        this._point3 = Random.position(pointMaximum).add(new Point((stage.size.x - pointMaximum.x) / 2, (stage.size.y - pointMaximum.y) / 2));
     }, {
 
     draw: function(context) {
@@ -131,15 +131,15 @@ CanvasBezierPoint = Utilities.createClass(
 
 CanvasArcToSegment = Utilities.createClass(
     function(stage) {
-        var maxSize = Stage.randomInt(20, 200);
-        var toCenter = Stage.randomPosition(stage.size).subtract(new Point(maxSize/2, maxSize/2));
+        var maxSize = Random.integer(20, 200);
+        var toCenter = Random.position(stage.size).subtract(new Point(maxSize/2, maxSize/2));
 
-        this._point1 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._point2 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._point3 = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._radius = Stage.randomInt(20, 200);
-        this._color = Stage.randomColor();
-        this._lineWidth = Stage.randomInt(1, 50);
+        this._point1 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._point2 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._point3 = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._radius = Random.integer(20, 200);
+        this._color = Random.color();
+        this._lineWidth = Random.integer(1, 50);
     }, {
 
     draw: function(context) {
@@ -168,16 +168,16 @@ CanvasArcToSegmentFill = Utilities.createClass(
 
 CanvasArcSegment = Utilities.createClass(
     function(stage) {
-        var maxSize = Stage.randomInt(20, 200);
-        var toCenter = Stage.randomPosition(stage.size).subtract(new Point(maxSize/2, maxSize/2));
+        var maxSize = Random.integer(20, 200);
+        var toCenter = Random.position(stage.size).subtract(new Point(maxSize/2, maxSize/2));
 
-        this._point = Stage.randomPosition(new Point(maxSize, maxSize)).add(toCenter);
-        this._radius = Stage.randomInt(20, 200);
-        this._startAngle = Stage.randomAngle();
-        this._endAngle = Stage.randomAngle();
-        this._counterclockwise = Stage.randomBool();
-        this._color = Stage.randomColor();
-        this._lineWidth = Stage.randomInt(1, 50);
+        this._point = Random.position(new Point(maxSize, maxSize)).add(toCenter);
+        this._radius = Random.integer(20, 200);
+        this._startAngle = Random.angle();
+        this._endAngle = Random.angle();
+        this._counterclockwise = Random.bool();
+        this._color = Random.color();
+        this._lineWidth = Random.integer(1, 50);
     }, {
 
     draw: function(context) {
@@ -204,11 +204,11 @@ CanvasArcSegmentFill = Utilities.createClass(
 
 CanvasRect = Utilities.createClass(
     function(stage) {
-        this._width = Stage.randomInt(20, 200);
-        this._height = Stage.randomInt(20, 200);
-        this._point = Stage.randomPosition(stage.size).subtract(new Point(this._width/2, this._height/2));
-        this._color = Stage.randomColor();
-        this._lineWidth = Stage.randomInt(1, 20);
+        this._width = Random.integer(20, 200);
+        this._height = Random.integer(20, 200);
+        this._point = Random.position(stage.size).subtract(new Point(this._width/2, this._height/2));
+        this._color = Random.color();
+        this._lineWidth = Random.integer(1, 20);
     }, {
 
     draw: function(context) {
@@ -235,16 +235,16 @@ CanvasRectFill = Utilities.createClass(
 
 CanvasEllipse = Utilities.createClass(
     function(stage) {
-        this._radius = new Point(Stage.randomInt(20, 200), Stage.randomInt(20, 200));
-        var toCenter = Stage.randomPosition(stage.size).subtract(this._radius.multiply(.5));
+        this._radius = new Point(Random.integer(20, 200), Random.integer(20, 200));
+        var toCenter = Random.position(stage.size).subtract(this._radius.multiply(.5));
 
-        this._center = Stage.randomPosition(this._radius).add(toCenter);
-        this._rotation = Stage.randomAngle();
-        this._startAngle = Stage.randomAngle();
-        this._endAngle = Stage.randomAngle();
-        this._anticlockwise = Stage.randomBool();
-        this._color = Stage.randomColor();
-        this._lineWidth = Stage.randomInt(1, 20);
+        this._center = Random.position(this._radius).add(toCenter);
+        this._rotation = Random.angle();
+        this._startAngle = Random.angle();
+        this._endAngle = Random.angle();
+        this._anticlockwise = Random.bool();
+        this._color = Random.color();
+        this._lineWidth = Random.integer(1, 20);
     }, {
 
     draw: function(context) {
@@ -271,7 +271,7 @@ CanvasEllipseFill = Utilities.createClass(
 
 CanvasStroke = Utilities.createClass(
     function (stage) {
-        this._object = new (Stage.randomElementInArray(this.objectTypes))(stage);
+        this._object = new (Random.itemInArray(this.objectTypes))(stage);
     }, {
 
     objectTypes: [
@@ -290,7 +290,7 @@ CanvasStroke = Utilities.createClass(
 
 CanvasFill = Utilities.createClass(
     function (stage) {
-        this._object = new (Stage.randomElementInArray(this.objectTypes))(stage);
+        this._object = new (Random.itemInArray(this.objectTypes))(stage);
     }, {
 
     objectTypes: [
@@ -316,8 +316,8 @@ SimpleCanvasPathStrokeStage = Utilities.createSubclass(SimpleCanvasStage,
     {
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
-        context.lineWidth = Stage.randomInt(1, 20);
-        context.strokeStyle = Stage.rotatingColor();
+        context.lineWidth = Random.integer(1, 20);
+        context.strokeStyle = Random.rotatingColor();
         context.beginPath();
         context.moveTo(this.size.x / 2, this.size.y / 2);
         for (var i = 0, length = this.offsetIndex; i < length; ++i)
@@ -335,7 +335,7 @@ SimpleCanvasPathFillStage = Utilities.createSubclass(SimpleCanvasStage,
     {
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
-        context.fillStyle = Stage.rotatingColor();
+        context.fillStyle = Random.rotatingColor();
         context.beginPath();
         context.moveTo(this.size.x / 2, this.size.y / 2);
         for (var i = 0, length = this.offsetIndex; i < length; ++i)

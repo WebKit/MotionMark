@@ -40,7 +40,7 @@ BouncingCssImage = Utilities.createSubclass(BouncingParticle,
 
     _move: function()
     {
-        this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px) " + this.rotater.rotateZ();
+        this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px) " + this.rotator.rotateZ();
     },
 
     animate: function(timeDelta)

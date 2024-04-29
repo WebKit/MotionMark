@@ -29,11 +29,11 @@
 CanvasLineSegment = Utilities.createClass(
     function(stage)
     {
-        var circle = Stage.randomInt(0, 3);
+        var circle = Random.integer(0, 3);
         this._color = ["#e01040", "#10c030", "#744CBA", "#e05010"][circle];
         this._lineWidth = Math.pow(Pseudo.random(), 12) * 20 + 3;
         this._omega = Pseudo.random() * 3 + 0.2;
-        var theta = Stage.randomAngle();
+        var theta = Random.angle();
         this._cosTheta = Math.cos(theta);
         this._sinTheta = Math.sin(theta);
         this._startX = stage.circleRadius * this._cosTheta + stage.circleX[circle];
@@ -47,7 +47,7 @@ CanvasLineSegment = Utilities.createClass(
         context.strokeStyle = this._color;
         context.lineWidth = this._lineWidth;
 
-        this._length += Math.sin(Stage.dateCounterValue(100) * this._omega);
+        this._length += Math.sin(Random.dateCounterValue(100) * this._omega);
 
         context.beginPath();
         context.moveTo(this._startX, this._startY);
@@ -63,21 +63,21 @@ CanvasArc = Utilities.createClass(
         var maxX = 6, maxY = 3;
         var distanceX = stage.size.x / maxX;
         var distanceY = stage.size.y / (maxY + 1);
-        var randY = Stage.randomInt(0, maxY);
-        var randX = Stage.randomInt(0, maxX - 1 * (randY % 2));
+        var randY = Random.integer(0, maxY);
+        var randX = Random.integer(0, maxX - 1 * (randY % 2));
 
         this._point = new Point(distanceX * (randX + (randY % 2) / 2), distanceY * (randY + .5));
 
         this._radius = 20 + Math.pow(Pseudo.random(), 5) * (Math.min(distanceX, distanceY) / 1.8);
-        this._startAngle = Stage.randomAngle();
-        this._endAngle = Stage.randomAngle();
+        this._startAngle = Random.angle();
+        this._endAngle = Random.angle();
         this._omega = (Pseudo.random() - 0.5) * 0.3;
-        this._counterclockwise = Stage.randomBool();
+        this._counterclockwise = Random.bool();
         var colors = ["#101010", "#808080", "#c0c0c0"];
         colors.push(["#e01040", "#10c030", "#e05010"][(randX + Math.ceil(randY / 2)) % 3]);
         this._color = colors[Math.floor(Pseudo.random() * colors.length)];
         this._lineWidth = 1 + Math.pow(Pseudo.random(), 5) * 30;
-        this._doStroke = Stage.randomInt(0, 3) != 0;
+        this._doStroke = Random.integer(0, 3) != 0;
     }, {
 
     draw: function(context)
@@ -108,7 +108,7 @@ CanvasLinePoint = Utilities.createClass(
     function(stage)
     {
         var colors = ["#101010", "#808080", "#c0c0c0", "#101010", "#808080", "#c0c0c0", "#e01040"];
-        this.color = Stage.randomElementInArray(colors);
+        this.color = Random.itemInArray(colors);
         this.width = Math.pow(Pseudo.random(), 5) * 20 + 1;
         this.isSplit = Pseudo.random() > 0.5;
 
@@ -133,7 +133,7 @@ CanvasLinePoint = Utilities.createClass(
     {
         var coordinate = startCoordinate;
         if (stage.objects.length) {
-            var offset = Stage.randomElementInArray(this.offsets);
+            var offset = Random.itemInArray(this.offsets);
 
             coordinate = coordinate.add(offset);
             if (coordinate.x < 0 || coordinate.x > this.gridSize.width)
@@ -231,12 +231,12 @@ CanvasLineSegmentStage = Utilities.createSubclass(SimpleCanvasStage,
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
 
-        var angle = Stage.dateFractionalValue(3000) * Math.PI * 2;
+        var angle = Random.dateFractionalValue(3000) * Math.PI * 2;
         var dx = this.twoFifthsSizeX * Math.cos(angle);
         var dy = this.twoFifthsSizeX * Math.sin(angle);
 
         var gradient = context.createLinearGradient(this.halfSize.x + dx, this.halfSize.y + dy, this.halfSize.x - dx, this.halfSize.y - dy);
-        var gradientStep = 0.5 + 0.5 * Math.sin(Stage.dateFractionalValue(5000) * Math.PI * 2);
+        var gradientStep = 0.5 + 0.5 * Math.sin(Random.dateFractionalValue(5000) * Math.PI * 2);
         var colorStopStep = Utilities.lerp(gradientStep, -.1, .1);
         var brightnessStep = Math.round(Utilities.lerp(gradientStep, 32, 64));
         var color1Step = "rgba(" + brightnessStep + "," + brightnessStep + "," + (brightnessStep << 1) + ",.4)";

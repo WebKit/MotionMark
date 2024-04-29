@@ -22,29 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-Pseudo =
-{
-    initialRandomSeed: 49734321,
-    randomSeed: 49734321,
-
-    resetRandomSeed: function()
-    {
-        Pseudo.randomSeed = Pseudo.initialRandomSeed;
-    },
-
-    random: function()
-    {
-        var randomSeed = Pseudo.randomSeed;
-        randomSeed = ((randomSeed + 0x7ed55d16) + (randomSeed << 12))  & 0xffffffff;
-        randomSeed = ((randomSeed ^ 0xc761c23c) ^ (randomSeed >>> 19)) & 0xffffffff;
-        randomSeed = ((randomSeed + 0x165667b1) + (randomSeed << 5))   & 0xffffffff;
-        randomSeed = ((randomSeed + 0xd3a2646c) ^ (randomSeed << 9))   & 0xffffffff;
-        randomSeed = ((randomSeed + 0xfd7046c5) + (randomSeed << 3))   & 0xffffffff;
-        randomSeed = ((randomSeed ^ 0xb55a4f09) ^ (randomSeed >>> 16)) & 0xffffffff;
-        Pseudo.randomSeed = randomSeed;
-        return (randomSeed & 0xfffffff) / 0x10000000;
-    }
-};
 
 Statistics =
 {

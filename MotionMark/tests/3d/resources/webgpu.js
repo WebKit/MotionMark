@@ -206,11 +206,11 @@ WebGLStage = Utilities.createSubclass(Stage,
 
             this._bindGroups = new Array(numTriangles);
             for (let i = 0; i < numTriangles; ++i) {
-                uniformWriteArray[alignedUniformFloats * i + 0] = Stage.random(0.2, 0.4);   // scale
-                uniformWriteArray[alignedUniformFloats * i + 1] = Stage.random(-0.9, 0.9);  // offsetX
-                uniformWriteArray[alignedUniformFloats * i + 2] = Stage.random(-0.9, 0.9);  // offsetY
-                uniformWriteArray[alignedUniformFloats * i + 3] = Stage.random(0.5, 2);     // scalar
-                uniformWriteArray[alignedUniformFloats * i + 4] = Stage.random(0, 10);      // scalarOffset
+                uniformWriteArray[alignedUniformFloats * i + 0] = Random.number(0.2, 0.4);   // scale
+                uniformWriteArray[alignedUniformFloats * i + 1] = Random.number(-0.9, 0.9);  // offsetX
+                uniformWriteArray[alignedUniformFloats * i + 2] = Random.number(-0.9, 0.9);  // offsetY
+                uniformWriteArray[alignedUniformFloats * i + 3] = Random.number(0.5, 2);     // scalar
+                uniformWriteArray[alignedUniformFloats * i + 4] = Random.number(0, 10);      // scalarOffset
 
                 this._bindGroups[i] = device.createBindGroup({
                   layout: this._bindGroupLayout,
@@ -259,9 +259,9 @@ WebGLStage = Utilities.createSubclass(Stage,
             const device = this._device;
 
             if (!this._startTime)
-                this._startTime = Stage.dateCounterValue(1000);
+                this._startTime = Random.dateCounterValue(1000);
 
-            const elapsedTimeData = new Float32Array([Stage.dateCounterValue(1000) - this._startTime]);
+            const elapsedTimeData = new Float32Array([Random.dateCounterValue(1000) - this._startTime]);
 
             // Update time uniform
             let mappedBuffer;

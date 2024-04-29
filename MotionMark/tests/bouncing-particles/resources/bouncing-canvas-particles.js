@@ -37,7 +37,7 @@ BouncingCanvasParticle = Utilities.createSubclass(BouncingParticle,
             return;
 
         this.context.translate(this.size.x / 2, this.size.y / 2);
-        this.context.rotate(this.rotater.degree() * Math.PI / 180);
+        this.context.rotate(this.rotator.degree() * Math.PI / 180);
         this.context.translate(-this.size.x / 2, -this.size.y / 2);
     },
 
