@@ -35,7 +35,7 @@ BouncingCompositedImage = Utilities.createSubclass(BouncingParticle,
         this.element.setAttribute("src", stage.imageSrc);
 
         if (stage.useFilters)
-            this.element.style.filter = "hue-rotate(" + Stage.randomAngle() + "rad)";
+            this.element.style.filter = "hue-rotate(" + Random.angle() + "rad)";
 
         stage.element.appendChild(this.element);
         this._move();
@@ -43,7 +43,7 @@ BouncingCompositedImage = Utilities.createSubclass(BouncingParticle,
 
     _move: function()
     {
-        this.element.style.transform = "translate3d(" + this.position.x + "px," + this.position.y + "px, 0) " + this.rotater.rotateZ();
+        this.element.style.transform = "translate3d(" + this.position.x + "px," + this.position.y + "px, 0) " + this.rotator.rotateZ();
     },
 
     animate: function(timeDelta)

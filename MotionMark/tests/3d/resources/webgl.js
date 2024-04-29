@@ -136,12 +136,12 @@ WebGLStage = Utilities.createSubclass(Stage,
 
             this._uniformData = new Float32Array(this._bufferSize * 6);
             for (var i = 0; i < this._bufferSize; ++i) {
-                this._uniformData[i * 6 + 0] = Stage.random(0.2, 0.4);
+                this._uniformData[i * 6 + 0] = Random.number(0.2, 0.4);
                 this._uniformData[i * 6 + 1] = 0;
-                this._uniformData[i * 6 + 2] = Stage.random(-0.9, 0.9);
-                this._uniformData[i * 6 + 3] = Stage.random(-0.9, 0.9);
-                this._uniformData[i * 6 + 4] = Stage.random(0.5, 2);
-                this._uniformData[i * 6 + 5] = Stage.random(0, 10);
+                this._uniformData[i * 6 + 2] = Random.number(-0.9, 0.9);
+                this._uniformData[i * 6 + 3] = Random.number(-0.9, 0.9);
+                this._uniformData[i * 6 + 4] = Random.number(0.5, 2);
+                this._uniformData[i * 6 + 5] = Random.number(0, 10);
             }
         },
 
@@ -163,8 +163,8 @@ WebGLStage = Utilities.createSubclass(Stage,
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             if (!this._startTime)
-                this._startTime = Stage.dateCounterValue(1000);
-            var elapsedTime = Stage.dateCounterValue(1000) - this._startTime;
+                this._startTime = Random.dateCounterValue(1000);
+            var elapsedTime = Random.dateCounterValue(1000) - this._startTime;
 
             for (var i = 0; i < this._numTriangles; ++i) {
 

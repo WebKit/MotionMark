@@ -25,7 +25,7 @@
 function Particle(stage)
 {
     this.stage = stage;
-    this.rotater = Stage.randomRotater();
+    this.rotator = Random.rotator(1000, 10000);
     this.reset();
     this.move();
 }
@@ -45,7 +45,7 @@ Particle.prototype =
 
     animate: function(timeDelta)
     {
-        this.rotater.next(timeDelta);
+        this.rotator.next(timeDelta);
 
         this.position = this.position.add(this.velocity.multiply(timeDelta));
         this.velocity.y += 0.03;

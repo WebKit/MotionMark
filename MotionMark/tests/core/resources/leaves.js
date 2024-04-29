@@ -28,7 +28,7 @@ window.Leaf = Utilities.createSubclass(Particle,
     function(stage)
     {
         this.element = document.createElement("img");
-        this.element.setAttribute("src", Stage.randomElementInArray(stage.images).src);
+        this.element.setAttribute("src", Random.itemInArray(stage.images).src);
         stage.element.appendChild(this.element);
 
         Particle.call(this, stage);
@@ -46,17 +46,17 @@ window.Leaf = Utilities.createSubclass(Particle,
 
         if (this.usesOpacity) {
             this._opacity = .01;
-            this._opacityRate = 0.02 * Stage.random(1, 6);
+            this._opacityRate = 0.02 * Random.number(1, 6);
         } else
-            this._life = Stage.randomInt(20, 100);
+            this._life = Random.integer(20, 100);
 
-        this._position = new Point(Stage.random(0, this.maxPosition.x), Stage.random(-this.size.height, this.maxPosition.y));
-        this._velocity = new Point(Stage.random(-6, -2), .1 * this.size.y + Stage.random(-1, 1));
+        this._position = new Point(Random.number(0, this.maxPosition.x), Random.number(-this.size.height, this.maxPosition.y));
+        this._velocity = new Point(Random.number(-6, -2), .1 * this.size.y + Random.number(-1, 1));
     },
 
     animate: function(timeDelta)
     {
-        this.rotater.next(timeDelta);
+        this.rotator.next(timeDelta);
 
         this._position.x += this._velocity.x + 8 * this.stage.focusX;
         this._position.y += this._velocity.y;
@@ -81,7 +81,7 @@ window.Leaf = Utilities.createSubclass(Particle,
 
     move: function()
     {
-        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
+        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotator.rotateZ();
         this.element.style.opacity = this._opacity;
     }
 });
@@ -143,7 +143,7 @@ Utilities.extendObject(ParticlesStage.prototype, {
 
     animate: function(timeDelta)
     {
-        this.focusX = 0.5 + 0.5 * Math.sin(Stage.dateFractionalValue(10000) * Math.PI * 2);
+        this.focusX = 0.5 + 0.5 * Math.sin(Random.dateFractionalValue(10000) * Math.PI * 2);
         timeDelta /= 4;
         this.particles.forEach(function(particle) {
             particle.animate(timeDelta);

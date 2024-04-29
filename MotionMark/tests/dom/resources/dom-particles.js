@@ -37,11 +37,11 @@ DOMParticle = Utilities.createSubclass(Particle,
     {
         Particle.prototype.reset.call(this);
 
-        this.position = Stage.randomElementInArray(this.stage.emitLocation);
+        this.position = Random.itemInArray(this.stage.emitLocation);
 
-        var angle = Stage.randomInt(0, this.stage.emitSteps) / this.stage.emitSteps * Math.PI * 2 + Stage.dateCounterValue(100) * this.stage.emissionSpin;
+        var angle = Random.integer(0, this.stage.emitSteps) / this.stage.emitSteps * Math.PI * 2 + Random.dateCounterValue(100) * this.stage.emissionSpin;
         this.velocity = new Point(Math.sin(angle), Math.cos(angle))
-            .multiply(Stage.random(.5, 2.5));
+            .multiply(Random.number(.5, 2.5));
 
         this.element.style.width = this.size.x + "px";
         this.element.style.height = this.size.y + "px";
@@ -51,7 +51,7 @@ DOMParticle = Utilities.createSubclass(Particle,
 
     move: function()
     {
-        this.element.style.transform = "translate(" + this.position.x + "px, " + this.position.y + "px)" + this.rotater.rotateZ();
+        this.element.style.transform = "translate(" + this.position.x + "px, " + this.position.y + "px)" + this.rotator.rotateZ();
     }
 });
 
@@ -64,14 +64,14 @@ DOMParticleStage = Utilities.createSubclass(ParticlesStage,
     initialize: function(benchmark)
     {
         ParticlesStage.prototype.initialize.call(this, benchmark);
-        this.emissionSpin = Stage.random(0, 3);
-        this.emitSteps = Stage.randomInt(4, 6);
+        this.emissionSpin = Random.number(0, 3);
+        this.emitSteps = Random.integer(4, 6);
         this.emitLocation = [
             new Point(this.size.x * .25, this.size.y * .333),
             new Point(this.size.x * .5, this.size.y * .25),
             new Point(this.size.x * .75, this.size.y * .333)
         ];
-        this.colorOffset = Stage.randomInt(0, 359);
+        this.colorOffset = Random.integer(0, 359);
     },
 
     createParticle: function()

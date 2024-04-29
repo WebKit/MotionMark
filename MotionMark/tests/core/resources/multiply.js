@@ -54,7 +54,7 @@ var MultiplyStage = Utilities.createSubclass(Stage,
         var maxSide = Math.floor(y / tileStride) * 2 + 1;
         this._centerSpiralCount = maxSide * maxSide;
         for (var i = 0; i < this._centerSpiralCount; ++i) {
-            this._addTile(x, y, tileSize, Stage.randomInt(0, 359));
+            this._addTile(x, y, tileSize, Random.integer(0, 359));
 
             if (i == nextIndex) {
                 direction = (direction + 1) % 4;
@@ -78,13 +78,13 @@ var MultiplyStage = Utilities.createSubclass(Stage,
 
             if (Math.floor(i / maxSide) % 2 == 1)
                 sideX = this.size.width - sideX - tileSize + 1;
-            this._addTile(sideX, sideY, tileSize, Stage.randomInt(0, 359));
+            this._addTile(sideX, sideY, tileSize, Random.integer(0, 359));
         }
     },
 
     _addTile: function(x, y, tileSize, rotateDeg)
     {
-        var tile = Utilities.createElement("div", { class: "div-" + Stage.randomInt(0,6) }, this.element);
+        var tile = Utilities.createElement("div", { class: "div-" + Random.integer(0,6) }, this.element);
         var halfTileSize = tileSize / 2;
         tile.style.left = x + 'px';
         tile.style.top = y + 'px';

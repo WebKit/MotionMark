@@ -32,7 +32,7 @@ BouncingTaggedImage = Utilities.createSubclass(BouncingParticle,
         this.element = document.createElement("img");
         this.element.style.width = this.size.x + "px";
         this.element.style.height = this.size.y + "px";
-        this.element.setAttribute("src", Stage.randomElementInArray(stage.images).src);
+        this.element.setAttribute("src", Random.itemInArray(stage.images).src);
 
         stage.element.appendChild(this.element);
         this._move();
@@ -40,7 +40,7 @@ BouncingTaggedImage = Utilities.createSubclass(BouncingParticle,
 
     _move: function()
     {
-        this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px) " + this.rotater.rotateZ();
+        this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px) " + this.rotator.rotateZ();
     },
 
     animate: function(timeDelta)

@@ -29,8 +29,8 @@ BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
     {
         BouncingCanvasParticle.call(this, stage, stage.shape);
         this._fill = stage.fill;
-        this._color0 = Stage.randomColor();
-        this._color1 = Stage.randomColor();
+        this._color0 = Random.color();
+        this._color1 = Random.color();
     }, {
 
     _applyFill: function()

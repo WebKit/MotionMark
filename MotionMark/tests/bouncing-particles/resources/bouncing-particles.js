@@ -27,10 +27,10 @@ function BouncingParticle(stage)
     this._stageSize = stage.size;
     this.size = stage.particleSize;
 
-    this.position = Stage.randomPosition(stage.size.subtract(stage.particleSize));
-    this._angle = Stage.randomAngle();
-    this._velocity = Stage.randomVelocity(stage.maxVelocity);
-    this.rotater = Stage.randomRotater();
+    this.position = Random.position(stage.size.subtract(stage.particleSize));
+    this._angle = Random.angle();
+    this._velocity = Random.velocity(stage.maxVelocity);
+    this.rotator = Random.rotator();
 }
 
 BouncingParticle.prototype =
@@ -43,7 +43,7 @@ BouncingParticle.prototype =
     animate: function(timeDelta)
     {
         this.position = this.position.move(this._angle, this._velocity, timeDelta);
-        this.rotater.next(timeDelta);
+        this.rotator.next(timeDelta);
 
         // If particle is going to move off right side
         if (this.position.x + this.size.x > this._stageSize.x) {

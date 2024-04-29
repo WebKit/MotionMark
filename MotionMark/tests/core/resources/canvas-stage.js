@@ -53,7 +53,7 @@ SimpleCanvasStage = Utilities.createSubclass(Stage,
             newIndex = -newIndex;
             for (var i = 0; i < newIndex; ++i) {
                 if (this._canvasObject.constructor === Array)
-                    this.objects.push(new (Stage.randomElementInArray(this._canvasObject))(this));
+                    this.objects.push(new (Random.itemInArray(this._canvasObject))(this));
                 else
                     this.objects.push(new this._canvasObject(this));
             }
