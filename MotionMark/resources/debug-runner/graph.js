@@ -469,7 +469,9 @@ class GraphController {
 
         // Data
         var allData = samples;
-        var filteredData = samples.filter(function (sample) {
+        var animData = samples.filter((sample) => sample['frameType'] == Strings.json.animationFrameType);
+        var mutData = samples.filter((sample) => sample['frameType'] == Strings.json.mutationFrameType);
+        var filteredData = animData.filter(function (sample) {
             return "smoothedFrameLength" in sample;
         });
 
@@ -496,7 +498,8 @@ class GraphController {
         }
 
         addData("complexity", allData, function(d) { return yLeft(d.complexity); }, 2);
-        addData("rawFPS", allData, function(d) { return yRight(d.frameLength); }, 1);
+        addData("rawFPS", animData, function(d) { return yRight(d.frameLength); }, 1);
+        addData("mutFPS", mutData, function(d) { return yRight(d.frameLength); }, 1);
         addData("filteredFPS", filteredData, function(d) { return yRight(d.smoothedFrameLength); }, 2);
 
         // regressions
@@ -558,7 +561,7 @@ class GraphController {
             .attr("height", axisHeight);
 
         var timeBisect = d3.bisector(function(d) { return d.time; }).right;
-        var statsToHighlight = ["complexity", "rawFPS", "filteredFPS"];
+        var statsToHighlight = ["complexity", "rawFPS", "filteredFPS", "mutFPS"];
         area.on("mouseover", function() {
             document.querySelector("#time-graph .cursor").classList.remove("hidden");
             document.querySelector("#test-graph nav").classList.remove("hide-data");
@@ -586,13 +589,21 @@ class GraphController {
                     data_y = yLeft(data.complexity);
                     break;
                 case "rawFPS":
-                    content = (msPerSecond / data.frameLength).toFixed(2);
-                    data_y = yRight(data.frameLength);
+                    if (data.frameType == Strings.json.animationFrameType) {
+                        content = (msPerSecond / data.frameLength).toFixed(2);
+                        data_y = yRight(data.frameLength);
+                    }
                     break;
                 case "filteredFPS":
                     if ("smoothedFrameLength" in data) {
                         content = (msPerSecond / data.smoothedFrameLength).toFixed(2);
                         data_y = yRight(data.smoothedFrameLength);
+                    }
+                    break;
+                case "mutFPS":
+                    if (data.frameType == Strings.json.mutationFrameType) {
+                        content = (msPerSecond / data.frameLength).toFixed(2);
+                        data_y = yRight(data.frameLength);
                     }
                     break;
                 }
@@ -649,6 +660,7 @@ class GraphController {
         this._showOrHideNodes(form["complexity"].checked, "#complexity");
         this._showOrHideNodes(form["rawFPS"].checked, "#rawFPS");
         this._showOrHideNodes(form["filteredFPS"].checked, "#filteredFPS");
+        this._showOrHideNodes(form["mutFPS"].checked, "#mutFPS");
         this._showOrHideNodes(form["regressions"].checked, "#regressions");
     }
 
