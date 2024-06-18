@@ -1,0 +1,29 @@
+<script src="../extensions/point.js"></script>
+<script src="../extensions/size.js"></script>
+<script src="../extensions/spiral-iterator.js"></script>
+<script src="resources/js-test.js"></script>
+<body>
+    <script>
+        description("This test checks the SpiralIterator class");
+
+        function padNumber(num, targetLength) {
+            return num.toString().padStart(targetLength, " ");
+        }
+
+        function testSprial(width, height) {
+            debug("");
+            debug("Sprial order for size = { " + width + " x " + height + " }");
+            debug("---------------------------------");
+
+            let gridSize = new Size(width, height);
+            let iterator = new SpiralIterator(gridSize); 
+            for (let index = 0; !iterator.isDone(); iterator.next(), ++index)
+                debug("index = " + padNumber(index, 2) + ", current = { " + padNumber(iterator.current.x, 2) + ", " + padNumber(iterator.current.y, 2) + " }");
+        }
+
+        testSprial(1, 1);
+        testSprial(3, 3);
+        testSprial(5, 3);
+        testSprial(3, 5);
+    </script>
+</body>

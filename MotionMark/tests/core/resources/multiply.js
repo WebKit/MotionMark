@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,132 +22,124 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-var MultiplyStage = Utilities.createSubclass(Stage,
-    function()
-    {
-        Stage.call(this);
-        this.tiles = [];
-        this._offsetIndex = 0;
-    }, {
+class Tile {
+    stage;
+    coordinate;
+    roundedRect;
+    distance;
+    step;
+    rotate;
 
-    visibleCSS: [
-        ["display", "none", "block"]
-    ],
-    totalRows: 68,
+    constructor(stage, coordinate) {
+        this.stage = stage;
+        this.coordinate = coordinate;
 
-    initialize: function(benchmark, options)
-    {
-        Stage.prototype.initialize.call(this, benchmark, options);
-        var tileSize = Math.round(this.size.height / this.totalRows);
-        if (options.visibleCSS)
-            this.visibleCSS = options.visibleCSS;
+        this.roundedRect = document.createHTMLElement('div', { 
+            class: "div-" + Random.integer(0, 5)
+        }, stage.element);
 
-        // Fill the scene with elements
-        var x = Math.round((this.size.width - tileSize) / 2);
-        var y = Math.round((this.size.height - tileSize) / 2);
-        var tileStride = tileSize;
-        var direction = 0;
-        var spiralCounter = 2;
-        var nextIndex = 1;
-        var maxSide = Math.floor(y / tileStride) * 2 + 1;
-        this._centerSpiralCount = maxSide * maxSide;
-        for (var i = 0; i < this._centerSpiralCount; ++i) {
-            this._addTile(x, y, tileSize, Stage.randomInt(0, 359));
+        this.distance = this.coordinate.length();
+        this.step = Math.max(3, this.distance / 1.5);
+        this.rotate = Random.integer(0, 359);
 
-            if (i == nextIndex) {
-                direction = (direction + 1) % 4;
-                spiralCounter++;
-                nextIndex += spiralCounter >> 1;
-            }
-            if (direction == 0)
-                x += tileStride;
-            else if (direction == 1)
-                y -= tileStride;
-            else if (direction == 2)
-                x -= tileStride;
-            else
-                y += tileStride;
-        }
-
-        this._sidePanelCount = maxSide * Math.floor((this.size.width - x) / tileStride) * 2;
-        for (var i = 0; i < this._sidePanelCount; ++i) {
-            var sideX = x + Math.floor(Math.floor(i / maxSide) / 2) * tileStride;
-            var sideY = y - tileStride * (i % maxSide);
-
-            if (Math.floor(i / maxSide) % 2 == 1)
-                sideX = this.size.width - sideX - tileSize + 1;
-            this._addTile(sideX, sideY, tileSize, Stage.randomInt(0, 359));
-        }
-    },
-
-    _addTile: function(x, y, tileSize, rotateDeg)
-    {
-        var tile = Utilities.createElement("div", { class: "div-" + Stage.randomInt(0,6) }, this.element);
-        var halfTileSize = tileSize / 2;
-        tile.style.left = x + 'px';
-        tile.style.top = y + 'px';
-        tile.style.width = tileSize + 'px';
-        tile.style.height = tileSize + 'px';
-        var visibleCSS = this.visibleCSS[this.tiles.length % this.visibleCSS.length];
-        tile.style[visibleCSS[0]] = visibleCSS[1];
-
-        var distance = 1 / tileSize * this.size.multiply(0.5).subtract(new Point(x + halfTileSize, y + halfTileSize)).length();
-        this.tiles.push({
-            element: tile,
-            rotate: rotateDeg,
-            step: Math.max(3, distance / 1.5),
-            distance: distance,
-            active: false,
-            visibleCSS: visibleCSS,
-        });
-    },
-
-    complexity: function()
-    {
-        return this._offsetIndex;
-    },
-
-    tune: function(count)
-    {
-        this._offsetIndex = Math.max(0, Math.min(this._offsetIndex + count, this.tiles.length));
-        this._distanceFactor = 1.5 * (1 - 0.5 * Math.max(this._offsetIndex - this._centerSpiralCount, 0) / this._sidePanelCount) / Math.sqrt(this._offsetIndex);
-    },
-
-    animate: function()
-    {
-        var progress = this._benchmark.timestamp % 10000 / 10000;
-        var bounceProgress = Math.sin(2 * Math.abs( 0.5 - progress));
-        var l = Utilities.lerp(bounceProgress, 20, 50);
-        var hslPrefix = "hsla(" + Utilities.lerp(progress, 0, 360) + ",100%,";
-
-        for (var i = 0; i < this._offsetIndex; ++i) {
-            var tile = this.tiles[i];
-            tile.active = true;
-            tile.element.style[tile.visibleCSS[0]] = tile.visibleCSS[2];
-            tile.rotate += tile.step;
-            tile.element.style.transform = "rotate(" + tile.rotate + "deg)";
-
-            var influence = Math.max(.01, 1 - (tile.distance * this._distanceFactor));
-            tile.element.style.backgroundColor = hslPrefix + l * Math.tan(influence / 1.25) + "%," + influence + ")";
-        }
-
-        for (var i = this._offsetIndex; i < this.tiles.length && this.tiles[i].active; ++i) {
-            var tile = this.tiles[i];
-            tile.active = false;
-            tile.element.style[tile.visibleCSS[0]] = tile.visibleCSS[1];
-        }
+        this.move();
+        this.resize();
+        this.hide();
     }
-});
 
-var MultiplyBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
-    {
-        Benchmark.call(this, new MultiplyStage(), options);
+    move() {
+        let tileSize = this.stage.tileSize;
+
+        let location = new Point(this.stage.rect.center());
+        location.add(this.coordinate.scaled(tileSize));
+        location.subtract(tileSize.scaled(0.5));
+
+        this.roundedRect.style.left = location.x + 'px';
+        this.roundedRect.style.top = location.y + 'px';
     }
-);
 
-window.benchmarkClass = MultiplyBenchmark;
+    resize() {
+        let tileSize = this.stage.tileSize;
 
-}());
+        this.roundedRect.style.width = tileSize.width + 'px';
+        this.roundedRect.style.height = tileSize.height + 'px';
+    }
+
+    show() {
+        this.roundedRect.style.display = "block";
+    }
+
+    hide() {
+        this.roundedRect.style.display = "none";
+    }
+
+    backgroundColor() {
+        let influence = Math.max(.01, 1 - (this.distance * this.stage.distanceFactor));
+        let l = this.stage.l * Math.tan(influence);
+        return this.stage.hslPrefix + l + "%," + influence + ")";
+    }
+
+    animate(timestamp, lastFrameLength) {
+        this.rotate += this.step;
+        this.roundedRect.style.transform = "rotate(" + this.rotate + "deg)";
+        this.roundedRect.style.backgroundColor = this.backgroundColor();
+    }
+}
+
+class TilesStage extends ReusableParticlesStage {
+    static rowsCount = 69;
+    tileSize;
+    tileGrid;
+    iterator;
+    distanceFactor;
+
+    constructor() {
+        super();
+
+        let tileSide = Math.floor(this.size.height / TilesStage.rowsCount);
+        this.tileSize = new Size(tileSide, tileSide);
+
+        let columnsCount = Math.floor(this.size.width / tileSide);
+        if (columnsCount % 2 == 0)
+            --columnsCount;
+
+        this.tileGrid = new Size(columnsCount, TilesStage.rowsCount);
+        this.iterator = new SpiralIterator(this.tileGrid); 
+
+        while (!this.iterator.isDone())
+            this.particles.push(this.createParticle());
+    }
+
+    createParticle() {
+        if (this.iterator.isDone())
+            this.iterator = new SpiralIterator(this.tileGrid);
+        let tile = new Tile(this, this.iterator.current);
+        this.iterator.next();
+        return tile;
+    }
+
+    tune(count) {
+        super.tune(count);
+        let centerSpiralCount = this.tileGrid.height * this.tileGrid.height;
+        let sidePanelCount = this.tileGrid.area() - centerSpiralCount;
+        let activeSidePanelCount = Math.max(this.activeLength - centerSpiralCount, 0);
+        this.distanceFactor = 1.5 * (1 - 0.5 * activeSidePanelCount / sidePanelCount) / Math.sqrt(this.activeLength);
+    }
+
+    animate(timestamp, lastFrameLength) {
+        let progress = timestamp % 10000 / 10000;
+        let bounceProgress = Math.sin(2 * Math.abs(0.5 - progress));
+        this.l = Math.lerp(bounceProgress, 20, 50);
+        this.hslPrefix = "hsla(" + Math.lerp(progress, 0, 360) + ",100%,";
+        super.animate(timestamp, lastFrameLength);
+    }
+}
+
+class TilesAnimator extends Animator {
+    constructor(test, settings) {
+        super(new TilesStage(), test, settings);
+    }
+}
+
+window.animatorClass = TilesAnimator;

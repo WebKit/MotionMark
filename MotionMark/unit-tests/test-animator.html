@@ -1,0 +1,72 @@
+<script src="../extensions/timespan.js"></script>
+<script src="../shared/controller.js"></script>
+<script src="../shared/fixed-controller.js"></script>
+<script src="../shared/animator.js"></script>
+<script src="resources/js-test.js"></script>
+<body>
+    <script>
+        description("This test checks the Animator class");
+
+        let settings = {
+            controller: "fixed",
+            testLength: 1500,
+            initialComplexity: 100
+        }
+
+        var frame;
+
+        class Stage {
+            currentComplexity;
+
+            constructor() {
+                this.currentComplexity = 0;
+            }
+
+            complexity() {
+                return this.currentComplexity;
+            }
+
+            tune(count) {
+                this.currentComplexity += count;
+            }
+
+            animate(lastFrameLength) {
+            }
+        }
+
+        class Benchmark {
+            settings;
+
+            constructor(settings) {
+                this.settings = settings;
+            }
+
+            async run() {
+                let animator = new Animator(new Stage, this.settings);
+                let timeline = await animator.run();
+                this.showTimeline(timeline);
+            }
+
+            showTimeline(timeline) {
+                debug("");
+                debug("Check the first 10 frames");
+
+                for (let i = 0; i < 10; ++i) {
+                    frame = timeline[i];
+                    shouldBe("frame.complexity", "100");
+                    shouldBeGreaterThan("frame.timespan.duration", "0");
+                }
+
+                debug("");
+                frame = timeline.last();
+                debug("Check the last frame was properly ended");
+                shouldBeGreaterThan("frame.timespan.duration", "0");
+                finishJSTest();
+            }
+        }
+
+        jsTestIsAsync = true;
+        let benchmark = new Benchmark(settings);
+        benchmark.run();
+    </script>
+</body>

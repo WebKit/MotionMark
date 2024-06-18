@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+  Copyright (C) 2015-2024 Apple Inc. All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -30,17 +30,27 @@
 
     <title>MotionMark</title>
 
-    <link rel="stylesheet" href="resources/runner/motionmark.css">
+    <link rel="stylesheet" href="release/release-motionmark.css">
 
-    <script src="resources/strings.js" defer></script>
-    <script src="resources/extensions.js" defer></script>
-    <script src="resources/statistics.js" defer></script>
-
-    <script src="resources/runner/tests.js" charset="utf-8" defer></script>
-    <script src="resources/runner/motionmark.js" defer></script>
-
-    <script src="resources/runner/benchmark-runner.js" defer></script>
-
+    <script src="extensions/bootstrap.js"></script>
+    <script src="extensions/document.js"></script>
+    <script src="extensions/math.js"></script>
+    <script src="extensions/regression.js"></script>
+    <script src="shared/animator.js"></script>
+    <script src="shared/benchmark.js"></script>
+    <script src="shared/core-tests.js"></script>
+    <script src="shared/frame-rate-detector.js"></script>
+    <script src="shared/motionmark.js"></script>
+    <script src="shared/results.js"></script>
+    <script src="shared/runs-overlay.js"></script>
+    <script src="shared/settings.js"></script>
+    <script src="shared/suites-collection.js"></script>
+    <script src="shared/timeline.js"></script>
+    <script src="shared/fixed-statistics.js"></script>
+    <script src="shared/wave-statistics.js"></script>
+    <script src="shared/strings.js"></script>
+    <script src="release/release-wave-results.js"></script>
+    <script src="release/release-motionmark.js"></script>
     <script>
         window.addEventListener("load", function() {
             // Start the fade in animation.
@@ -52,7 +62,7 @@
     <main>
         <section id="intro" class="selected">
             <div class="logo">
-              <svg><use xlink:href="resources/runner/logo.svg#root" /></svg>
+              <svg><use href="release/logo.svg#root" /></svg>
               <div>version <span class="version"></span></div>
             </div>
             <div class="body">
@@ -61,7 +71,7 @@
                 <p><a href="about.html">More details</a> about the benchmark are available. Bigger scores are better.</p>
                 <p>For accurate results, please take your browser window full screen, or rotate your device to landscape orientation.</p>
                 <p class="portrait-orientation-check"><b>Please rotate your device.</b></p>
-                <button id="start-button" class="landscape-orientation-check" onclick="benchmarkController.startBenchmark()">Run Benchmark</button>
+                <button id="start-button" class="landscape-orientation-check" onclick="motionmark.run()">Run Benchmark</button>
                 <p id="frame-rate-label">&nbsp;</p>
             </div>
         </section>
@@ -70,7 +80,7 @@
 
         <section id="results">
             <div class="logo">
-              <svg><use xlink:href="resources/runner/logo.svg#root" /></svg>
+              <svg><use href="release/logo.svg#root" /></svg>
               <div>version <span class="version"></span></div>
             </div>
             <div class="body">
@@ -85,14 +95,35 @@
                 </div>
                 <div class="table-container">
                     <div>
-                        <table id="results-score"></table>
-                        <table id="results-data"></table>
+                        <table id="results-score">
+                            <thead>
+                                <tr>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="results-data">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
-                    <table id="results-header"></table>
+                    <table id="results-header">
+                        <thead>
+                            <tr>
+                                <th>Test Name</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
-                <button onclick="benchmarkController.startBenchmark()">Test Again</button>
+                <button onclick="motionmark.run(suites)">Test Again</button>
             </div>
         </section>
+
     </main>
 </body>
 </html>

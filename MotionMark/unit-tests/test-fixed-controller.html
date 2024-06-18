@@ -1,0 +1,59 @@
+<script src="../extensions/timespan.js"></script>
+<script src="../shared/controller.js"></script>
+<script src="../shared/fixed-controller.js"></script>
+<script src="resources/js-test.js"></script>
+<body>
+    <script>
+        description("This test checks the FixedController class");
+
+        let settings = {
+            testLength: 1500,
+            initialComplexity: 100
+        }
+
+        let controller = new FixedController(settings);
+        let startTimestamp;
+        let frameCount = 0;
+        let evenFrameDuration = 16;
+        let oddFrameDuration = 12;
+
+        function showResults() {
+            debug("");
+            debug("Check the first 10 frames");
+
+            results = controller.results();
+            for (i = 0; i < 10; ++i) {
+                shouldBe("results[i].complexity", "100");
+                if (i % 2)
+                    shouldBe("results[i].timespan.duration", "12");
+                else
+                    shouldBe("results[i].timespan.duration", "16");
+            }
+
+            debug("");
+            debug("Check the last frame was properly ended");
+            shouldBeGreaterThan("results.last().timespan.duration", "0");
+            finishJSTest();
+        }
+
+        function animateLoop(timestamp) {
+            if (startTimestamp == undefined)
+                startTimestamp = timestamp;
+
+            if (timestamp != startTimestamp)
+                timestamp = startTimestamp + Math.floor(frameCount / 2) * (evenFrameDuration + oddFrameDuration) + (frameCount % 2) * evenFrameDuration;
+
+            controller.record(timestamp - startTimestamp);
+
+            if (controller.currentFrameComplexity() == 0)
+                showResults();
+            else
+                requestAnimationFrame(animateLoop);
+
+            ++frameCount;
+        }
+
+        jsTestIsAsync = true;
+        requestAnimationFrame(animateLoop);
+    </script>
+</body>

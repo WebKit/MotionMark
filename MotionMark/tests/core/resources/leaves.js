@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,73 +22,77 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-window.Leaf = Utilities.createSubclass(Particle,
-    function(stage)
-    {
-        this.element = document.createElement("img");
-        this.element.setAttribute("src", Stage.randomElementInArray(stage.images).src);
-        stage.element.appendChild(this.element);
+class Leaf extends ResettableParticle {
+    static minSide = 20;
+    static maxSide = 50;
+    image;
+    position;
+    velocity;
+    opacity;
+    opacityRate;
 
-        Particle.call(this, stage);
-    }, {
+    constructor(stage) {
+        super(stage, Leaf.minSide, Leaf.maxSide);
 
-    sizeMinimum: 20,
-    sizeRange: 30,
-    usesOpacity: true,
+        // Create the <img> element and set its source.
+        this.image = document.createHTMLElement('img', { 
+            src: Random.itemInArray(stage.images).src
+        }, stage.element);
 
-    reset: function()
-    {
-        Particle.prototype.reset.call(this);
-        this.element.style.width = this.size.x + "px";
-        this.element.style.height = this.size.y + "px";
+        // Move it to some initial position.
+        this.reset();
+        this.resize();
+        this.move(0);
+    }
 
-        if (this.usesOpacity) {
-            this._opacity = .01;
-            this._opacityRate = 0.02 * Stage.random(1, 6);
-        } else
-            this._life = Stage.randomInt(20, 100);
+    remove() {
+        this.image.remove();
+    }
 
-        this._position = new Point(Stage.random(0, this.maxPosition.x), Stage.random(-this.size.height, this.maxPosition.y));
-        this._velocity = new Point(Stage.random(-6, -2), .1 * this.size.y + Stage.random(-1, 1));
-    },
+    reset() {
+        super.reset();
 
-    animate: function(timeDelta)
-    {
-        this.rotater.next(timeDelta);
+        this.opacity = .01;
+        this.opacityRate = 0.02 * Random.number(1, 6);
 
-        this._position.x += this._velocity.x + 8 * this.stage.focusX;
-        this._position.y += this._velocity.y;
+        this.position = new Point(Random.number(0, this.bouncingRect.maxX), Random.number(-this.size.height, this.bouncingRect.maxY));
+        this.velocity = new Point(Random.number(-6, -2), .1 * this.size.height + Random.number(-1, 1));
+    }
 
-        if (this.usesOpacity) {
-            this._opacity += this._opacityRate;
-            if (this._opacity > 1) {
-                this._opacity = 1;
-                this._opacityRate *= -1;
-            } else if (this._opacity < 0 || this._position.y > this.stage.size.height)
-                this.reset();
-        } else {
-            this._life--;
-            if (!this._life || this._position.y > this.stage.size.height)
-                this.reset();
+    move(timestamp) {
+        this.image.style.transform = "translate(" + this.position.x + "px, " + this.position.y + "px)" + this.rotator.rotateZ(timestamp);
+        this.image.style.opacity = this.opacity;
+    }
+
+    resize() {
+        this.image.style.width = this.size.width + "px";
+        this.image.style.height = this.size.height + "px";
+
+    }
+
+    animate(timestamp, lastFrameLength) {
+        this.position.x += this.velocity.x + 8; // * this.stage.focusX;
+        this.position.y += this.velocity.y;
+
+        this.opacity += this.opacityRate;
+        if (this.opacity > 1) {
+            this.opacity = 1;
+            this.opacityRate *= -1;
+        } else if (this.opacity < 0 || this.position.y > this.stage.size.height) {
+            this.reset();
+            this.resize();
         }
 
-        if (this._position.x < -this.size.width || this._position.x > this.stage.size.width)
-            this._position.x = this._position.x - Math.sign(this._position.x) * (this.size.width + this.stage.size.width);
-        this.move();
-    },
+        if (this.position.x < -this.size.width || this.position.x > this.stage.size.width)
+            this.position.x = this.position.x - Math.sign(this.position.x) * (this.size.width + this.stage.size.width);
 
-    move: function()
-    {
-        this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
-        this.element.style.opacity = this._opacity;
+        this.move(timestamp);
     }
-});
+}
 
-Utilities.extendObject(ParticlesStage.prototype, {
-
-    imageSrcs: [
+class LeavesStage extends DisposableParticlesStage {
+    imageSources = [
         "compass",
         "console",
         "contribute",
@@ -102,78 +106,40 @@ Utilities.extendObject(ParticlesStage.prototype, {
         "storage",
         "styles",
         "timeline"
-    ],
-    images: [],
+    ];
+    images = [];
 
-    initialize: function(benchmark)
-    {
-        Stage.prototype.initialize.call(this, benchmark);
-
-        var lastPromise;
-        var images = this.images;
-        this.imageSrcs.forEach(function(imageSrc) {
-            var promise = this._loadImage("../core/resources/" + imageSrc + "100.png");
-            if (!lastPromise)
-                lastPromise = promise;
-            else {
-                lastPromise = lastPromise.then(function(img) {
-                    images.push(img);
-                    return promise;
-                });
-            }
-        }, this);
-
-        lastPromise.then(function(img) {
-            images.push(img);
-            benchmark.readyPromise.resolve();
+    loadImages() {
+        return this.imageSources.map((imageSource) => {
+            return new Promise((resolve) => {
+                let image = new Image;
+                image.onload = (e) => {
+                    resolve({ width: image.width, height: image.height });
+                };
+                image.src = "../core/images/" + imageSource + "100.png";
+                this.images.push(image);             
+            });
         });
-    },
+    }
 
-    _loadImage: function(src) {
-        var img = new Image;
-        var promise = new SimplePromise;
-
-        img.onload = function(e) {
-            promise.resolve(e.target);
-        };
-
-        img.src = src;
-        return promise;
-    },
-
-    animate: function(timeDelta)
-    {
-        this.focusX = 0.5 + 0.5 * Math.sin(Stage.dateFractionalValue(10000) * Math.PI * 2);
-        timeDelta /= 4;
-        this.particles.forEach(function(particle) {
-            particle.animate(timeDelta);
-        });
-    },
-
-    createParticle: function()
-    {
+    createParticle() {
         return new Leaf(this);
-    },
-
-    willRemoveParticle: function(particle)
-    {
-        particle.element.remove();
-    }
-});
-
-var LeavesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
-    {
-        Benchmark.call(this, new ParticlesStage(), options);
-    }, {
-
-    waitUntilReady: function() {
-        this.readyPromise = new SimplePromise;
-        return this.readyPromise;
     }
 
-});
+    removeParticle(leaf) {
+        leaf.remove();
+    }
+}
 
-window.benchmarkClass = LeavesBenchmark;
+class LeavesAnimator extends Animator {
+    constructor(test, settings) {
+        super(new LeavesStage(), test, settings);
+    }
 
-})();
+    async run() {
+        await Promise.all(this.stage.loadImages());
+        return super.run();
+    }
+}
+
+window.animatorClass = LeavesAnimator;

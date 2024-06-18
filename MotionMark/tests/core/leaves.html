@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+  Copyright (C) 2015-2024 Apple Inc. All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -26,10 +26,10 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="../resources/stage.css">
+    <link rel="stylesheet" type="text/css" href="../../shared/stage.css">
     <style>
         #stage {
-            background-color: #23282B;
+            background-color: #000;
         }
         #stage img {
             position: absolute;
@@ -38,12 +38,29 @@
 </head>
 <body>
     <div id="stage"></div>
-    <script src="../../resources/strings.js"></script>
-    <script src="../../resources/extensions.js"></script>
-    <script src="../../resources/statistics.js"></script>
-    <script src="../resources/math.js"></script>
-    <script src="../resources/main.js"></script>
-    <script src="resources/particles.js"></script>
+    <script src="../../extensions/bootstrap.js"></script>
+    <script src="../../extensions/document.js"></script>
+    <script src="../../extensions/insets.js"></script>
+    <script src="../../extensions/math.js"></script>
+    <script src="../../extensions/point.js"></script>
+    <script src="../../extensions/rotator.js"></script>
+    <script src="../../extensions/random.js"></script>
+    <script src="../../extensions/range.js"></script>
+    <script src="../../extensions/rect.js"></script>
+    <script src="../../extensions/regression.js"></script>
+    <script src="../../extensions/size.js"></script>
+    <script src="../../shared/animator.js"></script>
+    <script src="../../shared/controller.js"></script>
+    <script src="../../shared/timeline.js"></script>
+    <script src="../../shared/fixed-statistics.js"></script>
+    <script src="../../shared/wave-statistics.js"></script>
+    <script src="../../shared/exponential-controller.js"></script>
+    <script src="../../shared/fixed-controller.js"></script>
+    <script src="../../shared/ramp-controller.js"></script>
+    <script src="../../shared/wave-controller.js"></script>
+    <script src="../../shared/stage.js"></script>
+    <script src="shared/disposable-particles.js"></script>
+    <script src="shared/resettable-particle.js"></script>    
     <script src="resources/leaves.js"></script>
 </body>
 </html>
