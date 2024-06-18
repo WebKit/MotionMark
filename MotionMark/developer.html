@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2015-2020 Apple Inc. All rights reserved.
+  Copyright (C) 2015-2024 Apple Inc. All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -28,23 +28,45 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no">
 
-    <title>MotionMark developer</title>
+    <title>MotionMark</title>
 
-    <link rel="stylesheet" href="resources/runner/motionmark.css">
-    <link rel="stylesheet" href="resources/debug-runner/motionmark.css">
+    <link rel="stylesheet" href="debug/debug-motionmark.css">
 
-    <script src="resources/strings.js"></script>
-    <script src="resources/extensions.js"></script>
-    <script src="resources/statistics.js"></script>
-
-    <script src="resources/runner/tests.js" charset="utf-8"></script>
-    <script src="resources/debug-runner/tests.js" charset="utf-8"></script>
-    <script src="resources/runner/motionmark.js"></script>
-    <script src="resources/debug-runner/debug-runner.js" charset="utf-8"></script>
-
-    <script src="resources/runner/benchmark-runner.js"></script>
-    <script src="resources/debug-runner/d3.min.js"></script>
-    <script src="resources/debug-runner/graph.js" charset="utf-8"></script>
+    <script src="extensions/bootstrap.js"></script>
+    <script src="extensions/document.js"></script>
+    <script src="extensions/insets.js"></script>
+    <script src="extensions/math.js"></script>
+    <script src="extensions/point.js"></script>
+    <script src="extensions/random.js"></script>
+    <script src="extensions/range.js"></script>
+    <script src="extensions/size.js"></script>
+    <script src="extensions/rect.js"></script>
+    <script src="extensions/regression.js"></script>
+    <script src="shared/animator.js"></script>
+    <script src="shared/benchmark.js"></script>
+    <script src="shared/core-tests.js"></script>
+    <script src="shared/frame-rate-detector.js"></script>
+    <script src="shared/motionmark.js"></script>
+    <script src="shared/results.js"></script>
+    <script src="shared/runs-drop-target.js"></script>
+    <script src="shared/runs-overlay.js"></script>
+    <script src="shared/settings.js"></script>
+    <script src="shared/suites-collection.js"></script>
+    <script src="shared/timeline.js"></script>
+    <script src="shared/fixed-statistics.js"></script>
+    <script src="shared/wave-statistics.js"></script>
+    <script src="shared/strings.js"></script>
+    <script src="debug/d3.min.js"></script>
+    <script src="debug/graph.js"></script>
+    <script src="debug/complexity-graph.js"></script>
+    <script src="debug/time-graph.js"></script>
+    <script src="debug/graph-container.js"></script>
+    <script src="debug/debug-tests.js"></script>
+    <script src="debug/suites-tree.js"></script>
+    <script src="debug/debug-results.js"></script>
+    <script src="debug/debug-fixed-results.js"></script>
+    <script src="debug/debug-wave-results.js"></script>
+    <script src="debug/debug-motionmark.js"></script>
 </head>
 <body class="showing-intro">
     <main>
@@ -60,9 +82,9 @@
                         <ul class="tree"></ul>
                         <div><span id="drop-target">Drop results here</span></div>
                     </div>
-                    <div id="options">
-                        <h2>Options:</h2>
-                        <form name="benchmark-options">
+                    <div id="settings">
+                        <h2>Settings:</h2>
+                        <form name="benchmark-settings">
                             <ul>
                                 <li>
                                     <label>Warmup length: <input type="number" id="warmup-length" value="2000"> milliseconds</label>
@@ -71,36 +93,17 @@
                                     <label>Warmup frame count: <input type="number" id="warmup-frame-count" value="30"> frames</label>
                                 </li>
                                 <li>
-                                    <label>First frame minimum length: <input type="number" id="first-frame-minimum-length" value="0"> ms</label>
+                                    <label>Test length: <input type="number" id="test-length" value="30"> seconds each</label>
                                 </li>
                                 <li>
-                                    <label>Test length: <input type="number" id="test-interval" value="30"> seconds each</label>
-                                </li>
-                                <li>
-                                    <h3>Display:</h3>
-                                    <ul>
-                                        <li><label><input name="display" type="radio" value="minimal" checked> Minimal</label></li>
-                                        <li><label><input name="display" type="radio" value="progress-bar"> Progress bar</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <h3>Tiles:</h3>
-                                    <ul>
-                                        <li><label><input name="tiles" type="radio" value="big" checked> Big tiles</label></li>
-                                        <li><label><input name="tiles" type="radio" value="classic"> Classic tiles (512x512)</label></li>
-                                    </ul>
+                                    <label>Target frame rate: <input type="number" id="target-frame-rate" value="60"> FPS</label>
                                 </li>
                                 <li>
                                     <h3>Adjusting the test complexity:</h3>
                                     <ul>
                                         <li><label><input name="controller" type="radio" value="ramp" checked> Ramp</label></li>
                                         <li><label><input name="controller" type="radio" value="fixed"> Keep at a fixed complexity</label></li>
-                                        <li><label><input name="controller" type="radio" value="adaptive"> Maintain target FPS</label></li>
                                     </ul>
-                                </li>
-                                <li>
-                                    <label>System frame rate: <input type="number" id="system-frame-rate" value="60"> FPS</label><br>
-                                    <label>Target frame rate: <input type="number" id="frame-rate" value="60"> FPS</label>
                                 </li>
                                 <li>
                                     <h3>Time measurement method:</h3>
@@ -119,22 +122,17 @@
                     ensure that the target frame rate matches your system frame rate. Results cannot be compared between devices that
                     use different frame rates.
                 </p>
-                <p id="frame-rate-detection">
+                <p id="frame-rate-label">
                     Attempting to detect system frame rate: <span>0</span> FPS (in progress).
                 </p>
                 <div class="start-benchmark">
                     <p class="portrait-orientation-check hidden">Please rotate the device to orientation before starting.</p>
-                    <button id="start-button" onclick="benchmarkController.startBenchmark()">Run benchmark</button>
+                    <button id="start-button" onclick="motionmark.run()">Run benchmark</button>
                 </div>
             </div>
         </section>
 
-        <section id="test-container">
-            <div id="running-test" class="frame-container"></div>
-            <div id="progress">
-                <div id="progress-completed"></div>
-            </div>
-        </section>
+        <section id="test-container" class="frame-container"></section>
 
         <section id="results">
             <div class="body">
@@ -149,22 +147,48 @@
                 <p class="confidence"></p>
                 <div id="results-tables" class="table-container">
                     <div>
-                        <table id="results-score"></table>
-                        <table id="results-data"></table>
+                        <table id="results-score">
+                            <thead>
+                                <tr>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="results-graph">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <table id="results-data">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
-                    <table id="results-header"></table>
+                    <table id="results-header">
+                        <thead>
+                            <tr>
+                                <th>Test Name</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
-                <button onclick="benchmarkController.restartBenchmark()">Test Again</button>
+                <button onclick="motionmark.run(suites)">Test Again</button>
                 <p>
                     'j': Show JSON results<br/>
                     's': Select various results for copy/paste (use repeatedly to cycle)
                 </p>
             </div>
         </section>
+
         <section id="test-graph">
             <div class="body">
                 <header>
-                    <button onclick="benchmarkController.showResults()">&lt; Results</button>
+                    <button onclick="motionmark.showResultsSection()">&lt; Results</button>
                     <h1>Graph:</h1>
                     <p class="score">&nbsp;</p>
                     <p class="confidence">&nbsp;</p>
@@ -204,6 +228,7 @@
                 <div id="test-graph-data"></div>
             </div>
         </section>
+
     </main>
 </body>
 </html>
