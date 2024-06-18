@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,122 +22,107 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-var TextStage = Utilities.createSubclass(Stage,
-    function()
-    {
-        Stage.call(this);
+class TextTable {
+    static shimmerAverage = 0;
+    static shimmerMax = 0.5;
+    static shadowFalloff = new UnitBezier(new Point(0.015, 0.750), new Point(0.755, 0.235));
+    table;
 
-        this.testElements = [];
-        this._offsetIndex = 0;
-    }, {
+    constructor(table) {
+        this.table = table;
+    }
 
-    shadowFalloff: new UnitBezier(new Point(0.015, 0.750), new Point(0.755, 0.235)),
-    shimmerAverage: 0,
-    shimmerMax: 0.5,
-    millisecondsPerRotation: 1000 / (.26 * Math.PI * 2),
-    particleDistanceX: 1.5,
-    particleDistanceY: .5,
-    lightnessMin: 13,
-    lightnessMax: 94,
-    gradients: [
-        [10, 176, 176, 209, 148, 140],
+    show() {
+        this.table.style.visibility = "visible";
+    }
+
+    hide() {
+        this.table.style.visibility = "hidden";
+    }
+
+    move(progress, maxPosition) {
+        let x = Math.lerp(progress, 0, maxPosition.x);
+        let y = Math.lerp(progress, 0, maxPosition.y);
+        this.table.style.transform = "translate(" + Math.floor(x) + "px," + Math.floor(y) + "px)";
+    }
+
+    setColor(progress, offset, gradient) {
+        let colorProgress = TextTable.shadowFalloff.solve(progress);
+        const shimmer = Math.sin(offset - colorProgress);
+        colorProgress = Math.max(Math.min(colorProgress + Math.lerp(shimmer, TextTable.shimmerAverage, TextTable.shimmerMax), 1), 0);
+
+        let r = Math.round(Math.lerp(colorProgress, gradient[0], gradient[3]));
+        let g = Math.round(Math.lerp(colorProgress, gradient[1], gradient[4]));
+        let b = Math.round(Math.lerp(colorProgress, gradient[2], gradient[5]));
+        this.table.style.color = "rgb(" + r + "," + g + "," + b + ")";
+    }
+
+    animate(progress, maxPosition, offset, gradient) {
+        this.move(progress, maxPosition);
+        this.setColor(progress, offset, gradient);
+    }
+}
+
+class TextTablesStage extends ReusableParticlesStage {
+    gradients = [
+        [ 10, 176, 176, 209, 148, 140],
         [171, 120, 154, 245, 196, 154],
-        [224, 99, 99, 71, 134, 148],
-        [101, 100, 117, 80, 230, 175],
-        [232, 165, 30, 69, 186, 172]
-    ],
+        [224,  99,  99,  71, 134, 148],
+        [101, 100, 117,  80, 230, 175],
+        [232, 165,  30,  69, 186, 172]
+    ];
+    millisecondsPerRotation = 1000 / (.26 * Math.PI * 2);
+    template;
+    templateSize;
+    offset;
+    shadowFalloff;
 
-    initialize: function(benchmark)
-    {
-        Stage.prototype.initialize.call(this, benchmark);
+    constructor() {
+        super();
 
-        this._template = document.getElementById("template");
-        
-        const templateSize = Point.elementClientSize(this._template);
-        this._offset = this.size.subtract(templateSize).multiply(.5);
-        this._maxOffset = templateSize.height / 4;
+        this.template = document.getElementById("template");
+        this.templateSize = Size.elementClientSize(this.template);
 
-        this._template.style.left = this._offset.width + "px";
-        this._template.style.top = this._offset.height + "px";
+        this.offset = new Size(this.size);
+        this.offset.subtract(this.templateSize);
+        this.offset.divideBy(2);
 
-        this._stepProgress = 0;
-    },
+        this.template.style.left = this.offset.width + "px";
+        this.template.style.top = this.offset.height + "px";
+    }
 
-    tune: function(count)
-    {
-        if (count == 0)
+    createParticle() {
+        let table = this.template.cloneNode(true);
+        this.element.insertBefore(table, this.element.firstChild);
+        return new TextTable(table);
+    }
+
+    animate(timestamp, lastFrameLength) {
+        let activeParticles = this.activeParticles();
+        if (activeParticles.length == 0)
             return;
 
-        if (count < 0) {
-            this._offsetIndex = Math.max(this._offsetIndex + count, 0);
-            for (let i = this._offsetIndex; i < this.testElements.length; ++i)
-                this.testElements[i].style.visibility = "hidden";
+        let angle = Random.dateCounterValue(this.millisecondsPerRotation);
+        let gradient = this.gradients[Math.floor(angle / (Math.PI * 2)) % this.gradients.length];
+        let offset = Random.dateCounterValue(200);
+        let magnitude = Math.min(this.templateSize.height / 4, activeParticles.length * 2);
+        let maxPosition = Point.fromVector(magnitude, angle);
 
-            this._stepProgress = 1 / this._offsetIndex;
-            return;
-        }
-
-        this._offsetIndex = this._offsetIndex + count;
-        this._stepProgress = 1 / this._offsetIndex;
-
-        const index = Math.min(this._offsetIndex, this.testElements.length);
-        for (let i = 0; i < index; ++i)
-            this.testElements[i].style.visibility = "visible";
-
-        if (this._offsetIndex <= this.testElements.length)
-            return;
-
-        for (let i = this.testElements.length; i < this._offsetIndex; ++i) {
-            const clone = this._template.cloneNode(true);
-            this.testElements.push(clone);
-            this.element.insertBefore(clone, this.element.firstChild);
-        }
-    },
-
-    animate: function(timeDelta) 
-    {
-        const angle = Stage.dateCounterValue(this.millisecondsPerRotation);
-
-        const gradient = this.gradients[Math.floor(angle / (Math.PI * 2)) % this.gradients.length];
-        const offset = Stage.dateCounterValue(200);
-        const maxX = Math.sin(angle) * this._maxOffset;
-        const maxY = Math.cos(angle) * this._maxOffset;
-
+        let step = 1 / activeParticles.length;
         let progress = 0;
-        for (let i = 0; i < this._offsetIndex; ++i) {
-            const element = this.testElements[i];
 
-            let colorProgress = this.shadowFalloff.solve(progress);
-            const shimmer = Math.sin(offset - colorProgress);
-            colorProgress = Math.max(Math.min(colorProgress + Utilities.lerp(shimmer, this.shimmerAverage, this.shimmerMax), 1), 0);
-            const r = Math.round(Utilities.lerp(colorProgress, gradient[0], gradient[3]));
-            const g = Math.round(Utilities.lerp(colorProgress, gradient[1], gradient[4]));
-            const b = Math.round(Utilities.lerp(colorProgress, gradient[2], gradient[5]));
-            element.style.color = "rgb(" + r + "," + g + "," + b + ")";
-
-            const x = Utilities.lerp(i / this._offsetIndex, 0, maxX);
-            const y = Utilities.lerp(i / this._offsetIndex, 0, maxY);
-            element.style.transform = "translate(" + Math.floor(x) + "px," + Math.floor(y) + "px)";
-
-            progress += this._stepProgress;
+        for (let particle of activeParticles) {
+            particle.animate(progress, maxPosition, offset, gradient);
+            progress += step;
         }
-    },
-
-    complexity: function()
-    {
-        return 1 + this._offsetIndex;
     }
-});
+}
 
-var TextBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
-    {
-        Benchmark.call(this, new TextStage(), options);
+class TextTableAnimator extends Animator {
+    constructor(test, settings) {
+        super(new TextTablesStage(), test, settings);
     }
-);
+}
 
-window.benchmarkClass = TextBenchmark;
-
-}());
+window.animatorClass = TextTableAnimator;

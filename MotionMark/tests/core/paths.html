@@ -27,46 +27,10 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="../../shared/stage.css">
-    <style type="text/css">
-        #stage {
-            background-color: #000;
-        }
-
-        #stage div {
-            position: absolute;
-        }
-
-        #stage .div-0 {
-            border-top-right-radius: 100%;
-        }
-
-        #stage .div-1 {
-            border-top-left-radius: 100%;
-        }
-
-        #stage .div-2 {
-            border-bottom-left-radius: 100%;
-        }
-
-        #stage .div-3 {
-            border-bottom-right-radius: 100%;
-        }
-
-        #stage .div-4 {
-            border-bottom-left-radius: 100%;
-            border-top-right-radius: 100%;
-        }
-
-        #stage .div-5 {
-            border-bottom-right-radius: 100%;
-            border-top-left-radius: 100%;
-        }
-    </style>
 </head>
 <body>
-    <div id="stage"></div>
+    <canvas id="stage"></canvas>
     <script src="../../extensions/bootstrap.js"></script>
-    <script src="../../extensions/document.js"></script>
     <script src="../../extensions/insets.js"></script>
     <script src="../../extensions/math.js"></script>
     <script src="../../extensions/point.js"></script>
@@ -75,7 +39,6 @@
     <script src="../../extensions/rect.js"></script>
     <script src="../../extensions/regression.js"></script>
     <script src="../../extensions/size.js"></script>
-    <script src="../../extensions/spiral-iterator.js"></script>
     <script src="../../shared/animator.js"></script>
     <script src="../../shared/controller.js"></script>
     <script src="../../shared/timeline.js"></script>
@@ -86,7 +49,7 @@
     <script src="../../shared/ramp-controller.js"></script>
     <script src="../../shared/wave-controller.js"></script>
     <script src="../../shared/stage.js"></script>
-    <script src="shared/reusable-particles.js"></script>
-    <script src="resources/multiply.js"></script>
+    <script src="shared/reusable-segments.js"></script>
+    <script src="resources/paths.js"></script>
 </body>
 </html>

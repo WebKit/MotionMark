@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,126 +22,177 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-window.SuitsParticle = Utilities.createSubclass(Particle,
-    function(stage)
-    {
-        this.isClipPath = stage.particleCounter % 2;
-        this.initialize(stage);
-    }, {
+class Suit extends ResettableParticle {
+    static sideMinimum = 30;
+    static sideMaximum = 70;
+    static shapeCounter = 0;
+    static gradientCounter = 0;
+    isClipPath;
+    shape;
+    gradient;
+    transformSuffix;
+    position;
+    velocity;
 
-    sizeMinimum: 30,
-    sizeRange: 40,
-    hasGradient: true,
+    constructor(stage) {
+        super(stage, Suit.sideMinimum, Suit.sideMaximum);
 
-    initialize: function(stage)
-    {
-        var shapeId = "#shape-" + Stage.randomInt(1, stage.particleTypeCount);
+        this.isClipPath = ++stage.shapeCounter % 2;
+
+        this.createShape();
+        this.createGradient();
+
+        // Move it to some initial position.
+        this.reset();
+        this.move(0);
+    }
+
+    createShape() {
+        var shapeId = "#shape-" + Random.integer(1, this.stage.shapesCount);
+
         if (this.isClipPath) {
-            this.element = Utilities.createSVGElement("rect", {
-                x: 0,
-                y: 0,
+            this.shape = document.createSVGElement("rect", {
                 "clip-path": "url(" + shapeId + ")"
-            }, {}, stage.element);
+            }, this.stage.element);
         } else {
             var shapePath = document.querySelector(shapeId + " path");
-            this.element = shapePath.cloneNode();
-            stage.element.appendChild(this.element);
+            this.shape = shapePath.cloneNode();
+            this.stage.element.appendChild(this.shape);
         }
+    }
 
-        if (this.hasGradient) {
-            this.gradient = document.getElementById("default-gradient").cloneNode(true);
-            this.gradient.id = "gradient-" + stage.gradientsCounter++;
-            stage.gradientsDefs.appendChild(this.gradient);
-            this.element.setAttribute("fill", "url(#" + this.gradient.id + ")");
-        }
-        Particle.call(this, stage);
-    },
+    createGradient() {
+        this.gradient = this.stage.defaultGradient.cloneNode(true);
+        this.gradient.id = "gradient-" + Suit.gradientCounter++;
+        this.stage.gradientsDefs.appendChild(this.gradient);
+        this.shape.setAttribute("fill", "url(#" + this.gradient.id + ")");
+    }
 
-    reset: function()
-    {
-        Particle.prototype.reset.call(this);
-
-        this.position = Stage.randomElementInArray(this.stage.emitLocation);
-
-        var velocityMagnitude = Stage.random(.5, 2.5);
-        var angle = Stage.randomInt(0, this.stage.emitSteps) / this.stage.emitSteps * Math.PI * 2 + Stage.dateCounterValue(1000) * this.stage.emissionSpin + velocityMagnitude;
-        this.velocity = new Point(Math.sin(angle), Math.cos(angle))
-            .multiply(velocityMagnitude);
-
+    resetShape() {
         if (this.isClipPath) {
-            this.element.setAttribute("width", this.size.x);
-            this.element.setAttribute("height", this.size.y);
-            this.transformSuffix = " translate(-" + this.size.center.x + ",-" + this.size.center.y + ")";
+            this.shape.setAttribute("width", this.size.width);
+            this.shape.setAttribute("height", this.size.height);
+            this.transformSuffix = " translate(-" + (this.size.width / 2) + ",-" + (this.size.height / 2) + ")";
         } else
-            this.transformSuffix = " scale(" + this.size.x + ") translate(-.5,-.5)";
+            this.transformSuffix = " scale(" + this.size.width + ") translate(-.5,-.5)";
+    }
+
+    resetGradient() {
+        let transform = this.stage.element.createSVGTransform();
+        transform.setRotate(Random.integer(0, 359), 0, 0);
+        this.gradient.gradientTransform.baseVal.initialize(transform);
+
+        let stops = this.gradient.querySelectorAll("stop");
+        stops[0].setAttribute("stop-color", "hsl(" + this.stage.colorOffset + ", 70%, 45%)");
+        stops[1].setAttribute("stop-color", "hsl(" + ((this.stage.colorOffset + Random.integer(50,100)) % 360) + ", 70%, 65%)");
+    }
+
+    reset() {
+        super.reset();
+
+        this.position = new Point(Random.itemInArray(this.stage.emitLocations));
+
+        var velocityMagnitude = Random.number(.5, 2.5);
+        var angle = Random.integer(0, this.stage.emitSteps) / this.stage.emitSteps * Math.PI * 2 + Random.dateCounterValue(1000) * this.stage.emissionSpin + velocityMagnitude;
+        this.velocity = new Point(Math.sin(angle) * velocityMagnitude, Math.cos(angle) * velocityMagnitude);
 
         this.stage.colorOffset = (this.stage.colorOffset + .5) % 360;
 
-        if (this.hasGradient) {
-            var transform = this.stage.element.createSVGTransform();
-            transform.setRotate(Stage.randomInt(0, 359), 0, 0);
-            this.gradient.gradientTransform.baseVal.initialize(transform);
-
-            var stops = this.gradient.querySelectorAll("stop");
-            stops[0].setAttribute("stop-color", "hsl(" + this.stage.colorOffset + ", 70%, 45%)");
-            stops[1].setAttribute("stop-color", "hsl(" + ((this.stage.colorOffset + Stage.randomInt(50,100)) % 360) + ", 70%, 65%)");
-        } else
-            this.element.setAttribute("fill", "hsl(" + this.stage.colorOffset + ", 70%, 65%)");
-    },
-
-    move: function()
-    {
-        this.element.setAttribute("transform", "translate(" + this.position.x + "," + this.position.y + ") " + this.rotater.rotate(Point.zero) + this.transformSuffix);
+        this.resetShape();
+        this.resetGradient();
     }
-});
 
-var SuitsStage = Utilities.createSubclass(ParticlesStage,
-    function()
-    {
-        ParticlesStage.call(this);
-    }, {
+    move(timestamp) {
+        this.shape.setAttribute("transform", "translate(" + this.position.x + "," + this.position.y + ") " + this.rotator.rotate(timestamp, Point.zero()) + this.transformSuffix);
+    }
 
-    initialize: function(benchmark)
-    {
-        ParticlesStage.prototype.initialize.call(this, benchmark);
-        this.emissionSpin = Stage.random(0, 3);
-        this.emitSteps = Stage.randomInt(4, 6);
-        this.emitLocation = [
-            new Point(this.size.x * .25, this.size.y * .333),
-            new Point(this.size.x * .5, this.size.y * .25),
-            new Point(this.size.x * .75, this.size.y * .333)
-        ];
-        this.colorOffset = Stage.randomInt(0, 359);
+    animate(timestamp, lastFrameLength) {
+        let timeDelta = lastFrameLength / 4;
 
-        this.particleTypeCount = document.querySelectorAll(".shape").length;
+        this.position.add(this.velocity.scaled(timeDelta));
+        this.velocity.y += 0.03;
+
+        // If particle is going to move off right side
+        if (this.position.x > this.bouncingRect.maxX) {
+            if (this.velocity.x > 0)
+                this.velocity.x *= -1;
+            this.position.x = this.bouncingRect.maxX;
+        } else if (this.position.x < this.bouncingRect.x) {
+            // If particle is going to move off left side
+            if (this.velocity.x < 0)
+                this.velocity.x *= -1;
+            this.position.x = this.bouncingRect.x;
+        }
+
+        // If particle is going to move off bottom side
+        if (this.position.y > this.bouncingRect.maxY) {
+            // Adjust direction but maintain magnitude
+            var magnitude = this.velocity.length();
+            this.velocity.x *= 1.5 + .005 * this.size.width;
+            this.velocity = this.velocity.normalized().scaled(magnitude);
+            if (Math.abs(this.velocity.y) < 0.7)
+                this.reset();
+            else {
+                if (this.velocity.y > 0)
+                    this.velocity.y *= -0.999;
+                this.position.y = this.bouncingRect.maxY;
+            }
+        } else if (this.position.y < this.bouncingRect.y) {
+            // If particle is going to move off top side
+            var magnitude = this.velocity.length();
+            this.velocity.x *= 1.5 + .005 * this.size.width;
+            this.velocity = this.velocity.normalized().scaled(magnitude);
+            if (this.velocity.y < 0)
+                this.velocity.y *= -0.998;
+            this.position.y = this.bouncingRect.y;
+        }
+
+        this.move(timestamp);
+    }
+}
+
+class SuitsStage extends DisposableParticlesStage {
+    gradientsDefs;
+    defaultGradient;
+    shapesCount;
+    emissionSpin;
+    emitSteps;
+    emitLocations;
+    colorOffset;
+
+    constructor() {
+        super();
+
         this.gradientsDefs = document.getElementById("gradients");
-        this.gradientsCounter = 0;
-        this.particleCounter = 0;
-    },
+        this.defaultGradient = document.getElementById("default-gradient");
+        this.shapesCount = document.querySelectorAll(".shape").length;
 
-    createParticle: function()
-    {
-        this.particleCounter++;
-        return new SuitsParticle(this);
-    },
+        this.emissionSpin = Random.number(0, 3);
+        this.emitSteps = Random.integer(4, 6);
+        this.emitLocations = [
+            new Point(this.size.width * .25, this.size.height * .333),
+            new Point(this.size.width * .50, this.size.height * .250),
+            new Point(this.size.width * .75, this.size.height * .333)
+        ];
 
-    willRemoveParticle: function(particle)
-    {
-        particle.element.remove();
-        if (particle.gradient)
-            particle.gradient.remove();
+        this.colorOffset = Random.integer(0, 359);
     }
-});
 
-var SuitsBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
-    {
-        Benchmark.call(this, new SuitsStage(), options);
+    createParticle() {
+        return new Suit(this);
     }
-);
 
-window.benchmarkClass = SuitsBenchmark;
+    removeParticle(suit) {
+        suit.shape.remove();
+        suit.gradient.remove();
+    }
+}
 
-})();
+class SuitsAnimator extends Animator {
+    constructor(test, settings) {
+        super(new SuitsStage(), test, settings);
+    }
+}
+
+window.animatorClass = SuitsAnimator;
