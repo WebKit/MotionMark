@@ -196,7 +196,7 @@
 
                 var resample = new SampleData(regressionResult.samples.fieldMap, resampleData);
                 var bootstrapRegressionResult = findRegression(resample, predominantProfile);
-		if (bootstrapRegressionResult.regression.t2 < 0) {
+                if (bootstrapRegressionResult.regression.t2 < 0) {
                   // A positive slope means the frame rate decreased with increased complexity (which is the expected
                   // benavior). OTOH, a negative slope means the framerate increased as the complexity increased. This
                   // likely means the max complexity needs to be increased. None-the-less, if the slope is negative use
