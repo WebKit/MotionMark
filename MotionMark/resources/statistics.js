@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -181,39 +181,39 @@ Regression = Utilities.createClass(
     // All samples are analyzed. startIndex, endIndex are just stored for use by the caller.
     function(samples, startIndex, endIndex, options)
     {
-        const desiredFrameLength = options.desiredFrameLength;
-        var profile;
+        this.startIndex = Math.min(startIndex, endIndex);
+        this.endIndex = Math.max(startIndex, endIndex);
 
-        if (!options.preferredProfile || options.preferredProfile == Strings.json.profiles.slope) {
-            profile = this._calculateRegression(samples, {
-                shouldClip: true,
-                s1: desiredFrameLength,
-                t1: 0
-            });
-            this.profile = Strings.json.profiles.slope;
-        } else if (options.preferredProfile == Strings.json.profiles.flat) {
-            profile = this._calculateRegression(samples, {
-                shouldClip: true,
-                s1: desiredFrameLength,
+        this.s1 = 0;
+        this.t1 = 0;
+        this.n1 = 0;
+        this.e1 = Number.MAX_VALUE;
+
+        this.s2 = 0;
+        this.t2 = 0;
+        this.n2 = 0;
+        this.e2 = Number.MAX_VALUE;
+
+        this.complexity = 0;
+
+        if (options.preferredProfile == Strings.json.profiles.flat) {
+            this._calculateRegression(samples, {
+                s1: options.desiredFrameLength,
                 t1: 0,
                 t2: 0
             });
             this.profile = Strings.json.profiles.flat;
+        } else {
+             this._calculateRegression(samples, {
+                s1: options.desiredFrameLength,
+                t1: 0
+            });
+            this.profile = Strings.json.profiles.slope;
         }
 
-        this.startIndex = Math.min(startIndex, endIndex);
-        this.endIndex = Math.max(startIndex, endIndex);
-
-        this.complexity = profile.complexity;
-        this.s1 = profile.s1;
-        this.t1 = profile.t1;
-        this.s2 = profile.s2;
-        this.t2 = profile.t2;
-        this.stdev1 = profile.stdev1;
-        this.stdev2 = profile.stdev2;
-        this.n1 = profile.n1;
-        this.n2 = profile.n2;
-        this.error = profile.error;
+        this.stdev1 = Math.sqrt(this.e1 / this.n1);
+        this.stdev2 = Math.sqrt(this.e2 / this.n2);
+        this.error = this._error();
     }, {
 
     valueAt: function(complexity)
@@ -221,6 +221,60 @@ Regression = Utilities.createClass(
         if (this.n1 == 1 || complexity > this.complexity)
             return this.s2 + this.t2 * complexity;
         return this.s1 + this.t1 * complexity;
+    },
+
+    _intersection: function(segment1, segment2)
+    {
+        return (segment1.s - segment2.s) / (segment2.t - segment1.t);
+    },
+
+    _error: function() {
+        return this.e1 + this.e2;
+    },
+
+    _areEssentiallyEqual: function(n1, n2) {
+        // Choose epsilon not too small to ensure the intersetion
+        // of the two segements is not too far from sampled data.
+        const epsilon = 0.0001;
+        return Math.abs(n1 - n2) < epsilon;
+    },
+
+    _setOptimal: function(segment1, segment2, x, xn, options) {
+        if (segment1.e + segment2.e > this.e1 + this.e2)
+            return false;
+
+        segment1.s = options.s1 !== undefined ? options.s1 : segment1.s;
+        segment1.t = options.t1 !== undefined ? options.t1 : segment1.t;
+        segment2.s = options.s2 !== undefined ? options.s2 : segment2.s;
+        segment2.t = options.t2 !== undefined ? options.t2 : segment2.t;
+
+        // The score is the x coordinate of the intersection of segment1 and segment2.
+        let complexity = this._intersection(segment1, segment2);
+
+        if (!this._areEssentiallyEqual(segment1.t, segment2.t)) {
+            // If segment1 and segment2 are not parallel, then they have to meet
+            // at complexity such that x <= complexity <= xn.
+            if (!(complexity >= x && complexity <= xn))
+                return false;
+        } else {
+            // If segment1 and segment2 are parallel, then they have to form one
+            // single line.
+            if (!this._areEssentiallyEqual(segment1.s, segment2.s))
+                return false;
+        }
+
+        this.s1 = segment1.s;
+        this.t1 = segment1.t;
+        this.n1 = segment1.n;
+        this.e1 = segment1.e;
+
+        this.s2 = segment2.s;
+        this.t2 = segment2.t;
+        this.n2 = segment2.n;
+        this.e2 = segment2.e;
+
+        this.complexity = complexity;
+        return true;
     },
 
     // A generic two-segment piecewise regression calculator. Based on Kundu/Ubhaya
@@ -239,153 +293,139 @@ Regression = Utilities.createClass(
         const complexityIndex = 0;
         const frameLengthIndex = 1;
 
-        if (samples.length == 1) {
-            // Only one sample point; we can't calculate any regression.
-            var x = samples[0][complexityIndex];
-            return {
-                complexity: x,
-                s1: x,
-                t1: 0,
-                s2: x,
-                t2: 0,
-                error1: 0,
-                error2: 0
-            };
-        }
-
         // Sort by increasing complexity.
-        var sortedSamples = samples.slice().sort((a, b) => a[complexityIndex] - b[complexityIndex]);
-        
-        // x is expected to increase in complexity
-        var lowComplexity = sortedSamples[0][complexityIndex];
-        var highComplexity = sortedSamples[samples.length - 1][complexityIndex];
+        let sortedSamples = samples.slice().sort((a, b) => a[complexityIndex] - b[complexityIndex]);
 
-        var a1 = 0, b1 = 0, c1 = 0, d1 = 0, h1 = 0, k1 = 0;
-        var a2 = 0, b2 = 0, c2 = 0, d2 = 0, h2 = 0, k2 = 0;
+        let a1 = 0, b1 = 0, c1 = 0, d1 = 0, h1 = 0, k1 = 0;
+        let a2 = 0, b2 = 0, c2 = 0, d2 = 0, h2 = 0, k2 = 0;
 
-        for (var i = 0; i < sortedSamples.length; ++i) {
-            var x = sortedSamples[i][complexityIndex];
-            var y = sortedSamples[i][frameLengthIndex];
+        for (let j = 0; j < sortedSamples.length; ++j) {
+            let x = sortedSamples[j][complexityIndex];
+            let y = sortedSamples[j][frameLengthIndex];
+
             a2 += 1;
             b2 += x;
             c2 += x * x;
             d2 += y;
-            h2 += y * x;
+            h2 += x * y;
             k2 += y * y;
         }
 
-        var s1_best, t1_best, s2_best, t2_best, n1_best, n2_best, error1_best, error2_best, x_best, x_prime;
+        for (let j = 0; j < sortedSamples.length - 1; ++j) {
+            let x = sortedSamples[j][complexityIndex];
+            let y = sortedSamples[j][frameLengthIndex];
+            let xx = x * x;
+            let xy = x * y;
+            let yy = y * y;
 
-        function setBest(s1, t1, error1, s2, t2, error2, splitIndex, x_prime, x)
-        {
-            s1_best = s1;
-            t1_best = t1;
-            error1_best = error1;
-            s2_best = s2;
-            t2_best = t2;
-            error2_best = error2;
-            // Number of samples included in the first segment, inclusive of splitIndex
-            n1_best = splitIndex + 1;
-            // Number of samples included in the second segment
-            n2_best = samples.length - splitIndex - 1;
-            if (!options.shouldClip || (x_prime >= lowComplexity && x_prime <= highComplexity))
-                x_best = x_prime;
-            else {
-                // Discontinuous piecewise regression
-                x_best = x;
-            }
-        }
-
-        // Iterate from 0 to n - 2, inclusive
-        for (var i = 0; i < sortedSamples.length - 1; ++i) {
-            var x = sortedSamples[i][complexityIndex];
-            var y = sortedSamples[i][frameLengthIndex];
-            var xx = x * x;
-            var yx = y * x;
-            var yy = y * y;
-            // a1, b1, etc. is sum from 0 to i, inclusive
             a1 += 1;
             b1 += x;
             c1 += xx;
             d1 += y;
-            h1 += yx;
+            h1 += xy;
             k1 += yy;
-            // a2, b2, etc. is sum from i+1 to sortedSamples.length - 1, inclusive
+
             a2 -= 1;
             b2 -= x;
             c2 -= xx;
             d2 -= y;
-            h2 -= yx;
+            h2 -= xy;
             k2 -= yy;
 
-            var A = c1*d1 - b1*h1;
-            var B = a1*h1 - b1*d1;
-            var C = a1*c1 - b1*b1;
-            var D = c2*d2 - b2*h2;
-            var E = a2*h2 - b2*d2;
-            var F = a2*c2 - b2*b2;
-            var s1 = options.s1 !== undefined ? options.s1 : (A / C);
-            var t1 = options.t1 !== undefined ? options.t1 : (B / C);
-            var s2 = options.s2 !== undefined ? options.s2 : (D / F);
-            var t2 = options.t2 !== undefined ? options.t2 : (E / F);
-            // Assumes that the two segments meet
-            var x_prime = (s1 - s2) / (t2 - t1);
+            let A = (c1 * d1) - (b1 * h1);
+            let B = (a1 * h1) - (b1 * d1);
+            let C = (a1 * c1) - (b1 * b1);
+            let D = (c2 * d2) - (b2 * h2);
+            let E = (a2 * h2) - (b2 * d2);
+            let F = (a2 * c2) - (b2 * b2);
 
-            var error1 = (k1 + a1*s1*s1 + c1*t1*t1 - 2*d1*s1 - 2*h1*t1 + 2*b1*s1*t1) || Number.MAX_VALUE;
-            var error2 = (k2 + a2*s2*s2 + c2*t2*t2 - 2*d2*s2 - 2*h2*t2 + 2*b2*s2*t2) || Number.MAX_VALUE;
-
-            if (i == 0) {
-                setBest(s1, t1, error1, s2, t2, error2, i, x_prime, x);
-                continue;
-            }
+            let s1 = A / C;
+            let t1 = B / C;
+            let s2 = D / F;
+            let t2 = E / F;
 
             if (C == 0 || F == 0)
                 continue;
 
-            // Projected point is not between this and the next sample
-            var nextSampleComplexity = sortedSamples[i + 1][complexityIndex];
-            if (x_prime > nextSampleComplexity || x_prime < x) {
-                // Calculate lambda, which divides the weight of this sample between the two lines
+            let segment1;
+            let segment2;
+            let xp = (j == 0) ? 0 : sortedSamples[j - 1][complexityIndex];
 
-                // These values remove the influence of this sample
-                var I = c1 - 2*b1*x + a1*xx;
-                var H = C - I;
-                var G = A + B*x - C*y;
-
-                var J = D + E*x - F*y;
-                var K = c2 - 2*b2*x + a2*xx;
-
-                var lambda = (G*F + G*K - H*J) / (I*J + G*K);
-                if (lambda > 0 && lambda < 1) {
-                    var lambda1 = 1 - lambda;
-                    s1 = options.s1 !== undefined ? options.s1 : ((A - lambda1*(-h1*x + d1*xx + c1*y - b1*yx)) / (C - lambda1*I));
-                    t1 = options.t1 !== undefined ? options.t1 : ((B - lambda1*(h1 - d1*x - b1*y + a1*yx)) / (C - lambda1*I));
-                    s2 = options.s2 !== undefined ? options.s2 : ((D + lambda1*(-h2*x + d2*xx + c2*y - b2*yx)) / (F + lambda1*K));
-                    t2 = options.t2 !== undefined ? options.t2 : ((E + lambda1*(h2 - d2*x - b2*y + a2*yx)) / (F + lambda1*K));
-                    x_prime = (s1 - s2) / (t2 - t1);
-
-                    error1 = ((k1 + a1*s1*s1 + c1*t1*t1 - 2*d1*s1 - 2*h1*t1 + 2*b1*s1*t1) - lambda1 * Math.pow(y - (s1 + t1*x), 2)) || Number.MAX_VALUE;
-                    error2 = ((k2 + a2*s2*s2 + c2*t2*t2 - 2*d2*s2 - 2*h2*t2 + 2*b2*s2*t2) + lambda1 * Math.pow(y - (s2 + t2*x), 2)) || Number.MAX_VALUE;
-                } else if (t1 != t2)
-                    continue;
+            if (j == 0) {
+                // Let segment1 be any line through (x[0], y[0]) which meets segment2 at
+                // a point (x’, y’) where x[0] < x' < x[1]. segment1 has no error.
+                let xMid = (x + sortedSamples[j + 1][complexityIndex]) / 2;
+                let yMid = s2 + t2 * xMid;
+                let tMid = (yMid - y) / (xMid - x);
+                segment1 = {
+                    s: y - tMid * x,
+                    t: tMid,
+                    n: 1,
+                    e: 0
+                };
+            } else {
+                segment1 = {
+                    s: s1,
+                    t: t1,
+                    n: j + 1,
+                    e: k1 + (a1 * s1 * s1) + (c1 * t1 * t1) - (2 * d1 * s1) - (2 * h1 * t1) + (2 * b1 * s1 * t1)
+                };
             }
 
-            if (error1 + error2 < error1_best + error2_best)
-                setBest(s1, t1, error1, s2, t2, error2, i, x_prime, x);
-        }
+            if (j == sortedSamples.length - 2) {
+                // Let segment2 be any line through (x[n - 1], y[n - 1]) which meets segment1
+                // at a point (x’, y’) where x[n - 2] < x' < x[n - 1]. segment2 has no error.
+                let xMid = (x + sortedSamples[j + 1][complexityIndex]) / 2;
+                let yMid = s1 + t1 * xMid;
+                let tMid = (yMid - sortedSamples[j + 1][frameLengthIndex]) / (xMid - sortedSamples[j + 1][complexityIndex]);
+                segment2 = {
+                    s: y - tMid * x,
+                    t: tMid,
+                    n: 1,
+                    e: 0
+                };
+            } else {
+                segment2 = {
+                    s: s2,
+                    t: t2,
+                    n: sortedSamples.length - (j + 1),
+                    e: k2 + (a2 * s2 * s2) + (c2 * t2 * t2) - (2 * d2 * s2) - (2 * h2 * t2) + (2 * b2 * s2 * t2)
+                };
+            }
 
-        return {
-            complexity: x_best,
-            s1: s1_best,
-            t1: t1_best,
-            stdev1: Math.sqrt(error1_best / n1_best),
-            s2: s2_best,
-            t2: t2_best,
-            stdev2: Math.sqrt(error2_best / n2_best),
-            error: error1_best + error2_best,
-            n1: n1_best,
-            n2: n2_best
-        };
+            if (this._setOptimal(segment1, segment2, x, sortedSamples[j + 1][complexityIndex], options))
+                continue
+
+            // These values remove the influence of this sample
+            let G = A + B * x - C * y;
+            let J = D + E * x - F * y;
+
+            let I = c1 - 2 * b1 * x + a1 * xx;
+            let K = c2 - 2 * b2 * x + a2 * xx;
+
+            // Calculate lambda, which divides the weight of this sample between the two lines
+            let lambda = (G * F + G * K - J * C) / (I * J + G * K);
+            if (!(lambda > 0 && lambda < 1))
+                continue;
+
+            let lambda1 = 1 - lambda;
+
+            segment1 = {
+                s: (A + lambda  * (-h1 * x + d1 * xx + c1 * y - b1 * xy)) / (C - lambda * I),
+                t: (B + lambda  * (h1 - d1 * x - b1 * y + a1 * xy)) / (C - lambda * I),
+                n: j + 1,
+                e: (k1 + a1 * s1 * s1 + c1 * t1 * t1 - 2 * d1 * s1 - 2 * h1 * t1 + 2 * b1 * s1 * t1) - lambda * Math.pow(y - (s1 + t1 * x), 2)
+            };
+
+            segment2 = {
+                s: (D + lambda1 * (-h2 * x + d2 * xx + c2 * y - b2 * xy)) / (F + lambda1 * K),
+                t: (E + lambda1 * (h2 - d2 * x - b2 * y + a2 * xy)) / (F + lambda1 * K),
+                n: sortedSamples.length - (j + 1),
+                e: (k2 + a2 * s2 * s2 + c2 * t2 * t2 - 2 * d2 * s2 - 2 * h2 * t2 + 2 * b2 * s2 * t2) + lambda1 * Math.pow(y - (s2 + t2 * x), 2)
+            };
+
+            this._setOptimal(segment1, segment2, x, sortedSamples[j + 1][complexityIndex], options);
+        }
     }
 });
 
