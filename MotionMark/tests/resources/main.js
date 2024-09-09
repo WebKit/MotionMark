@@ -688,7 +688,7 @@ Stage = Utilities.createClass(
         this._element = document.getElementById("stage");
         this._element.setAttribute("width", document.body.offsetWidth);
         this._element.setAttribute("height", document.body.offsetHeight);
-        this._size = Point.elementClientSize(this._element).subtract(Insets.elementPadding(this._element).size);
+        this._size = GeometryHelpers.elementClientSize(this._element).subtract(Insets.elementPadding(this._element).size);
     },
 
     get element()

@@ -55,7 +55,7 @@ var TextStage = Utilities.createSubclass(Stage,
 
         this._template = document.getElementById("template");
         
-        const templateSize = Point.elementClientSize(this._template);
+        const templateSize = GeometryHelpers.elementClientSize(this._template);
         this._offset = this.size.subtract(templateSize).multiply(.5);
         this._maxOffset = templateSize.height / 4;
 
