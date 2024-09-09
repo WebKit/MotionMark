@@ -30,7 +30,7 @@ CanvasLineSegment = Utilities.createClass(
     function(stage) {
         var radius = Stage.randomInt(10, 100);
         var center = Stage.randomPosition(stage.size);
-        var delta = Point.pointOnCircle(Stage.randomAngle(), radius/2);
+        var delta = GeometryHelpers.createPointOnCircle(Stage.randomAngle(), radius/2);
 
         this._point1 = center.add(delta);
         this._point2 = center.subtract(delta);

@@ -37,7 +37,7 @@ Utilities.extendObject(window.benchmarkController, {
         var margins = new Insets(30, 30, 50, 40);
         // Note that changes to header content (in onGraphTypeChanged()) can change the available size, so we prepopulate
         // "score" and "confidence" elements with non-breaking spaces in the HTML.
-        var size = Point.elementClientSize(element);
+        var size = GeometryHelpers.elementClientSize(element);
 
         // Convert from compact JSON output to propertied data
         var samplesWithProperties = {};
