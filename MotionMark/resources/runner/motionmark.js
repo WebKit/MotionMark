@@ -235,18 +235,18 @@
             var experimentResult = {};
             result[Strings.json.controller] = experimentResult;
             experimentResult[Strings.json.measurements.average] = averageComplexity.mean();
-            experimentResult[Strings.json.measurements.concern] = averageComplexity.concern(Experiment.defaults.CONCERN);
+            experimentResult[Strings.json.measurements.concern] = averageComplexity.concern(Experiment.DEFAULT_CONCERN);
             experimentResult[Strings.json.measurements.stdev] = averageComplexity.standardDeviation();
             experimentResult[Strings.json.measurements.percent] = averageComplexity.percentage();
 
             experimentResult = {};
             result[Strings.json.frameLength] = experimentResult;
             experimentResult[Strings.json.measurements.average] = 1000 / averageFrameLength.mean();
-            experimentResult[Strings.json.measurements.concern] = averageFrameLength.concern(Experiment.defaults.CONCERN);
+            experimentResult[Strings.json.measurements.concern] = averageFrameLength.concern(Experiment.DEFAULT_CONCERN);
             experimentResult[Strings.json.measurements.stdev] = averageFrameLength.standardDeviation();
             experimentResult[Strings.json.measurements.percent] = averageFrameLength.percentage();
 
-            result[Strings.json.score] = averageComplexity.score(Experiment.defaults.CONCERN);
+            result[Strings.json.score] = averageComplexity.score(Experiment.DEFAULT_CONCERN);
             result[Strings.json.scoreLowerBound] = result[Strings.json.score] - averageFrameLength.standardDeviation();
             result[Strings.json.scoreUpperBound] = result[Strings.json.score] + averageFrameLength.standardDeviation();
         }

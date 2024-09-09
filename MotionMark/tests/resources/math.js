@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,14 +22,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-SimpleKalmanEstimator = Utilities.createSubclass(Experiment,
-    function(processError, measurementError) {
-        Experiment.call(this, false);
+
+class SimpleKalmanEstimator extends Experiment {
+    constructor(processError, measurementError)
+    {
+        const includeConcern = false;
+        super(includeConcern);
         var error = .5 * (Math.sqrt(processError * processError + 4 * processError * measurementError) - processError);
         this._gain = error / (error + measurementError);
-    }, {
+    }
 
-    sample: function(newMeasurement)
+    sample(newMeasurement)
     {
         if (!this._initialized) {
             this._initialized = true;
@@ -38,19 +41,43 @@ SimpleKalmanEstimator = Utilities.createSubclass(Experiment,
         }
 
         this.estimate = this.estimate + this._gain * (newMeasurement - this.estimate);
-    },
+    }
 
-    reset: function()
+    reset()
     {
-        Experiment.prototype.reset.call(this);
+        super.reset();
         this._initialized = false;
         this.estimate = 0;
     }
-});
+}
 
-PIDController = Utilities.createClass(
-    function(ysp)
+class PIDController {
+    static yPositions;
+    static stages;
+
+    constructor(ysp)
     {
+        // This enum will be used to tell whether the system output (or the controller input)
+        // is moving towards the set-point or away from it.
+        PIDController.yPositions = {
+            BEFORE_SETPOINT: 0,
+            AFTER_SETPOINT: 1
+        };
+
+        // The Ziegler-Nichols method for is used tuning the PID controller. The workflow of
+        // the tuning is split into four stages. The first two stages determine the values
+        // of the PID controller gains. During these two stages we return the proportional
+        // term only. The third stage is used to determine the min-max values of the
+        // saturation actuator. In the last stage back-calculation and tracking are applied
+        // to avoid integrator windup. During the last two stages, we return a PID control
+        // value.
+        PIDController.stages = {
+            WARMING: 0,         // Increase the value of the Kp until the system output reaches ysp.
+            OVERSHOOT: 1,       // Measure the oscillation period and the overshoot value
+            UNDERSHOOT: 2,      // Return PID value and measure the undershoot value
+            SATURATE: 3         // Return PID value and apply back-calculation and tracking.
+        };
+
         this._ysp = ysp;
         this._out = 0;
 
@@ -59,17 +86,17 @@ PIDController = Utilities.createClass(
 
         this._eold = 0;
         this._I = 0;
-    }, {
+    }
 
     // Determines whether the current y is
     //  before ysp => (below ysp if ysp > y0) || (above ysp if ysp < y0)
     //  after ysp => (above ysp if ysp > y0) || (below ysp if ysp < y0)
-    _yPosition: function(y)
+    _yPosition(y)
     {
         return (y < this._ysp) == (this._y0 < this._ysp)
             ? PIDController.yPositions.BEFORE_SETPOINT
             : PIDController.yPositions.AFTER_SETPOINT;
-    },
+    }
 
     // Calculate the ultimate distance from y0 after time t. We want to move very
     // slowly at the beginning to see how adding few items to the test can affect
@@ -81,34 +108,34 @@ PIDController = Utilities.createClass(
     // The basic formula is: y = t^3
     // Change the formula to reach y=1 after 1000 ms: y = (t/1000)^3
     // Change the formula to reach y=(ysp - y0) after 1000 ms: y = (ysp - y0) * (t/1000)^3
-    _distanceUltimate: function(t)
+    _distanceUltimate(t)
     {
         return (this._ysp - this._y0) * Math.pow(t / 1000, 3);
-    },
+    }
 
     // Calculates the distance of y relative to y0. It also ensures we do not return
     // zero by returning a epsilon value in the same direction as ultimate distance.
-    _distance: function(y, du)
+    _distance(y, du)
     {
         const epsilon = 0.0001;
         var d  = y - this._y0;
         return du < 0 ? Math.min(d, -epsilon) : Math.max(d, epsilon);
-    },
+    }
 
     // Decides how much the proportional gain should be increased during the manual
     // gain stage. We choose to use the ratio of the ultimate distance to the current
     // distance as an indication of how much the system is responsive. We want
     // to keep the increment under control so it does not cause the system instability
     // So we choose to take the natural logarithm of this ratio.
-    _gainIncrement: function(t, y, e)
+    _gainIncrement(t, y, e)
     {
         var du = this._distanceUltimate(t);
         var d = this._distance(y, du);
         return Math.log(du / d) * 0.1;
-    },
+    }
 
     // Update the stage of the controller based on its current stage and the system output
-    _updateStage: function(y)
+    _updateStage(y)
     {
         var yPosition = this._yPosition(y);
 
@@ -128,17 +155,17 @@ PIDController = Utilities.createClass(
                 this._stage = PIDController.stages.SATURATE;
             break;
         }
-    },
+    }
 
     // Manual tuning is used before calculating the PID controller gains.
-    _tuneP: function(e)
+    _tuneP(e)
     {
         // The output is the proportional term only.
         return this._Kp * e;
-    },
+    }
 
     // PID tuning function. Kp, Ti and Td were already calculated
-    _tunePID: function(h, y, e)
+    _tunePID(h, y, e)
     {
         // Proportional term.
         var P = this._Kp * e;
@@ -152,10 +179,10 @@ PIDController = Utilities.createClass(
 
         // The ouput is a PID function.
        return P + this._I + D;
-    },
+    }
 
     // Apply different strategies for the tuning based on the stage of the controller.
-    _tune: function(t, h, y, e)
+    _tune(t, h, y, e)
     {
         switch (this._stage) {
         case PIDController.stages.WARMING:
@@ -211,10 +238,10 @@ PIDController = Utilities.createClass(
         }
 
         return 0;
-    },
+    }
 
     // Ensures the system does not fluctuates.
-    _saturate: function(v, e)
+    _saturate(v, e)
     {
         var u = v;
 
@@ -248,11 +275,11 @@ PIDController = Utilities.createClass(
 
         this._out += u;
         return u;
-    },
+    }
 
     // Called from the benchmark to tune its test. It uses Ziegler-Nichols method
     // to calculate the controller parameters. It then returns a PID tuning value.
-    tune: function(t, h, y)
+    tune(t, h, y)
     {
         this._updateStage(y);
 
@@ -266,27 +293,4 @@ PIDController = Utilities.createClass(
         // Apply back-calculation and tracking to avoid integrator windup
         return this._saturate(v, e);
     }
-});
-
-Utilities.extendObject(PIDController, {
-    // This enum will be used to tell whether the system output (or the controller input)
-    // is moving towards the set-point or away from it.
-    yPositions: {
-        BEFORE_SETPOINT: 0,
-        AFTER_SETPOINT: 1
-    },
-
-    // The Ziegler-Nichols method for is used tuning the PID controller. The workflow of
-    // the tuning is split into four stages. The first two stages determine the values
-    // of the PID controller gains. During these two stages we return the proportional
-    // term only. The third stage is used to determine the min-max values of the
-    // saturation actuator. In the last stage back-calculation and tracking are applied
-    // to avoid integrator windup. During the last two stages, we return a PID control
-    // value.
-    stages: {
-        WARMING: 0,         // Increase the value of the Kp until the system output reaches ysp.
-        OVERSHOOT: 1,       // Measure the oscillation period and the overshoot value
-        UNDERSHOOT: 2,      // Return PID value and measure the undershoot value
-        SATURATE: 3         // Return PID value and apply back-calculation and tracking.
-    }
-});
+}
