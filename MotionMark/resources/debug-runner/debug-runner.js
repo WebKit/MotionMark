@@ -22,34 +22,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-ProgressBar = Utilities.createClass(
-    function(element, ranges)
+
+class ProgressBar {
+    constructor(element, ranges)
     {
         this._element = element;
         this._ranges = ranges;
         this._currentRange = 0;
         this._updateElement();
-    }, {
+    }
 
-    _updateElement: function()
+    _updateElement()
     {
         this._element.style.width = (this._currentRange * (100 / this._ranges)) + "%";
-    },
+    }
 
-    incrementRange: function()
+    incrementRange()
     {
         ++this._currentRange;
         this._updateElement();
     }
-});
+}
 
-DeveloperResultsTable = Utilities.createSubclass(ResultsTable,
-    function(element, headers)
+class DeveloperResultsTable extends ResultsTable {
+    constructor(element, headers)
     {
-        ResultsTable.call(this, element, headers);
-    }, {
+        super(element, headers);
+    }
 
-    _addGraphButton: function(td, testName, testResult, testData)
+    _addGraphButton(td, testName, testResult, testData)
     {
         var button = Utilities.createElement("button", { class: "small-button" }, td);
         button.textContent = Strings.text.graph + "…";
@@ -60,9 +61,9 @@ DeveloperResultsTable = Utilities.createSubclass(ResultsTable,
         button.addEventListener("click", function(e) {
             benchmarkController.showTestGraph(e.target.testName, e.target.testResult, e.target.testData);
         });
-    },
+    }
 
-    _isNoisyMeasurement: function(jsonExperiment, data, measurement, options)
+    _isNoisyMeasurement(jsonExperiment, data, measurement, options)
     {
         const percentThreshold = 10;
         const averageThreshold = 2;
@@ -74,9 +75,9 @@ DeveloperResultsTable = Utilities.createSubclass(ResultsTable,
             return Math.abs(data[Strings.json.measurements.average] - options["frame-rate"]) >= averageThreshold;
 
         return false;
-    },
+    }
 
-    _addTest: function(testName, testResult, options, testData)
+    _addTest(testName, testResult, options, testData)
     {
         var row = Utilities.createElement("tr", {}, this.element);
 
@@ -120,7 +121,7 @@ DeveloperResultsTable = Utilities.createSubclass(ResultsTable,
                 td.textContent = header.text(testResult);
         }, this);
     }
-});
+}
 
 Utilities.extendObject(window.benchmarkRunnerClient, {
     testsCount: null,
