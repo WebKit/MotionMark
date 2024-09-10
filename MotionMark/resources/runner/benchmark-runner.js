@@ -116,7 +116,7 @@ class BenchmarkRunner {
 
         var options = { complexity: test.complexity };
         Utilities.extendObject(options, this._client.options);
-        Utilities.extendObject(options, Utilities.parseParameters());
+        Utilities.extendObject(options, Utilities.parseParameters(contentWindow.location));
 
         var benchmark = new contentWindow.benchmarkClass(options);
         document.body.style.backgroundColor = benchmark.backgroundColor();
