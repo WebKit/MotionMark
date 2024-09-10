@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 BouncingSvgShape = Utilities.createSubclass(BouncingSvgParticle,
     function(stage)
@@ -69,20 +68,20 @@ BouncingSvgShape = Utilities.createSubclass(BouncingSvgParticle,
     }
 });
 
-BouncingSvgShapesStage = Utilities.createSubclass(BouncingSvgParticlesStage,
-    function()
+class BouncingSvgShapesStage extends BouncingSvgParticlesStage {
+    constructor()
     {
-        BouncingSvgParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        BouncingSvgParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.parseShapeParameters(options);
         this._gradientsCount = 0;
-    },
+    }
 
-    createGradient: function(stops)
+    createGradient(stops)
     {
         var attrs = { id: "gradient-" + ++this._gradientsCount };
         var gradient = Utilities.createSVGElement("linearGradient", attrs, {}, this._ensureDefsIsCreated());
@@ -93,16 +92,16 @@ BouncingSvgShapesStage = Utilities.createSubclass(BouncingSvgParticlesStage,
         }
 
         return gradient;
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingSvgShape(this);
-    },
+    }
 
-    particleWillBeRemoved: function(particle)
+    particleWillBeRemoved(particle)
     {
-        BouncingSvgParticlesStage.prototype.particleWillBeRemoved.call(this, particle);
+        super.particleWillBeRemoved(particle);
 
         var fill = particle.element.getAttribute("fill");
         if (fill.indexOf("url(#") != 0)
@@ -111,7 +110,7 @@ BouncingSvgShapesStage = Utilities.createSubclass(BouncingSvgParticlesStage,
         var gradient = this.element.querySelector(fill.substring(4, fill.length - 1));
         this._ensureDefsIsCreated().removeChild(gradient);
     }
-});
+}
 
 BouncingSvgShapesBenchmark = Utilities.createSubclass(Benchmark,
     function(options)
@@ -121,5 +120,3 @@ BouncingSvgShapesBenchmark = Utilities.createSubclass(Benchmark,
 );
 
 window.benchmarkClass = BouncingSvgShapesBenchmark;
-
-})();

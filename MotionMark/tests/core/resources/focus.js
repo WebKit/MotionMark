@@ -85,27 +85,27 @@ var FocusElement = Utilities.createClass(
     }
 });
 
-var FocusStage = Utilities.createSubclass(Stage,
-    function()
+class FocusStage extends Stage {
+    constructor()
     {
-        Stage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
 
         this._testElements = [];
         this._offsetIndex = 0;
         this.focalPoint = 0.5;
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return this._offsetIndex;
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -126,9 +126,9 @@ var FocusStage = Utilities.createSubclass(Stage,
         for (var i = this._offsetIndex; i < newIndex; ++i)
             this._testElements[i].show();
         this._offsetIndex = newIndex;
-    },
+    }
 
-    animate: function()
+    animate()
     {
         var time = this._benchmark.timestamp;
         var sinFactor = Math.sin(time / movementDuration);
@@ -139,7 +139,7 @@ var FocusStage = Utilities.createSubclass(Stage,
         for (var i = 0; i < this._offsetIndex; ++i)
             this._testElements[i].animate(this, sinFactor, cosFactor);
     }
-});
+}
 
 var FocusBenchmark = Utilities.createSubclass(Benchmark,
     function(options)

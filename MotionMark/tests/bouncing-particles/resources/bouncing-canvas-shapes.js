@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
     function(stage)
@@ -81,23 +80,23 @@ BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
     }
 });
 
-BouncingCanvasShapesStage = Utilities.createSubclass(BouncingCanvasParticlesStage,
-    function ()
+class BouncingCanvasShapesStage extends BouncingCanvasParticlesStage {
+    constructor ()
     {
-        BouncingCanvasParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        BouncingCanvasParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.parseShapeParameters(options);
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingCanvasShape(this);
     }
-});
+}
 
 BouncingCanvasShapesBenchmark = Utilities.createSubclass(Benchmark,
     function(options)
@@ -107,5 +106,3 @@ BouncingCanvasShapesBenchmark = Utilities.createSubclass(Benchmark,
 );
 
 window.benchmarkClass = BouncingCanvasShapesBenchmark;
-
-})();

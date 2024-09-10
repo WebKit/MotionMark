@@ -53,23 +53,23 @@ BouncingSvgParticle = Utilities.createSubclass(BouncingParticle,
     }
 });
 
-BouncingSvgParticlesStage = Utilities.createSubclass(BouncingParticlesStage,
-    function()
+class BouncingSvgParticlesStage extends BouncingParticlesStage {
+    constructor()
     {
-        BouncingParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    _createDefs: function()
+    _createDefs()
     {
         return Utilities.createSVGElement("defs", {}, {}, this.element);
-    },
+    }
 
-    _ensureDefsIsCreated: function()
+    _ensureDefsIsCreated()
     {
         return this.element.querySelector("defs") || this._createDefs();
-    },
+    }
 
-    _createClipStar: function()
+    _createClipStar()
     {
         var attrs = { id: "star-clip", clipPathUnits: "objectBoundingBox" };
         var clipPath  = Utilities.createSVGElement("clipPath", attrs, {}, this._ensureDefsIsCreated());
@@ -77,15 +77,15 @@ BouncingSvgParticlesStage = Utilities.createSubclass(BouncingParticlesStage,
         attrs = { d: "M.50,0L.38,.38L0,.38L.30,.60L.18,1L.50,.75L.82,1L.70,.60L1,.38L.62,.38z" };
         Utilities.createSVGElement("path", attrs, {}, clipPath);
         return clipPath;
-    },
+    }
 
-    ensureClipStarIsCreated: function()
+    ensureClipStarIsCreated()
     {
         return this.element.querySelector("#star-clip") || this._createClipStar();
-    },
+    }
 
-    particleWillBeRemoved: function(particle)
+    particleWillBeRemoved(particle)
     {
         particle.element.remove();
     }
-});
+}

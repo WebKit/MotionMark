@@ -90,23 +90,23 @@ BouncingCanvasParticle.clips = {
     ]
 };
 
-BouncingCanvasParticlesStage = Utilities.createSubclass(BouncingParticlesStage,
-    function()
+class BouncingCanvasParticlesStage extends BouncingParticlesStage {
+    constructor()
     {
-        BouncingParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        BouncingParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.context.clearRect(0, 0, this.size.x, this.size.y);
         this.particles.forEach(function(particle) {
             particle.animate(timeDelta);
         });
     }
-});
+}

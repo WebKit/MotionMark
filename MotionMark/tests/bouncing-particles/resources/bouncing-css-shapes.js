@@ -75,28 +75,28 @@ BouncingCssShape = Utilities.createSubclass(BouncingParticle,
     }
 });
 
-BouncingCssShapesStage = Utilities.createSubclass(BouncingParticlesStage,
-    function()
+class BouncingCssShapesStage extends BouncingParticlesStage {
+    constructor()
     {
-        BouncingParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        BouncingParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.parseShapeParameters(options);
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingCssShape(this);
-    },
+    }
 
-    particleWillBeRemoved: function(particle)
+    particleWillBeRemoved(particle)
     {
         particle.element.remove();
     }
-});
+}
 
 BouncingCssShapesBenchmark = Utilities.createSubclass(Benchmark,
     function(options)

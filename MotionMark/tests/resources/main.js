@@ -681,94 +681,92 @@ class RampController extends Controller {
     }
 }
 
-Stage = Utilities.createClass(
-    function()
+class Stage {
+    constructor()
     {
-    }, {
+    }
 
-    initialize: function(benchmark)
+    initialize(benchmark)
     {
         this._benchmark = benchmark;
         this._element = document.getElementById("stage");
         this._element.setAttribute("width", document.body.offsetWidth);
         this._element.setAttribute("height", document.body.offsetHeight);
         this._size = GeometryHelpers.elementClientSize(this._element).subtract(Insets.elementPadding(this._element).size);
-    },
+    }
 
     get element()
     {
         return this._element;
-    },
+    }
 
     get size()
     {
         return this._size;
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return 0;
-    },
+    }
 
-    tune: function()
+    tune()
     {
         throw "Not implemented";
-    },
+    }
 
-    animate: function()
+    animate()
     {
         throw "Not implemented";
-    },
+    }
 
-    clear: function()
+    clear()
     {
         return this.tune(-this.tune(0));
     }
-});
 
-Utilities.extendObject(Stage, {
-    random: function(min, max)
+    static random(min, max)
     {
         return (Pseudo.random() * (max - min)) + min;
-    },
+    }
 
-    randomBool: function()
+    static randomBool()
     {
         return !!Math.round(Pseudo.random());
-    },
+    }
 
-    randomSign: function()
+    static randomSign()
     {
         return Pseudo.random() >= .5 ? 1 : -1;
-    },
+    }
 
-    randomInt: function(min, max)
+    static randomInt(min, max)
     {
         return Math.floor(this.random(min, max + 1));
-    },
+    }
 
-    randomPosition: function(maxPosition)
+    static randomPosition(maxPosition)
     {
         return new Point(this.randomInt(0, maxPosition.x), this.randomInt(0, maxPosition.y));
-    },
+    }
 
-    randomSquareSize: function(min, max)
+    static randomSquareSize(min, max)
     {
         var side = this.random(min, max);
         return new Point(side, side);
-    },
+    }
 
-    randomVelocity: function(maxVelocity)
+    static randomVelocity(maxVelocity)
     {
         return this.random(maxVelocity / 8, maxVelocity);
-    },
+    }
 
-    randomAngle: function()
+    static randomAngle()
     {
         return this.random(0, Math.PI * 2);
-    },
+    }
 
-    randomColor: function()
+    static randomColor()
     {
         var min = 32;
         var max = 256 - 32;
@@ -776,9 +774,9 @@ Utilities.extendObject(Stage, {
             + this.randomInt(min, max).toString(16)
             + this.randomInt(min, max).toString(16)
             + this.randomInt(min, max).toString(16);
-    },
+    }
 
-    randomStyleMixBlendMode: function()
+    static randomStyleMixBlendMode()
     {
         var mixBlendModeList = [
           'normal',
@@ -800,9 +798,9 @@ Utilities.extendObject(Stage, {
         ];
 
         return mixBlendModeList[this.randomInt(0, mixBlendModeList.length)];
-    },
+    }
 
-    randomStyleFilter: function()
+    static randomStyleFilter()
     {
         var filterList = [
             'grayscale(50%)',
@@ -818,38 +816,38 @@ Utilities.extendObject(Stage, {
         ];
 
         return filterList[this.randomInt(0, filterList.length)];
-    },
+    }
 
-    randomElementInArray: function(array)
+    static randomElementInArray(array)
     {
         return array[Stage.randomInt(0, array.length - 1)];
-    },
+    }
 
-    rotatingColor: function(cycleLengthMs, saturation, lightness)
+    static rotatingColor(cycleLengthMs, saturation, lightness)
     {
         return "hsl("
             + Stage.dateFractionalValue(cycleLengthMs) * 360 + ", "
             + ((saturation || .8) * 100).toFixed(0) + "%, "
             + ((lightness || .35) * 100).toFixed(0) + "%)";
-    },
+    }
 
     // Returns a fractional value that wraps around within [0,1]
-    dateFractionalValue: function(cycleLengthMs)
+    static dateFractionalValue(cycleLengthMs)
     {
         return (Date.now() / (cycleLengthMs || 2000)) % 1;
-    },
+    }
 
     // Returns an increasing value slowed down by factor
-    dateCounterValue: function(factor)
+    static dateCounterValue(factor)
     {
         return Date.now() / factor;
-    },
+    }
 
-    randomRotater: function()
+    static randomRotater()
     {
         return new Rotater(this.random(1000, 10000));
     }
-});
+}
 
 Rotater = Utilities.createClass(
     function(rotateInterval)

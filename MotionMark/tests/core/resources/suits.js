@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 window.SuitsParticle = Utilities.createSubclass(Particle,
     function(stage)
@@ -97,15 +96,15 @@ window.SuitsParticle = Utilities.createSubclass(Particle,
     }
 });
 
-var SuitsStage = Utilities.createSubclass(ParticlesStage,
-    function()
+class SuitsStage extends ParticlesStage {
+    constructor()
     {
-        ParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark)
+    initialize(benchmark)
     {
-        ParticlesStage.prototype.initialize.call(this, benchmark);
+        super.initialize(this, benchmark);
         this.emissionSpin = Stage.random(0, 3);
         this.emitSteps = Stage.randomInt(4, 6);
         this.emitLocation = [
@@ -119,21 +118,21 @@ var SuitsStage = Utilities.createSubclass(ParticlesStage,
         this.gradientsDefs = document.getElementById("gradients");
         this.gradientsCounter = 0;
         this.particleCounter = 0;
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         this.particleCounter++;
         return new SuitsParticle(this);
-    },
+    }
 
-    willRemoveParticle: function(particle)
+    willRemoveParticle(particle)
     {
         particle.element.remove();
         if (particle.gradient)
             particle.gradient.remove();
     }
-});
+}
 
 var SuitsBenchmark = Utilities.createSubclass(Benchmark,
     function(options)
@@ -143,5 +142,3 @@ var SuitsBenchmark = Utilities.createSubclass(Benchmark,
 );
 
 window.benchmarkClass = SuitsBenchmark;
-
-})();

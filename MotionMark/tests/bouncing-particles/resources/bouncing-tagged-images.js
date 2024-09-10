@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 BouncingTaggedImage = Utilities.createSubclass(BouncingParticle,
     function(stage)
@@ -50,29 +49,28 @@ BouncingTaggedImage = Utilities.createSubclass(BouncingParticle,
     }
 });
 
-BouncingTaggedImagesStage = Utilities.createSubclass(BouncingParticlesStage,
-
-    function()
-    {
-        BouncingParticlesStage.call(this);
-    }, {
-
-    imageSrcs: [
+class BouncingTaggedImagesStage extends BouncingParticlesStage {
+    static imageSrcs = [
         "image1",
         "image2",
         "image3",
         "image4",
         "image5",
-    ],
-    images: [],
+    ];
 
-    initialize: function(benchmark, options)
+    constructor()
     {
-        BouncingParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super();
+        this.images = [];
+    }
+
+    initialize(benchmark, options)
+    {
+        super.initialize(benchmark, options);
 
         var lastPromise;
         var images = this.images;
-        this.imageSrcs.forEach(function(imageSrc) {
+        BouncingTaggedImagesStage.imageSrcs.forEach(function(imageSrc) {
             var promise = this._loadImage("resources/" + imageSrc + ".jpg");
             if (!lastPromise)
                 lastPromise = promise;
@@ -88,9 +86,10 @@ BouncingTaggedImagesStage = Utilities.createSubclass(BouncingParticlesStage,
             images.push(img);
             benchmark.readyPromise.resolve();
         });
-    },
+    }
 
-    _loadImage: function(src) {
+    _loadImage(src)
+    {
         var img = new Image;
         var promise = new SimplePromise;
 
@@ -100,18 +99,18 @@ BouncingTaggedImagesStage = Utilities.createSubclass(BouncingParticlesStage,
 
         img.src = src;
         return promise;
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingTaggedImage(this);
-    },
+    }
 
-    particleWillBeRemoved: function(particle)
+    particleWillBeRemoved(particle)
     {
         particle.element.remove();
     }
-});
+}
 
 BouncingTaggedImagesBenchmark = Utilities.createSubclass(Benchmark,
     function(options)
@@ -126,5 +125,3 @@ BouncingTaggedImagesBenchmark = Utilities.createSubclass(Benchmark,
 });
 
 window.benchmarkClass = BouncingTaggedImagesBenchmark;
-
-})();

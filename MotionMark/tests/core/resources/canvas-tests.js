@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 // === PAINT OBJECTS ===
 
@@ -197,15 +196,15 @@ CanvasBezierSegment = Utilities.createSubclass(CanvasLinePoint,
 
 // === STAGES ===
 
-CanvasLineSegmentStage = Utilities.createSubclass(SimpleCanvasStage,
-    function()
+class CanvasLineSegmentStage extends SimpleCanvasStage {
+    constructor()
     {
-        SimpleCanvasStage.call(this, CanvasLineSegment);
-    }, {
+        super(CanvasLineSegment);
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        SimpleCanvasStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context.lineCap = options["lineCap"] || "butt";
         this.lineMinimum = 20;
         this.lineLengthMaximum = 40;
@@ -224,9 +223,9 @@ CanvasLineSegmentStage = Utilities.createSubclass(SimpleCanvasStage,
         ];
         this.halfSize = this.size.multiply(.5);
         this.twoFifthsSizeX = this.size.x * .4;
-    },
+    }
 
-    animate: function()
+    animate()
     {
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
@@ -261,22 +260,23 @@ CanvasLineSegmentStage = Utilities.createSubclass(SimpleCanvasStage,
         for (var i = this.offsetIndex, length = this.objects.length; i < length; ++i)
             this.objects[i].draw(context);
     }
-});
+}
 
-CanvasLinePathStage = Utilities.createSubclass(SimpleCanvasStage,
-    function()
+class CanvasLinePathStage extends SimpleCanvasStage {
+    constructor()
     {
-        SimpleCanvasStage.call(this, [CanvasLinePoint, CanvasLinePoint, CanvasQuadraticSegment, CanvasBezierSegment]);
-    }, {
+        super([CanvasLinePoint, CanvasLinePoint, CanvasQuadraticSegment, CanvasBezierSegment]);
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        SimpleCanvasStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context.lineJoin = options["lineJoin"] || "bevel";
         this.context.lineCap = options["lineCap"] || "butt";
-    },
+    }
 
-    animate: function() {
+    animate()
+    {
         var context = this.context;
 
         context.clearRect(0, 0, this.size.x, this.size.y);
@@ -306,7 +306,7 @@ CanvasLinePathStage = Utilities.createSubclass(SimpleCanvasStage,
         }
         context.stroke();
     }
-});
+}
 
 // === BENCHMARK ===
 
@@ -331,5 +331,3 @@ CanvasPathBenchmark = Utilities.createSubclass(Benchmark,
 );
 
 window.benchmarkClass = CanvasPathBenchmark;
-
-})();
