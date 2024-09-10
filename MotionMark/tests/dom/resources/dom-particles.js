@@ -84,11 +84,11 @@ class DOMParticleStage extends ParticlesStage {
     }
 }
 
-DOMParticleBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class DOMParticleBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new DOMParticleStage(), options);
+        super(new DOMParticleStage(), options);
     }
-);
+}
 
 window.benchmarkClass = DOMParticleBenchmark;

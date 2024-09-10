@@ -134,11 +134,11 @@ class SuitsStage extends ParticlesStage {
     }
 }
 
-var SuitsBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class SuitsBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new SuitsStage(), options);
+        super(new SuitsStage(), options);
     }
-);
+}
 
 window.benchmarkClass = SuitsBenchmark;

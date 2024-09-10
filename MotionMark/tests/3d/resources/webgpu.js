@@ -65,7 +65,7 @@ fragment float4 fragmentMain(float4 inColor : attribute(1)) : SV_Target 0 {
 }
 `;
 
-class WebGLStage extends Stage
+class WebGLStage extends Stage {
     constructor(element, options)
     {
         super();
@@ -314,16 +314,17 @@ class WebGLStage extends Stage
     }
 }
 
-WebGLBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class WebGLBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new WebGLStage(), options);
-    }, {
+        super(new WebGLStage(), options);
+    }
 
-    waitUntilReady: function() {
+    waitUntilReady()
+    {
         this._initPromise = new SimplePromise;
         return this._initPromise;
-    },
-});
+    }
+}
 
 window.benchmarkClass = WebGLBenchmark;

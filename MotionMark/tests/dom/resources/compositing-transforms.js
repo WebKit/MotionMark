@@ -77,11 +77,11 @@ class CompositingTransformsStage extends BouncingParticlesStage {
     }
 }
 
-CompositedTransformsBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class CompositedTransformsBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new CompositingTransformsStage(), options);
+        super(new CompositingTransformsStage(), options);
     }
-);
+}
 
 window.benchmarkClass = CompositedTransformsBenchmark;

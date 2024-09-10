@@ -112,16 +112,17 @@ class BouncingTaggedImagesStage extends BouncingParticlesStage {
     }
 }
 
-BouncingTaggedImagesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class BouncingTaggedImagesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new BouncingTaggedImagesStage(), options);
-    }, {
+        super(new BouncingTaggedImagesStage(), options);
+    }
 
-    waitUntilReady: function() {
+    waitUntilReady()
+    {
         this.readyPromise = new SimplePromise;
         return this.readyPromise;
     }
-});
+}
 
 window.benchmarkClass = BouncingTaggedImagesBenchmark;

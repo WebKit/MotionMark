@@ -57,11 +57,11 @@ class TemplateSvgStage extends Stage {
     }
 }
 
-TemplateSvgBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TemplateSvgBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TemplateSvgStage(), options);
+        super(new TemplateSvgStage(), options);
     }
-);
+}
 
 window.benchmarkClass = TemplateSvgBenchmark;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 function TemplateCanvasObject(stage)
 {
@@ -86,11 +85,11 @@ class TemplateCanvasStage extends Stage {
     }
 }
 
-TemplateCanvasBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TemplateCanvasBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TemplateCanvasStage(), options);
-    }, {
+        super(new TemplateCanvasStage(), options);
+    }
 
     // Override this function if the benchmark needs to wait for resources to be
     // loaded.
@@ -98,7 +97,7 @@ TemplateCanvasBenchmark = Utilities.createSubclass(Benchmark,
     // Default implementation returns a resolved promise, so that the benchmark
     // benchmark starts right away. Here's an example where we're waiting 5
     // seconds before starting the benchmark.
-    waitUntilReady: function()
+    waitUntilReady()
     {
         var promise = new SimplePromise;
         window.setTimeout(function() {
@@ -106,8 +105,6 @@ TemplateCanvasBenchmark = Utilities.createSubclass(Benchmark,
         }, 5000);
         return promise;
     }
-});
+}
 
 window.benchmarkClass = TemplateCanvasBenchmark;
-
-})();

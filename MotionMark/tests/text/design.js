@@ -22,12 +22,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-// The MotionMark-based TextBenchmark should already be set to |window.benchmarkClass|
-var TextBenchmark = window.benchmarkClass;
-var TextTemplateBenchmark = Utilities.createSubclass(TextBenchmark,
-    function(options)
+class TextTemplateBenchmark extends TextBenchmark {
+    constructor(options)
     {
         var dataset;
         switch (options["corpus"]) {
@@ -91,10 +88,8 @@ var TextTemplateBenchmark = Utilities.createSubclass(TextBenchmark,
             }
         })
 
-        TextBenchmark.call(this, options);
+        super(options);
     }
-);
+}
 
 window.benchmarkClass = TextTemplateBenchmark;
-
-})();
