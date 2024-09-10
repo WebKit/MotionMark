@@ -86,9 +86,9 @@ window.Leaf = Utilities.createSubclass(Particle,
     }
 });
 
-Utilities.extendObject(ParticlesStage.prototype, {
+class LeavesStage extends ParticlesStage {
 
-    imageSrcs: [
+    static imageSrcs = [
         "compass",
         "console",
         "contribute",
@@ -102,16 +102,21 @@ Utilities.extendObject(ParticlesStage.prototype, {
         "storage",
         "styles",
         "timeline"
-    ],
-    images: [],
-
-    initialize: function(benchmark)
+    ];
+    
+    constructor()
     {
-        Stage.prototype.initialize.call(this, benchmark);
+        super();
+        this.images = [];
+    }
+
+    initialize(benchmark)
+    {
+        super.initialize(benchmark);
 
         var lastPromise;
         var images = this.images;
-        this.imageSrcs.forEach(function(imageSrc) {
+        LeavesStage.imageSrcs.forEach(function(imageSrc) {
             var promise = this._loadImage("../core/resources/" + imageSrc + "100.png");
             if (!lastPromise)
                 lastPromise = promise;
@@ -127,9 +132,9 @@ Utilities.extendObject(ParticlesStage.prototype, {
             images.push(img);
             benchmark.readyPromise.resolve();
         });
-    },
+    }
 
-    _loadImage: function(src) {
+    _loadImage(src) {
         var img = new Image;
         var promise = new SimplePromise;
 
@@ -139,32 +144,32 @@ Utilities.extendObject(ParticlesStage.prototype, {
 
         img.src = src;
         return promise;
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.focusX = 0.5 + 0.5 * Math.sin(Stage.dateFractionalValue(10000) * Math.PI * 2);
         timeDelta /= 4;
         this.particles.forEach(function(particle) {
             particle.animate(timeDelta);
         });
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new Leaf(this);
-    },
+    }
 
-    willRemoveParticle: function(particle)
+    willRemoveParticle(particle)
     {
         particle.element.remove();
     }
-});
+}
 
 var LeavesBenchmark = Utilities.createSubclass(Benchmark,
     function(options)
     {
-        Benchmark.call(this, new ParticlesStage(), options);
+        Benchmark.call(this, new LeavesStage(), options);
     }, {
 
     waitUntilReady: function() {

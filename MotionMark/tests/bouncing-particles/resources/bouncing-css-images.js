@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 BouncingCssImage = Utilities.createSubclass(BouncingParticle,
     function(stage)
@@ -50,28 +49,28 @@ BouncingCssImage = Utilities.createSubclass(BouncingParticle,
     }
 });
 
-BouncingCssImagesStage = Utilities.createSubclass(BouncingParticlesStage,
-    function()
+class BouncingCssImagesStage extends BouncingParticlesStage {
+    constructor()
     {
-        BouncingParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        BouncingParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingCssImage(this);
-    },
+    }
 
-    particleWillBeRemoved: function(particle)
+    particleWillBeRemoved(particle)
     {
         particle.element.remove();
     }
-});
+}
 
 BouncingCssImagesBenchmark = Utilities.createSubclass(Benchmark,
     function(options)
@@ -81,5 +80,3 @@ BouncingCssImagesBenchmark = Utilities.createSubclass(Benchmark,
 );
 
 window.benchmarkClass = BouncingCssImagesBenchmark;
-
-})();

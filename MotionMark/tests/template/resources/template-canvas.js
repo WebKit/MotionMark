@@ -50,30 +50,30 @@ TemplateCanvasObject.prototype = {
     }
 };
 
-TemplateCanvasStage = Utilities.createSubclass(Stage,
-    function()
+class TemplateCanvasStage extends Stage {
+    constructor()
     {
-        Stage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
 
         // Define a collection for your objects.
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         // If count is -ve, -count elements need to be removed form the
         // stage. If count is +ve, +count elements need to be added to
         // the stage.
 
         // Change objects in the stage.
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         // Animate the elements such that all of them are redrawn. Most
         // likely you will need to call TemplateCanvasObject.animate()
@@ -84,7 +84,7 @@ TemplateCanvasStage = Utilities.createSubclass(Stage,
 
         // Loop through all your objects and ask them to animate.
     }
-});
+}
 
 TemplateCanvasBenchmark = Utilities.createSubclass(Benchmark,
     function(options)

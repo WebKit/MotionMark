@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 DOMParticle = Utilities.createSubclass(Particle,
     function(stage)
@@ -55,15 +54,15 @@ DOMParticle = Utilities.createSubclass(Particle,
     }
 });
 
-DOMParticleStage = Utilities.createSubclass(ParticlesStage,
-    function()
+class DOMParticleStage extends ParticlesStage {
+    constructor()
     {
-        ParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark)
+    initialize(benchmark)
     {
-        ParticlesStage.prototype.initialize.call(this, benchmark);
+        super.initialize(benchmark);
         this.emissionSpin = Stage.random(0, 3);
         this.emitSteps = Stage.randomInt(4, 6);
         this.emitLocation = [
@@ -72,18 +71,18 @@ DOMParticleStage = Utilities.createSubclass(ParticlesStage,
             new Point(this.size.x * .75, this.size.y * .333)
         ];
         this.colorOffset = Stage.randomInt(0, 359);
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new DOMParticle(this);
-    },
+    }
 
-    willRemoveParticle: function(particle)
+    willRemoveParticle(particle)
     {
         particle.element.remove();
     }
-});
+}
 
 DOMParticleBenchmark = Utilities.createSubclass(Benchmark,
     function(options)
@@ -93,5 +92,3 @@ DOMParticleBenchmark = Utilities.createSubclass(Benchmark,
 );
 
 window.benchmarkClass = DOMParticleBenchmark;
-
-})();

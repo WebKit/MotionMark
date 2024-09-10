@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,6 +22,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 function Particle(stage)
 {
     this.stage = stage;
@@ -93,22 +94,22 @@ Particle.prototype =
     }
 }
 
-ParticlesStage = Utilities.createSubclass(Stage,
-    function()
+class ParticlesStage extends Stage {
+    constructor()
     {
-        Stage.call(this);
+        super();
         this.particles = [];
-    }, {
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         timeDelta /= 4;
         this.particles.forEach(function(particle) {
             particle.animate(timeDelta);
         });
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -127,10 +128,10 @@ ParticlesStage = Utilities.createSubclass(Stage,
         }
 
         this.particles.splice(0, count);
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return this.particles.length;
     }
-});
+}

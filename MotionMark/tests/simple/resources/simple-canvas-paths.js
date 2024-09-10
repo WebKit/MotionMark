@@ -307,12 +307,12 @@ CanvasFill = Utilities.createClass(
 
 // === STAGES ===
 
-SimpleCanvasPathStrokeStage = Utilities.createSubclass(SimpleCanvasStage,
-    function(canvasObject) {
-        SimpleCanvasStage.call(this, canvasObject);
-    }, {
+class SimpleCanvasPathStrokeStage extends SimpleCanvasStage {
+    constructor(canvasObject) {
+        super(canvasObject);
+    }
 
-    animate: function()
+    animate()
     {
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
@@ -324,14 +324,14 @@ SimpleCanvasPathStrokeStage = Utilities.createSubclass(SimpleCanvasStage,
             this.objects[i].draw(context);
         context.stroke();
     }
-});
+}
 
-SimpleCanvasPathFillStage = Utilities.createSubclass(SimpleCanvasStage,
-    function(canvasObject) {
-        SimpleCanvasStage.call(this, canvasObject);
-    }, {
+class SimpleCanvasPathFillStage extends SimpleCanvasStage {
+    constructor(canvasObject) {
+        super(canvasObject);
+    }
 
-    animate: function()
+    animate()
     {
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
@@ -342,50 +342,50 @@ SimpleCanvasPathFillStage = Utilities.createSubclass(SimpleCanvasStage,
             this.objects[i].draw(context);
         context.fill();
     }
-});
+}
 
-CanvasLineSegmentStage = Utilities.createSubclass(SimpleCanvasStage,
-    function()
+class CanvasLineSegmentStage extends SimpleCanvasStage {
+    constructor()
     {
-        SimpleCanvasStage.call(this, CanvasLineSegment);
-    }, {
+        super(CanvasLineSegment);
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        SimpleCanvasStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context.lineCap = options["lineCap"] || "butt";
     }
-});
+}
 
-CanvasLinePathStage = Utilities.createSubclass(SimpleCanvasPathStrokeStage,
-    function()
+class CanvasLinePathStage extends SimpleCanvasPathStrokeStage {
+    constructor()
     {
-        SimpleCanvasPathStrokeStage.call(this, CanvasLinePoint);
-    }, {
+        super(CanvasLinePoint);
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        SimpleCanvasPathStrokeStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context.lineJoin = options["lineJoin"] || "bevel";
     }
-});
+}
 
-CanvasLineDashStage = Utilities.createSubclass(SimpleCanvasStage,
-    function()
+class CanvasLineDashStage extends SimpleCanvasStage {
+    constructor()
     {
-        SimpleCanvasStage.call(this, CanvasLinePoint);
+        super(CanvasLinePoint);
         this._step = 0;
-    }, {
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        SimpleCanvasStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context.setLineDash([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         this.context.lineWidth = 1;
         this.context.strokeStyle = "#000";
-    },
+    }
 
-    animate: function()
+    animate()
     {
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
@@ -396,7 +396,7 @@ CanvasLineDashStage = Utilities.createSubclass(SimpleCanvasStage,
             this.objects[i].draw(context);
         context.stroke();
     }
-});
+}
 
 // === BENCHMARK ===
 
