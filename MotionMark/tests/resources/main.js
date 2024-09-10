@@ -883,8 +883,8 @@ Rotater = Utilities.createClass(
     }
 });
 
-Benchmark = Utilities.createClass(
-    function(stage, options)
+class Benchmark {
+    constructor(stage, options)
     {
         this._animateLoop = this._animateLoop.bind(this);
         this._warmupLength = options["warmup-length"];
@@ -924,25 +924,25 @@ Benchmark = Utilities.createClass(
             this._controller = new RampController(this, options);
             break;
         }
-    }, {
+    }
 
     get stage()
     {
         return this._stage;
-    },
+    }
 
     get timestamp()
     {
         return this._currentTimestamp - this._benchmarkStartTimestamp;
-    },
+    }
 
-    backgroundColor: function()
+    backgroundColor()
     {
         var stage = window.getComputedStyle(document.getElementById("stage"));
         return stage["background-color"];
-    },
+    }
 
-    run: function()
+    run()
     {
         return this.waitUntilReady().then(function() {
             this._finishPromise = new SimplePromise;
@@ -952,17 +952,17 @@ Benchmark = Utilities.createClass(
             this._animateLoop();
             return this._finishPromise;
         }.bind(this));
-    },
+    }
 
     // Subclasses should override this if they have setup to do prior to commencing.
-    waitUntilReady: function()
+    waitUntilReady()
     {
         var promise = new SimplePromise;
         promise.resolve();
         return promise;
-    },
+    }
 
-    _animateLoop: function(timestamp)
+    _animateLoop(timestamp)
     {
         timestamp = (this._getTimestamp && this._getTimestamp()) || timestamp;
         this._currentTimestamp = timestamp;
@@ -997,4 +997,4 @@ Benchmark = Utilities.createClass(
         this._previousTimestamp = timestamp;
         requestAnimationFrame(this._animateLoop);
     }
-});
+}

@@ -130,11 +130,11 @@ class TiledCanvasImageStage extends Stage {
     }
 }
 
-TiledCanvasImageBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TiledCanvasImageBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TiledCanvasImageStage(), options);
+        super(new TiledCanvasImageStage(), options);
     }
-);
+}
 
 window.benchmarkClass = TiledCanvasImageBenchmark;

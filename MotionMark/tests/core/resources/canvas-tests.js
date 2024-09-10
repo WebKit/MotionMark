@@ -310,8 +310,8 @@ class CanvasLinePathStage extends SimpleCanvasStage {
 
 // === BENCHMARK ===
 
-CanvasPathBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class CanvasPathBenchmark extends Benchmark {
+    constructor(options)
     {
         var stage;
         switch (options["pathType"]) {
@@ -326,8 +326,8 @@ CanvasPathBenchmark = Utilities.createSubclass(Benchmark,
             break;
         }
 
-        Benchmark.call(this, stage, options);
+        super(stage, options);
     }
-);
+}
 
 window.benchmarkClass = CanvasPathBenchmark;

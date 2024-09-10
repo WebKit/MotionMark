@@ -58,11 +58,11 @@ class BouncingCanvasImagesStage extends BouncingCanvasParticlesStage {
     }
 }
 
-BouncingCanvasImagesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class BouncingCanvasImagesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new BouncingCanvasImagesStage(), options);
+        super(new BouncingCanvasImagesStage(), options);
     }
-);
+}
 
 window.benchmarkClass = BouncingCanvasImagesBenchmark;

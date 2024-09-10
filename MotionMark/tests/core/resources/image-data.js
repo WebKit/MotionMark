@@ -192,16 +192,17 @@ class ImageDataStage extends Stage {
     }
 }
 
-var ImageDataBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class ImageDataBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new ImageDataStage(), options);
-    }, {
+        super(new ImageDataStage(), options);
+    }
 
-    waitUntilReady: function() {
+    waitUntilReady()
+    {
         this.readyPromise = new SimplePromise;
         return this.readyPromise;
     }
-});
+}
 
 window.benchmarkClass = ImageDataBenchmark;

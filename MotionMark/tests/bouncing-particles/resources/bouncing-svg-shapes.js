@@ -112,11 +112,11 @@ class BouncingSvgShapesStage extends BouncingSvgParticlesStage {
     }
 }
 
-BouncingSvgShapesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class BouncingSvgShapesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new BouncingSvgShapesStage(), options);
+        super(new BouncingSvgShapesStage(), options);
     }
-);
+}
 
 window.benchmarkClass = BouncingSvgShapesBenchmark;

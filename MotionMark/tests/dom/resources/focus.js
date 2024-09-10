@@ -177,11 +177,11 @@ class FocusStage extends Stage {
     }
 }
 
-var FocusBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class FocusBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new FocusStage(), options);
+        super(new FocusStage(), options);
     }
-);
+}
 
 window.benchmarkClass = FocusBenchmark;

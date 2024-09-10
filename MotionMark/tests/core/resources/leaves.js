@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 window.Leaf = Utilities.createSubclass(Particle,
     function(stage)
@@ -166,19 +165,17 @@ class LeavesStage extends ParticlesStage {
     }
 }
 
-var LeavesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class LeavesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new LeavesStage(), options);
-    }, {
+        super(new LeavesStage(), options);
+    }
 
-    waitUntilReady: function() {
+    waitUntilReady()
+    {
         this.readyPromise = new SimplePromise;
         return this.readyPromise;
     }
-
-});
+}
 
 window.benchmarkClass = LeavesBenchmark;
-
-})();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 var minimumDiameter = 30;
 var sizeVariance = 20;
@@ -141,13 +140,11 @@ class FocusStage extends Stage {
     }
 }
 
-var FocusBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class FocusBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new FocusStage(), options);
+        super(new FocusStage(), options);
     }
-);
+}
 
 window.benchmarkClass = FocusBenchmark;
-
-}());

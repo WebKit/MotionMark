@@ -128,11 +128,11 @@ class TextStage extends Stage {
     }
 }
 
-var TextBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TextBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TextStage(), options);
+        super(new TextStage(), options);
     }
-);
+}
 
 window.benchmarkClass = TextBenchmark;

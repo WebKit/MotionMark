@@ -193,11 +193,11 @@ class WebGLStage extends Stage {
     }
 }
 
-WebGLBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class WebGLBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new WebGLStage(), options);
+        super(new WebGLStage(), options);
     }
-);
+}
 
 window.benchmarkClass = WebGLBenchmark;

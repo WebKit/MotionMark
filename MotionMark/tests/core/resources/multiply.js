@@ -138,11 +138,11 @@ class MultiplyStage extends Stage {
     }
 }
 
-var MultiplyBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class MultiplyBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new MultiplyStage(), options);
+        super(new MultiplyStage(), options);
     }
-);
+}
 
 window.benchmarkClass = MultiplyBenchmark;

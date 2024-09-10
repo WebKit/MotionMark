@@ -57,11 +57,11 @@ class TemplateCssStage extends Stage {
     }
 }
 
-TemplateCssBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TemplateCssBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TemplateCssStage(), options);
+        super(new TemplateCssStage(), options);
     }
-);
+}
 
 window.benchmarkClass = TemplateCssBenchmark;
