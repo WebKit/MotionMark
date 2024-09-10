@@ -419,10 +419,10 @@ class UnitBezier {
 
         for (t2 = x, i = 0; i < 8; ++i) {
             x2 = this.sampleX(t2) - x;
-            if (Math.abs(x2) < this.epsilon)
+            if (Math.abs(x2) < UnitBezier.epsilon)
                 return t2;
             d2 = this.sampleDerivativeX(t2);
-            if (Math.abs(d2) < this.derivativeEpsilon)
+            if (Math.abs(d2) < UnitBezier.derivativeEpsilon)
                 break;
             t2 = t2 - x2 / d2;
         }
@@ -438,7 +438,7 @@ class UnitBezier {
 
         while (t0 < t1) {
             x2 = this.sampleX(t2);
-            if (Math.abs(x2 - x) < this.epsilon)
+            if (Math.abs(x2 - x) < UnitBezier.epsilon)
                 return t2;
             if (x > x2)
                 t0 = t2;
