@@ -38,9 +38,9 @@ class Utilities {
         return output;
     }
 
-    static parseParameters()
+    static parseParameters(windowLocation)
     {
-        return this._parse(window.location.search.substr(1), "&");
+        return this._parse(windowLocation.search.substr(1), "&");
     }
 
     static parseArguments(str)
