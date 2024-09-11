@@ -22,8 +22,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-Utilities.extendObject(SimpleCanvasStage.prototype, {
-    tune: function(count)
+
+class SimpleCanvasStage extends CanvasStage {
+    constructor(canvasObject)
+    {
+        super(canvasObject)
+    }
+    
+    tune(count)
     {
         if (count == 0)
             return;
@@ -42,18 +48,18 @@ Utilities.extendObject(SimpleCanvasStage.prototype, {
             for (var i = 0; i < newIndex; ++i)
                 this.objects.push(new this._canvasObject(this, coordinateMaximumFactor));
         }
-    },
+    }
 
-    animate: function()
+    animate()
     {
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
         for (var i = 0, length = this.offsetIndex; i < length; ++i)
             this.objects[i].draw(context);
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return this.offsetIndex;
     }
-});
+}

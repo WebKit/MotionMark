@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SimpleCanvasStage extends Stage {
+class CanvasStage extends Stage {
     constructor(canvasObject)
     {
         super();

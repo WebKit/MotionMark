@@ -199,7 +199,7 @@ class CanvasBezierSegment extends CanvasLinePoint {
 
 // === STAGES ===
 
-class CanvasLineSegmentStage extends SimpleCanvasStage {
+class CanvasLineSegmentStage extends CanvasStage {
     constructor()
     {
         super(CanvasLineSegment);
@@ -265,7 +265,7 @@ class CanvasLineSegmentStage extends SimpleCanvasStage {
     }
 }
 
-class CanvasLinePathStage extends SimpleCanvasStage {
+class CanvasLinePathStage extends CanvasStage {
     constructor()
     {
         super([CanvasLinePoint, CanvasLinePoint, CanvasQuadraticSegment, CanvasBezierSegment]);
@@ -325,7 +325,7 @@ class CanvasPathBenchmark extends Benchmark {
             stage = new CanvasLinePathStage();
             break;
         case "arcs":
-            stage = new SimpleCanvasStage(CanvasArc);
+            stage = new CanvasStage(CanvasArc);
             break;
         }
 
