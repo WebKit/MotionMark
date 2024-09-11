@@ -22,16 +22,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-BouncingCanvasParticle = Utilities.createSubclass(BouncingParticle,
-    function(stage, shape)
+
+class BouncingCanvasParticle extends BouncingParticle {
+    static clips;
+    constructor(stage, shape)
     {
-        BouncingParticle.call(this, stage);
+        BouncingCanvasParticle.clips = {
+            star: [
+                new Point(0.50, 0.00),
+                new Point(0.38, 0.38),
+                new Point(0.00, 0.38),
+                new Point(0.30, 0.60),
+                new Point(0.18, 1.00),
+                new Point(0.50, 0.75),
+                new Point(0.82, 1.00),
+                new Point(0.70, 0.60),
+                new Point(1.00, 0.38),
+                new Point(0.62, 0.38)
+            ]
+        };
+
+        super(stage);
         this.context = stage.context;
         this._shape = shape;
         this._clip = stage.clip;
-    }, {
+    }
 
-    applyRotation: function()
+    applyRotation()
     {
         if (this._shape == "circle")
             return;
@@ -39,9 +56,9 @@ BouncingCanvasParticle = Utilities.createSubclass(BouncingParticle,
         this.context.translate(this.size.x / 2, this.size.y / 2);
         this.context.rotate(this.rotater.degree() * Math.PI / 180);
         this.context.translate(-this.size.x / 2, -this.size.y / 2);
-    },
+    }
 
-    applyClipping: function()
+    applyClipping()
     {
         var clipPoints = BouncingCanvasParticle.clips[this._clip];
         if (!clipPoints)
@@ -58,37 +75,22 @@ BouncingCanvasParticle = Utilities.createSubclass(BouncingParticle,
 
         this.context.closePath();
         this.context.clip();
-    },
+    }
 
-    _draw: function()
+    _draw()
     {
         throw "Not implemented";
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
-        BouncingParticle.prototype.animate.call(this, timeDelta);
+        super.animate(timeDelta);
         this.context.save();
             this.context.translate(this.position.x, this.position.y);
             this._draw();
         this.context.restore();
     }
-});
-
-BouncingCanvasParticle.clips = {
-    star: [
-        new Point(0.50, 0.00),
-        new Point(0.38, 0.38),
-        new Point(0.00, 0.38),
-        new Point(0.30, 0.60),
-        new Point(0.18, 1.00),
-        new Point(0.50, 0.75),
-        new Point(0.82, 1.00),
-        new Point(0.70, 0.60),
-        new Point(1.00, 0.38),
-        new Point(0.62, 0.38)
-    ]
-};
+}
 
 class BouncingCanvasParticlesStage extends BouncingParticlesStage {
     constructor()

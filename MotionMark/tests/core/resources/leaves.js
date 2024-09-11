@@ -23,27 +23,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-window.Leaf = Utilities.createSubclass(Particle,
-    function(stage)
+class Leaf extends Particle {
+    static get sizeMinimum() { return 20; }
+    static get sizeRange() { return 30; }
+    static get usesOpacity() { return true; }
+
+    constructor(stage)
     {
+        super(stage);
+    }
+    
+    initialize()
+    {
+        super.initialize();
         this.element = document.createElement("img");
-        this.element.setAttribute("src", Stage.randomElementInArray(stage.images).src);
-        stage.element.appendChild(this.element);
+        this.element.setAttribute("src", Stage.randomElementInArray(this.stage.images).src);
+        this.stage.element.appendChild(this.element);
+    }
 
-        Particle.call(this, stage);
-    }, {
-
-    sizeMinimum: 20,
-    sizeRange: 30,
-    usesOpacity: true,
-
-    reset: function()
+    reset()
     {
-        Particle.prototype.reset.call(this);
+        super.reset();
         this.element.style.width = this.size.x + "px";
         this.element.style.height = this.size.y + "px";
 
-        if (this.usesOpacity) {
+        if (this.constructor.usesOpacity) {
             this._opacity = .01;
             this._opacityRate = 0.02 * Stage.random(1, 6);
         } else
@@ -51,16 +55,16 @@ window.Leaf = Utilities.createSubclass(Particle,
 
         this._position = new Point(Stage.random(0, this.maxPosition.x), Stage.random(-this.size.height, this.maxPosition.y));
         this._velocity = new Point(Stage.random(-6, -2), .1 * this.size.y + Stage.random(-1, 1));
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.rotater.next(timeDelta);
 
         this._position.x += this._velocity.x + 8 * this.stage.focusX;
         this._position.y += this._velocity.y;
 
-        if (this.usesOpacity) {
+        if (this.constructor.usesOpacity) {
             this._opacity += this._opacityRate;
             if (this._opacity > 1) {
                 this._opacity = 1;
@@ -76,14 +80,14 @@ window.Leaf = Utilities.createSubclass(Particle,
         if (this._position.x < -this.size.width || this._position.x > this.stage.size.width)
             this._position.x = this._position.x - Math.sign(this._position.x) * (this.size.width + this.stage.size.width);
         this.move();
-    },
+    }
 
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
         this.element.style.opacity = this._opacity;
     }
-});
+}
 
 class LeavesStage extends ParticlesStage {
 

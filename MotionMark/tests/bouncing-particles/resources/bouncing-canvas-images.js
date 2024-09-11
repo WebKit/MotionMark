@@ -23,21 +23,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-BouncingCanvasImage = Utilities.createSubclass(BouncingCanvasParticle,
-    function(stage)
+class BouncingCanvasImage extends BouncingCanvasParticle {
+    constructor(stage)
     {
-        BouncingCanvasParticle.call(this, stage, "image");
+        super(stage, "image");
         this._imageElement = stage.imageElement;
-    }, {
+    }
 
-    _draw: function()
+    _draw()
     {
         this.context.save();
             this.applyRotation();
             this.context.drawImage(this._imageElement, 0, 0, this.size.x, this.size.y);
         this.context.restore();
     }
-});
+}
 
 class BouncingCanvasImagesStage extends BouncingCanvasParticlesStage {
     constructor()

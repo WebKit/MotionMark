@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-BouncingCompositedImage = Utilities.createSubclass(BouncingParticle,
-    function(stage)
+class BouncingCompositedImage extends BouncingParticle {
+    constructor(stage)
     {
-        BouncingParticle.call(this, stage);
+        super(stage);
 
         this.element = document.createElement("img");
         this.element.style.width = this.size.x + "px";
@@ -38,19 +38,19 @@ BouncingCompositedImage = Utilities.createSubclass(BouncingParticle,
 
         stage.element.appendChild(this.element);
         this._move();
-    }, {
+    }
 
-    _move: function()
+    _move()
     {
         this.element.style.transform = "translate3d(" + this.position.x + "px," + this.position.y + "px, 0) " + this.rotater.rotateZ();
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
-        BouncingParticle.prototype.animate.call(this, timeDelta);
+        super.animate(timeDelta);
         this._move();
     }
-});
+}
 
 class CompositingTransformsStage extends BouncingParticlesStage {
     constructor()

@@ -23,28 +23,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-function Particle(stage)
-{
-    this.stage = stage;
-    this.rotater = Stage.randomRotater();
-    this.reset();
-    this.move();
-}
+class Particle {
+    static get sizeMinimum() { return 40; }
+    static get sizeRange() { return 10; }
 
-Particle.prototype =
-{
-    sizeMinimum: 40,
-    sizeRange: 10,
-
-    reset: function()
+    constructor(stage)
     {
-        var randSize = Math.round(Math.pow(Pseudo.random(), 4) * this.sizeRange + this.sizeMinimum);
+        this.stage = stage;
+        this.rotater = Stage.randomRotater();
+        this.initialize();
+        this.reset();
+        this.move();
+    }
+    
+    initialize()
+    {
+    }
+
+    reset()
+    {
+        var randSize = Math.round(Math.pow(Pseudo.random(), 4) * this.constructor.sizeRange + this.constructor.sizeMinimum);
         this.size = new Point(randSize, randSize);
         this.minPosition = this.size.center;
         this.maxPosition = this.stage.size.subtract(this.minPosition);
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.rotater.next(timeDelta);
 
@@ -87,9 +91,9 @@ Particle.prototype =
         }
 
         this.move();
-    },
+    }
 
-    move: function()
+    move()
     {
     }
 }

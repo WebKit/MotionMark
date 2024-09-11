@@ -22,36 +22,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-BouncingSvgParticle = Utilities.createSubclass(BouncingParticle,
-    function(stage, shape)
-    {
-        BouncingParticle.call(this, stage);
-        this._shape = shape;
-    }, {
 
-    _applyClipping: function(stage)
+class BouncingSvgParticle extends BouncingParticle {
+    constructor(stage, shape)
+    {
+        super(stage);
+        this._shape = shape;
+    }
+
+    _applyClipping(stage)
     {
         if (stage.clip != "star")
             return;
 
         stage.ensureClipStarIsCreated();
         this.element.setAttribute("clip-path", "url(#star-clip)");
-    },
+    }
 
-    _move: function()
+    _move()
     {
         var transform = "translate(" + this.position.x + ", " + this.position.y + ")";
         if (this._shape != "circle")
             transform += this.rotater.rotate(this.size.center);
         this.element.setAttribute("transform", transform);
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
-        BouncingParticle.prototype.animate.call(this, timeDelta);
+        super.animate(timeDelta);
         this._move();
     }
-});
+}
 
 class BouncingSvgParticlesStage extends BouncingParticlesStage {
     constructor()
