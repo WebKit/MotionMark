@@ -23,21 +23,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-function TemplateCanvasObject(stage)
+class TemplateCanvasObject
 {
+    constructor(stage)
+    {
+        super(stage);
+    }
+
     // For the canvas stage, most likely you will need to create your
     // animated object since it's only draw time thing.
 
     // Fill in your object data.
-}
-
-TemplateCanvasObject.prototype = {
-    _draw: function()
+    
+    _draw()
     {
         // Draw your object.
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         // Redraw the animated object. The last time this animated
         // item was drawn before 'timeDelta'.
@@ -47,7 +50,7 @@ TemplateCanvasObject.prototype = {
         // Redraw your object.
         this._draw();
     }
-};
+}
 
 class TemplateCanvasStage extends Stage {
     constructor()
