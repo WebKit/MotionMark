@@ -34,9 +34,11 @@ var opacityMultiplier = 30;
 var focusDuration = 1000;
 var movementDuration = 2500;
 
-var FocusElement = Utilities.createClass(
-    function(stage)
+class FocusElement {
+    constructor(stage)
     {
+        super(stage);
+
         var size = minimumDiameter + sizeVariance;
 
         // Size and blurring are a function of depth.
@@ -59,19 +61,19 @@ var FocusElement = Utilities.createClass(
         this._cosMultiplier = Pseudo.random() * Stage.randomSign() * depthMultiplier * travelDistance;
 
         this.animate(stage, 0, 0);
-    }, {
+    }
 
-    hide: function()
+    hide()
     {
         this.particle.style.display = "none";
-    },
+    }
 
-    show: function()
+    show()
     {
         this.particle.style.display = "block";
-    },
+    }
 
-    animate: function(stage, sinFactor, cosFactor)
+    animate(stage, sinFactor, cosFactor)
     {
         var top = sinFactor * this._sinMultiplier;
         var left = cosFactor * this._cosMultiplier;
@@ -82,7 +84,7 @@ var FocusElement = Utilities.createClass(
         Utilities.setElementPrefixedProperty(this.particle, "filter", "blur(" + blur + "px) opacity(" + opacity + "%)");
         this.particle.style.transform = "translate3d(" + left + "%, " + top + "%, 0)";
     }
-});
+}
 
 class FocusStage extends Stage {
     constructor()

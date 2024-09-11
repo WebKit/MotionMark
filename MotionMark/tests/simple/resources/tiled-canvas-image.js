@@ -23,24 +23,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-CanvasImageTile = Utilities.createClass(
-    function(stage, source)
+class CanvasImageTile {
+    constructor(stage, source)
     {
         this._context = stage.context;
         this._size = stage.tileSize;
         this.source = source;
-    }, {
+    }
 
-    getImageData: function()
+    getImageData()
     {
         this._imagedata = this._context.getImageData(this.source.x, this.source.y, this._size.width, this._size.height);
-    },
+    }
 
-    putImageData: function(destination)
+    putImageData(destination)
     {
         this._context.putImageData(this._imagedata, destination.x, destination.y);
     }
-});
+}
 
 class TiledCanvasImageStage extends Stage {
     constructor(element, options)

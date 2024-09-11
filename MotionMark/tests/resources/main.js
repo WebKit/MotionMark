@@ -849,39 +849,39 @@ class Stage {
     }
 }
 
-Rotater = Utilities.createClass(
-    function(rotateInterval)
+class Rotater {
+    constructor(rotateInterval)
     {
         this._timeDelta = 0;
         this._rotateInterval = rotateInterval;
         this._isSampling = false;
-    }, {
+    }
 
     get interval()
     {
         return this._rotateInterval;
-    },
+    }
 
-    next: function(timeDelta)
+    next(timeDelta)
     {
         this._timeDelta = (this._timeDelta + timeDelta) % this._rotateInterval;
-    },
+    }
 
-    degree: function()
+    degree()
     {
         return (360 * this._timeDelta) / this._rotateInterval;
-    },
+    }
 
-    rotateZ: function()
+    rotateZ()
     {
         return "rotateZ(" + Math.floor(this.degree()) + "deg)";
-    },
+    }
 
-    rotate: function(center)
+    rotate(center)
     {
         return "rotate(" + Math.floor(this.degree()) + ", " + center.x + "," + center.y + ")";
     }
-});
+}
 
 class Benchmark {
     constructor(stage, options)

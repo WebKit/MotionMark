@@ -31,8 +31,8 @@ var travelDistance = 50;
 
 var opacityMultiplier = 30;
 
-var FocusElement = Utilities.createClass(
-    function(stage)
+class FocusElement {
+    constructor(stage)
     {
         var size = minimumDiameter + sizeVariance;
 
@@ -60,19 +60,19 @@ var FocusElement = Utilities.createClass(
         var depthMultiplier = Utilities.lerp(1 - this._depth, 0.8, 1);
         this._sinMultiplier = Pseudo.random() * Stage.randomSign() * depthMultiplier * travelDistance;
         this._cosMultiplier = Pseudo.random() * Stage.randomSign() * depthMultiplier * travelDistance;
-    }, {
+    }
 
-    hide: function()
+    hide()
     {
         this.container.style.display = "none";
-    },
+    }
 
-    show: function()
+    show()
     {
         this.container.style.display = "block";
-    },
+    }
 
-    animate: function(stage, sinFactor, cosFactor)
+    animate(stage, sinFactor, cosFactor)
     {
         var top = sinFactor * this._sinMultiplier;
         var left = cosFactor * this._cosMultiplier;
@@ -80,7 +80,7 @@ var FocusElement = Utilities.createClass(
         Utilities.setElementPrefixedProperty(this.container, "filter", "blur(" + stage.getBlurValue(this._depth) + "px) opacity(" + stage.getOpacityValue(this._depth) + "%)");
         this.container.style.transform = "translate3d(" + left + "%, " + top + "%, 0)";
     }
-});
+}
 
 class FocusStage extends Stage {
     static movementDuration = 2500;
