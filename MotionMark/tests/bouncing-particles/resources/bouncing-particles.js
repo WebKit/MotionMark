@@ -23,25 +23,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-function BouncingParticle(stage)
-{
-    this._stageSize = stage.size;
-    this.size = stage.particleSize;
+class BouncingParticle {
+    constructor(stage)
+    {
+        this._stageSize = stage.size;
+        this.size = stage.particleSize;
 
-    this.position = Stage.randomPosition(stage.size.subtract(stage.particleSize));
-    this._angle = Stage.randomAngle();
-    this._velocity = Stage.randomVelocity(stage.maxVelocity);
-    this.rotater = Stage.randomRotater();
-}
+        this.position = Stage.randomPosition(stage.size.subtract(stage.particleSize));
+        this._angle = Stage.randomAngle();
+        this._velocity = Stage.randomVelocity(stage.maxVelocity);
+        this.rotater = Stage.randomRotater();
+    }
 
-BouncingParticle.prototype =
-{
     get center()
     {
         return this.position.add(this.size.center);
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.position = this.position.move(this._angle, this._velocity, timeDelta);
         this.rotater.next(timeDelta);

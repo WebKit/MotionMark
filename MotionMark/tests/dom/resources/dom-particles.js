@@ -23,18 +23,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-DOMParticle = Utilities.createSubclass(Particle,
-    function(stage)
+class DOMParticle extends Particle {
+    constructor(stage)
     {
+        super(stage);
+    }
+    
+    initialize()
+    {
+        super.initialize();
         this.element = document.createElement("div");
-        stage.element.appendChild(this.element);
+        this.stage.element.appendChild(this.element);
+    }
 
-        Particle.call(this, stage);
-    }, {
-
-    reset: function()
+    reset()
     {
-        Particle.prototype.reset.call(this);
+        super.reset();
 
         this.position = Stage.randomElementInArray(this.stage.emitLocation);
 
@@ -46,13 +50,13 @@ DOMParticle = Utilities.createSubclass(Particle,
         this.element.style.height = this.size.y + "px";
         this.stage.colorOffset = (this.stage.colorOffset + 1) % 360;
         this.element.style.backgroundColor = "hsl(" + this.stage.colorOffset + ", 70%, 45%)";
-    },
+    }
 
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this.position.x + "px, " + this.position.y + "px)" + this.rotater.rotateZ();
     }
-});
+}
 
 class DOMParticleStage extends ParticlesStage {
     constructor()

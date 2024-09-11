@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-BouncingCssShape = Utilities.createSubclass(BouncingParticle,
-    function(stage)
+class BouncingCssShape extends BouncingParticle {
+    constructor(stage)
     {
-        BouncingParticle.call(this, stage);
+        super(stage);
 
         this.element = this._createSpan(stage);
 
@@ -49,9 +49,9 @@ BouncingCssShape = Utilities.createSubclass(BouncingParticle,
             Utilities.setElementPrefixedProperty(this.element, "filter", Stage.randomStyleFilter());
 
         this._move();
-    }, {
+    }
 
-    _createSpan: function(stage)
+    _createSpan(stage)
     {
         var span = document.createElement("span");
         span.className = stage.shape + " " + stage.clip;
@@ -59,20 +59,20 @@ BouncingCssShape = Utilities.createSubclass(BouncingParticle,
         span.style.height = this.size.y + "px";
         stage.element.appendChild(span);
         return span;
-    },
+    }
 
-    _move: function()
+    _move()
     {
         this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px)" + this.rotater.rotateZ();
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
-        BouncingParticle.prototype.animate.call(this, timeDelta);
+        super.animate(timeDelta);
         this.rotater.next(timeDelta);
         this._move();
     }
-});
+}
 
 class BouncingCssShapesStage extends BouncingParticlesStage {
     constructor()

@@ -23,16 +23,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
-    function(stage)
+class BouncingCanvasShape extends BouncingCanvasParticle {
+    constructor(stage)
     {
-        BouncingCanvasParticle.call(this, stage, stage.shape);
+        super(stage, stage.shape);
         this._fill = stage.fill;
         this._color0 = Stage.randomColor();
         this._color1 = Stage.randomColor();
-    }, {
+    }
 
-    _applyFill: function()
+    _applyFill()
     {
         switch (this._fill) {
         case "gradient":
@@ -47,9 +47,9 @@ BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
             this.context.fillStyle = this._color0;
             break;
         }
-    },
+    }
 
-    _drawShape: function()
+    _drawShape()
     {
         this.context.beginPath();
 
@@ -67,9 +67,9 @@ BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
         }
 
         this.context.fill();
-    },
+    }
 
-    _draw: function()
+    _draw()
     {
         this.context.save();
             this._applyFill();
@@ -78,7 +78,7 @@ BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
             this._drawShape();
         this.context.restore();
     }
-});
+}
 
 class BouncingCanvasShapesStage extends BouncingCanvasParticlesStage {
     constructor ()

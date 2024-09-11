@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-BouncingSvgShape = Utilities.createSubclass(BouncingSvgParticle,
-    function(stage)
+class BouncingSvgShape extends BouncingSvgParticle {
+    constructor(stage)
     {
-        BouncingSvgParticle.call(this, stage, stage.shape);
+        super(stage, stage.shape);
         this._fill = stage.fill;
 
         this._createShape(stage);
@@ -34,9 +34,9 @@ BouncingSvgShape = Utilities.createSubclass(BouncingSvgParticle,
         this._applyFill(stage);
 
         this._move();
-    }, {
+    }
 
-    _createShape: function(stage)
+    _createShape(stage)
     {
         switch (this._shape) {
         case "rect":
@@ -50,9 +50,9 @@ BouncingSvgShape = Utilities.createSubclass(BouncingSvgParticle,
             this.element = Utilities.createSVGElement("circle", attrs, {}, stage.element);
             break;
         }
-    },
+    }
 
-    _applyFill: function(stage)
+    _applyFill(stage)
     {
         switch (this._fill) {
         case "gradient":
@@ -66,7 +66,7 @@ BouncingSvgShape = Utilities.createSubclass(BouncingSvgParticle,
             break;
         }
     }
-});
+}
 
 class BouncingSvgShapesStage extends BouncingSvgParticlesStage {
     constructor()

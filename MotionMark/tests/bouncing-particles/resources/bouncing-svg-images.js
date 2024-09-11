@@ -23,17 +23,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-BouncingSvgImage = Utilities.createSubclass(BouncingSvgParticle,
-    function(stage)
+class BouncingSvgImage extends BouncingSvgParticle {
+    constructor(stage)
     {
-        BouncingSvgParticle.call(this, stage, "image");
+        super(stage, "image");
 
         var attrs = { x: 0, y: 0, width: this.size.x, height: this.size.y };
         var xlinkAttrs = { href: stage.imageSrc };
         this.element = Utilities.createSVGElement("image", attrs, xlinkAttrs, stage.element);
         this._move();
     }
-);
+)
 
 class BouncingSvgImagesStage extends BouncingSvgParticlesStage {
     constructor()

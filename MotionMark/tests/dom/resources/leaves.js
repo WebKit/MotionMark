@@ -23,55 +23,54 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var SuperLeaf = window.Leaf;
-var SimpleLeaf = Utilities.createSubclass(SuperLeaf,
-    function(stage)
+class SimpleLeaf extends Leaf {
+    static get sizeMinimum() { return 25; }
+    static get sizeRange() { return 0; }
+    static get usesOpacity() { return false; }
+
+    constructor(stage)
     {
-        SuperLeaf.call(this, stage);
-    }, {
+        super(stage);
+    }
 
-    sizeMinimum: 25,
-    sizeRange: 0,
-    usesOpacity: false,
-
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
     }
-});
+}
 
-var ScaleLeaf = Utilities.createSubclass(SuperLeaf,
-    function(stage)
+class ScaleLeaf extends Leaf {
+    static get sizeMinimum() { return 20; }
+    static get sizeRange() { return 30; }
+    static get usesOpacity() { return false; }
+
+    constructor(stage)
     {
-        SuperLeaf.call(this, stage);
-    }, {
+        super(stage);
+    }
 
-    sizeMinimum: 20,
-    sizeRange: 30,
-    usesOpacity: false,
-
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
     }
-});
+}
 
-var OpacityLeaf = Utilities.createSubclass(SuperLeaf,
-    function(stage)
+class OpacityLeaf extends Leaf {
+    static get sizeMinimum() { return 25; }
+    static get sizeRange() { return 0; }
+    static get usesOpacity() { return true; }
+
+    constructor(stage)
     {
-        SuperLeaf.call(this, stage);
-    }, {
+        super(stage);
+    }
 
-    sizeMinimum: 25,
-    sizeRange: 0,
-    usesOpacity: true,
-
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
         this.element.style.opacity = this._opacity;
     }
-});
+}
 
 
 class LeavesDerivedBenchmark extends LeavesBenchmark {

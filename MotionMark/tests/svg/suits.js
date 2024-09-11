@@ -23,79 +23,82 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var SuperSuitsParticle = window.SuitsParticle;
-ClipSuit = Utilities.createSubclass(SuperSuitsParticle,
-    function(stage)
-    {
-        this.initialize(stage);
-    }, {
+class ClipSuit extends SuitsParticle {
+    static get hasGradient() { return false; }
 
-    isClipPath: true,
-    hasGradient: false,
-    move: function()
+    constructor(stage)
+    {
+        this.isClipPath = true;
+        this.initialize(stage);
+    }
+
+    move()
     {
         this.element.setAttribute("transform", "translate(" + (this.position.x - this.size.center.x) + "," + (this.position.y - this.size.center.x) + ")");
     }
-});
+}
 
-ShapeSuit = Utilities.createSubclass(SuperSuitsParticle,
-    function(stage)
+class ShapeSuit extends SuitsParticle {
+    static get hasGradient() { return false; }
+
+    constructor(stage)
     {
+        this.isClipPath = false;
         this.initialize(stage);
-    }, {
+    }
 
-    isClipPath: false,
-    hasGradient: false,
-    move: function()
+    move()
     {
         this.element.setAttribute("transform", "translate(" + this.position.x + "," + this.position.y + ") " + this.transformSuffix);
     }
-});
+}
 
-RotationSuit = Utilities.createSubclass(SuperSuitsParticle,
-    function(stage)
+class RotationSuit extends SuitsParticle {
+    static get hasGradient() { return false; }
+
+    constructor(stage)
     {
         this.isClipPath = stage.particleCounter % 2;
         this.initialize(stage);
-    }, {
+    }
+}
 
-    hasGradient: false,
-});
+class GradientSuit extends SuitsParticle {
+    static get hasGradient() { return true; }
 
-GradientSuit = Utilities.createSubclass(SuperSuitsParticle,
-    function(stage)
+    constructor(stage)
     {
         this.isClipPath = stage.particleCounter % 2;
         this.initialize(stage);
-    }, {
+    }
 
-    hasGradient: true,
-    move: function()
+    move()
     {
         this.element.setAttribute("transform", "translate(" + this.position.x + "," + this.position.y + ") " + this.transformSuffix);
     }
-});
+}
 
-StaticSuit = Utilities.createSubclass(SuperSuitsParticle,
-    function(stage)
+class StaticSuit extends SuitsParticle {
+    static get hasGradient() { return true; }
+
+    constructor(stage)
     {
         this.isClipPath = stage.particleCounter % 2;
         this.initialize(stage);
-    }, {
+    }
 
-    hasGradient: true,
-    reset: function()
+    reset()
     {
-        SuperSuitsParticle.prototype.reset.call(this);
+        super.reset();
         this.originalPosition = Stage.randomPosition(this.stage.size);
         this.transformSuffix = " rotate(" + Math.floor(Stage.randomAngle() * 180 / Math.PI) + ",0,0)" + this.transformSuffix;
-    },
+    }
 
-    move: function()
+    move()
     {
         this.element.setAttribute("transform", "translate(" + this.originalPosition.x + "," + this.originalPosition.y + ") " + this.transformSuffix);
     }
-});
+}
 
 
 class SuitsDerivedBenchmark extends SuitsBenchmark {
