@@ -65,23 +65,6 @@ class Utilities {
         return this.extendObject(this.copyObject(obj1), obj2);
     }
 
-    // Deprecated
-    static createClass(classConstructor, classMethods)
-    {
-        classConstructor.prototype = classMethods;
-        return classConstructor;
-    }
-
-    // Deprecated
-    static createSubclass(superclass, classConstructor, classMethods)
-    {
-        classConstructor.prototype = Object.create(superclass.prototype);
-        classConstructor.prototype.constructor = classConstructor;
-        if (classMethods)
-            Utilities.extendObject(classConstructor.prototype, classMethods);
-        return classConstructor;
-    }
-
     static createElement(name, attrs, parentElement)
     {
         var element = document.createElement(name);
