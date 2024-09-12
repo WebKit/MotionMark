@@ -402,39 +402,39 @@ class ResultsTable {
     }
 }
 
-window.benchmarkRunnerClient = {
-    iterationCount: 1,
-    options: null,
-    results: null,
-
-    initialize: function(suites, options)
+class BenchmarkRunnerClient {
+    iterationCount = 1;
+    options = null;
+    results = null;
+    
+    constructor(suites, options)
     {
         this.options = options;
-    },
+    }
 
-    willStartFirstIteration: function()
+    willStartFirstIteration()
     {
         this.results = new ResultsDashboard(Strings.version, this.options);
-    },
+    }
 
-    didRunSuites: function(suitesSamplers)
+    didRunSuites(suitesSamplers)
     {
         this.results.push(suitesSamplers);
-    },
+    }
 
-    didRunTest: function(testData)
+    didRunTest(testData)
     {
         this.results.calculateScore(testData);
-    },
+    }
 
-    didFinishLastIteration: function()
+    didFinishLastIteration()
     {
         benchmarkController.showResults();
     }
-};
+}
 
-window.sectionsManager = {
-    showSection: function(sectionIdentifier, pushState)
+class SectionsManager {
+    showSection(sectionIdentifier, pushState)
     {
         var sections = document.querySelectorAll("main > section");
         for (var i = 0; i < sections.length; ++i) {
@@ -453,30 +453,30 @@ window.sectionsManager = {
 
         if (pushState)
             history.pushState({section: sectionIdentifier}, document.title);
-    },
+    }
 
-    setSectionVersion: function(sectionIdentifier, version)
+    setSectionVersion(sectionIdentifier, version)
     {
         document.querySelector("#" + sectionIdentifier + " .version").textContent = version;
-    },
+    }
 
-    setSectionScore: function(sectionIdentifier, score, confidence, fps)
+    setSectionScore(sectionIdentifier, score, confidence, fps)
     {
         if (fps && score)
             document.querySelector("#" + sectionIdentifier + " .score").textContent = `${score} @ ${fps}fps`;
         if (confidence)
             document.querySelector("#" + sectionIdentifier + " .confidence").textContent = confidence;
-    },
+    }
 
-    populateTable: function(tableIdentifier, headers, dashboard)
+    populateTable(tableIdentifier, headers, dashboard)
     {
         var table = new ResultsTable(document.getElementById(tableIdentifier), headers);
         table.showIterations(dashboard);
     }
-};
+}
 
-window.benchmarkController = {
-    benchmarkDefaultParameters: {
+class BenchmarkController {
+    benchmarkDefaultParameters = {
         "test-interval": 30,
         "display": "minimal",
         "tiles": "big",
@@ -489,29 +489,40 @@ window.benchmarkController = {
         "first-frame-minimum-length": 0,
         "system-frame-rate": 60,
         "frame-rate": 60,
-    },
+    };
 
-    initialize: async function()
+    async initialize()
     {
-        document.title = Strings.text.title.replace("%s", Strings.version);
-        document.querySelectorAll(".version").forEach(function(e) {
-            e.textContent = Strings.version;
-        });
+        this.updateUIStrings();
         benchmarkController.addOrientationListenerIfNecessary();
 
         this._startButton = document.getElementById("start-button");
         this._startButton.disabled = true;
         this._startButton.textContent = Strings.text.determininingFrameRate;
 
+        await this.detectFrameRate();
+    }
+    
+    async detectFrameRate(progressElement = undefined)
+    {
         let targetFrameRate;
         try {
-            targetFrameRate = await benchmarkController.determineFrameRate();
+            targetFrameRate = await this.determineFrameRate(progressElement);
         } catch (e) {
+            console.log('Frame rate detection failed ' + e);
         }
         this.frameRateDeterminationComplete(targetFrameRate);
-    },
+    }
     
-    frameRateDeterminationComplete: function(frameRate)
+    updateUIStrings()
+    {
+        document.title = Strings.text.title.replace("%s", Strings.version);
+        document.querySelectorAll(".version").forEach(function(e) {
+            e.textContent = Strings.version;
+        });
+    }
+    
+    frameRateDeterminationComplete(frameRate)
     {
         const frameRateLabel = document.getElementById("frame-rate-label");
 
@@ -531,9 +542,9 @@ window.benchmarkController = {
 
         this._startButton.textContent = Strings.text.runBenchmark;
         this._startButton.disabled = false;
-    },
+    }
 
-    determineCanvasSize: function()
+    determineCanvasSize()
     {
         var match = window.matchMedia("(max-device-width: 760px)");
         if (match.matches) {
@@ -554,9 +565,9 @@ window.benchmarkController = {
         }
 
         document.body.classList.add("large");
-    },
+    }
 
-    determineFrameRate: function(detectionProgressElement)
+    determineFrameRate(detectionProgressElement)
     {
         return new Promise((resolve, reject) => {
             let firstTimestamp;
@@ -605,9 +616,9 @@ window.benchmarkController = {
 
             requestAnimationFrame(tick);
         })
-    },
+    }
 
-    addOrientationListenerIfNecessary: function()
+    addOrientationListenerIfNecessary()
     {
         if (!("orientation" in window))
             return;
@@ -615,9 +626,9 @@ window.benchmarkController = {
         this.orientationQuery = window.matchMedia("(orientation: landscape)");
         this._orientationChanged(this.orientationQuery);
         this.orientationQuery.addListener(this._orientationChanged);
-    },
+    }
 
-    _orientationChanged: function(match)
+    _orientationChanged(match)
     {
         benchmarkController.isInLandscapeOrientation = match.matches;
         if (match.matches)
@@ -626,43 +637,48 @@ window.benchmarkController = {
             document.querySelector(".portrait-orientation-check").classList.remove("hidden");
 
         benchmarkController.updateStartButtonState();
-    },
+    }
 
-    updateStartButtonState: function()
+    updateStartButtonState()
     {
         document.getElementById("start-button").disabled = !this.isInLandscapeOrientation;
-    },
+    }
 
-    _startBenchmark: function(suites, options, frameContainerID)
+    _startBenchmark(suites, options, frameContainerID)
     {
         var configuration = document.body.className.match(/small|medium|large/);
         if (configuration)
             options[Strings.json.configuration] = configuration[0];
 
-        benchmarkRunnerClient.initialize(suites, options);
+        this.ensureRunnerClient(suites, options);
         var frameContainer = document.getElementById(frameContainerID);
-        var runner = new BenchmarkRunner(suites, frameContainer, benchmarkRunnerClient);
+        var runner = new BenchmarkRunner(suites, frameContainer, this.runnerClient);
         runner.runMultipleIterations();
 
         sectionsManager.showSection("test-container");
-    },
+    }
+    
+    ensureRunnerClient(suites, options)
+    {
+        this.runnerClient = new benchmarkRunnerClientClass(suites, options);
+    }
 
-    startBenchmark: async function()
+    async startBenchmark()
     {
         benchmarkController.determineCanvasSize();
 
         let options = this.benchmarkDefaultParameters;
         this._startBenchmark(Suites, options, "test-container");
-    },
+    }
 
-    showResults: function()
+    showResults()
     {
         if (!this.addedKeyEvent) {
             document.addEventListener("keypress", this.handleKeyPress, false);
             this.addedKeyEvent = true;
         }
 
-        const dashboard = benchmarkRunnerClient.results;
+        const dashboard = this.runnerClient.results;
         const score = dashboard.score;
         const confidence = "±" + (Statistics.largestDeviationPercentage(dashboard.scoreLowerBound, score, dashboard.scoreUpperBound) * 100).toFixed(2) + "%";
         const fps = dashboard._targetFrameRate;
@@ -672,9 +688,9 @@ window.benchmarkController = {
         sectionsManager.populateTable("results-score", Headers.score, dashboard);
         sectionsManager.populateTable("results-data", Headers.details, dashboard);
         sectionsManager.showSection("results", true);
-    },
+    }
 
-    handleKeyPress: function(event)
+    handleKeyPress(event)
     {
         switch (event.charCode)
         {
@@ -688,17 +704,17 @@ window.benchmarkController = {
             benchmarkController.selectResults(event.target);
             break;
         }
-    },
+    }
 
-    hideDebugInfo: function()
+    hideDebugInfo()
     {
         var overlay = document.getElementById("overlay");
         if (!overlay)
             return;
         document.body.removeChild(overlay);
-    },
+    }
 
-    showDebugInfo: function()
+    showDebugInfo()
     {
         if (document.getElementById("overlay"))
             return;
@@ -715,9 +731,9 @@ window.benchmarkController = {
         data.textContent = "Please wait...";
         setTimeout(function() {
             var output = {
-                version: benchmarkRunnerClient.results.version,
-                options: benchmarkRunnerClient.results.options,
-                data: benchmarkRunnerClient.results.data
+                version: this.runnerClient.results.version,
+                options: this.runnerClient.results.options,
+                data: this.runnerClient.results.data
             };
             data.textContent = JSON.stringify(output, function(key, value) {
                 if (typeof value === 'number')
@@ -738,9 +754,9 @@ window.benchmarkController = {
         button.onclick = function() {
             benchmarkController.hideDebugInfo();
         };
-    },
+    }
 
-    selectResults: function(target)
+    selectResults(target)
     {
         target.selectRange = ((target.selectRange || 0) + 1) % 3;
 
@@ -764,7 +780,16 @@ window.benchmarkController = {
         }
         selection.addRange(range);
     }
-};
+}
 
-window.addEventListener("load", function() { benchmarkController.initialize(); });
+window.benchmarkControllerClass = BenchmarkController;
+window.benchmarkRunnerClientClass = BenchmarkRunnerClient;
+window.sectionsManagerClass = SectionsManager;
 
+window.addEventListener("load", () => {
+
+    window.sectionsManager = new sectionsManagerClass();
+    window.benchmarkController = new benchmarkControllerClass();
+
+    benchmarkController.initialize();
+});

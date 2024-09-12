@@ -79,7 +79,7 @@ class DeveloperResultsTable extends ResultsTable {
 
     _addTest(testName, testResult, options, testData)
     {
-        var row = Utilities.createElement("tr", {}, this.element);
+        var row = Utilities.createElement("tr", {}, this.tbody);
 
         var isNoisy = false;
         [Strings.json.complexity, Strings.json.frameLength].forEach(function (experiment) {
@@ -123,44 +123,44 @@ class DeveloperResultsTable extends ResultsTable {
     }
 }
 
-Utilities.extendObject(window.benchmarkRunnerClient, {
-    testsCount: null,
-    progressBar: null,
+class DebugBenchmarkRunnerClient extends BenchmarkRunnerClient {
+    testsCount;
+    progressBar;
 
-    initialize: function(suites, options)
+    constructor(suites, options)
     {
+        super(suites, options);
         this.testsCount = this.iterationCount * suites.reduce(function (count, suite) { return count + suite.tests.length; }, 0);
-        this.options = options;
-    },
+    }
 
-    willStartFirstIteration: function()
+    willStartFirstIteration()
     {
-        this.results = new ResultsDashboard(Strings.version, this.options);
+        super.willStartFirstIteration();
         this.progressBar = new ProgressBar(document.getElementById("progress-completed"), this.testsCount);
-    },
+    }
 
-    didRunTest: function(testData)
+    didRunTest(testData)
     {
         this.progressBar.incrementRange();
-        this.results.calculateScore(testData);
+        super.didRunTest(testData);
     }
-});
+}
 
-Utilities.extendObject(window.sectionsManager, {
-    setSectionHeader: function(sectionIdentifier, title)
+class DebugSectionsManager extends SectionsManager {
+    setSectionHeader(sectionIdentifier, title)
     {
         document.querySelector("#" + sectionIdentifier + " h1").textContent = title;
-    },
+    }
 
-    populateTable: function(tableIdentifier, headers, dashboard)
+    populateTable(tableIdentifier, headers, dashboard)
     {
         var table = new DeveloperResultsTable(document.getElementById(tableIdentifier), headers);
         table.showIterations(dashboard);
     }
-});
+}
 
-window.optionsManager = {
-    valueForOption: function(name)
+window.optionsManager = new class OptionsManager {
+    valueForOption(name)
     {
         var formElement = document.forms["benchmark-options"].elements[name];
         if (formElement.type == "checkbox")
@@ -174,9 +174,9 @@ window.optionsManager = {
             return null;
         }
         return formElement.value;
-    },
+    }
 
-    updateUIFromLocalStorage: function()
+    updateUIFromLocalStorage()
     {
         var formElements = document.forms["benchmark-options"].elements;
 
@@ -196,9 +196,9 @@ window.optionsManager = {
             else if (type == "radio")
                 formElements[name].value = value;
         }
-    },
+    }
 
-    updateLocalStorageFromUI: function()
+    updateLocalStorageFromUI()
     {
         var formElements = document.forms["benchmark-options"].elements;
         var options = {};
@@ -232,17 +232,17 @@ window.optionsManager = {
         }
 
         return options;
-    },
+    }
 
-    updateDisplay: function()
+    updateDisplay()
     {
         document.body.classList.remove("display-minimal");
         document.body.classList.remove("display-progress-bar");
 
         document.body.classList.add("display-" + optionsManager.valueForOption("display"));
-    },
+    }
 
-    updateTiles: function()
+    updateTiles()
     {
         document.body.classList.remove("tiles-big");
         document.body.classList.remove("tiles-classic");
@@ -251,38 +251,38 @@ window.optionsManager = {
     }
 };
 
-window.suitesManager = {
-    _treeElement: function()
+window.suitesManager = new class SuitesManager {
+    _treeElement()
     {
         return document.querySelector("#suites > .tree");
-    },
+    }
 
-    _suitesElements: function()
+    _suitesElements()
     {
         return document.querySelectorAll("#suites > ul > li");
-    },
+    }
 
-    _checkboxElement: function(element)
+    _checkboxElement(element)
     {
         return element.querySelector("input[type='checkbox']:not(.expand-button)");
-    },
+    }
 
-    _editElement: function(element)
+    _editElement(element)
     {
         return element.querySelector("input[type='number']");
-    },
+    }
 
-    _editsElements: function()
+    _editsElements()
     {
         return document.querySelectorAll("#suites input[type='number']");
-    },
+    }
 
-    _localStorageNameForTest: function(suiteName, testName)
+    _localStorageNameForTest(suiteName, testName)
     {
         return suiteName + "/" + testName;
-    },
+    }
 
-    _updateSuiteCheckboxState: function(suiteCheckbox)
+    _updateSuiteCheckboxState(suiteCheckbox)
     {
         var numberEnabledTests = 0;
         suiteCheckbox.testsElements.forEach(function(testElement) {
@@ -292,9 +292,9 @@ window.suitesManager = {
         }, this);
         suiteCheckbox.checked = numberEnabledTests > 0;
         suiteCheckbox.indeterminate = numberEnabledTests > 0 && numberEnabledTests < suiteCheckbox.testsElements.length;
-    },
+    }
 
-    isAtLeastOneTestSelected: function()
+    isAtLeastOneTestSelected()
     {
         var suitesElements = this._suitesElements();
 
@@ -307,9 +307,9 @@ window.suitesManager = {
         }
 
         return false;
-    },
+    }
 
-    _onChangeSuiteCheckbox: function(event)
+    _onChangeSuiteCheckbox(event)
     {
         var selected = event.target.checked;
         event.target.testsElements.forEach(function(testElement) {
@@ -317,15 +317,15 @@ window.suitesManager = {
             testCheckbox.checked = selected;
         }, this);
         benchmarkController.updateStartButtonState();
-    },
+    }
 
-    _onChangeTestCheckbox: function(suiteCheckbox)
+    _onChangeTestCheckbox(suiteCheckbox)
     {
         this._updateSuiteCheckboxState(suiteCheckbox);
         benchmarkController.updateStartButtonState();
-    },
+    }
 
-    _createSuiteElement: function(treeElement, suite, id)
+    _createSuiteElement(treeElement, suite, id)
     {
         var suiteElement = Utilities.createElement("li", {}, treeElement);
         var expand = Utilities.createElement("input", { type: "checkbox",  class: "expand-button", id: id }, suiteElement);
@@ -338,9 +338,9 @@ window.suitesManager = {
 
         label.appendChild(document.createTextNode(" " + suite.name));
         return suiteElement;
-    },
+    }
 
-    _createTestElement: function(listElement, test, suiteCheckbox)
+    _createTestElement(listElement, test, suiteCheckbox)
     {
         var testElement = Utilities.createElement("li", {}, listElement);
         var span = Utilities.createElement("label", { class: "tree-label" }, testElement);
@@ -384,9 +384,9 @@ window.suitesManager = {
             this._onChangeTestCheckbox(relatedCheckbox.suiteCheckbox);
         }.bind(this);
         return testElement;
-    },
+    }
 
-    createElements: function()
+    createElements()
     {
         var treeElement = this._treeElement();
 
@@ -399,9 +399,9 @@ window.suitesManager = {
                 this._createTestElement(listElement, test, suiteCheckbox);
             }, this);
         }, this);
-    },
+    }
 
-    updateEditsElementsState: function()
+    updateEditsElementsState()
     {
         var editsElements = this._editsElements();
         var showComplexityInputs = optionsManager.valueForOption("controller") == "fixed";
@@ -413,9 +413,9 @@ window.suitesManager = {
             else
                 editElement.classList.remove("selected");
         }
-    },
+    }
 
-    updateUIFromLocalStorage: function()
+    updateUIFromLocalStorage()
     {
         var suitesElements = this._suitesElements();
 
@@ -442,9 +442,9 @@ window.suitesManager = {
         }
 
         benchmarkController.updateStartButtonState();
-    },
+    }
 
-    updateLocalStorageFromUI: function()
+    updateLocalStorageFromUI()
     {
         var suitesElements = this._suitesElements();
         var suites = [];
@@ -476,9 +476,9 @@ window.suitesManager = {
         }
 
         return suites;
-    },
+    }
 
-    suitesFromQueryString: function(suiteName, testName)
+    suitesFromQueryString(suiteName, testName)
     {
         suiteName = decodeURIComponent(suiteName);
         testName = decodeURIComponent(testName);
@@ -508,9 +508,9 @@ window.suitesManager = {
         };
 
         return suites;
-    },
+    }
 
-    updateLocalStorageFromJSON: function(results)
+    updateLocalStorageFromJSON(results)
     {
         for (var suiteName in results[Strings.json.results.tests]) {
             var suiteResults = results[Strings.json.results.tests][suiteName];
@@ -528,18 +528,16 @@ window.suitesManager = {
     }
 }
 
-Utilities.extendObject(window.benchmarkController, {
-    initialize: async function()
+class DebugBenchmarkController extends BenchmarkController {
+    async initialize()
     {
-        document.title = Strings.text.title.replace("%s", Strings.version);
-        document.querySelectorAll(".version").forEach(function(e) {
-            e.textContent = Strings.version;
-        });
+        this.updateUIStrings();
+        this.graphController = new GraphController;
 
-        document.forms["benchmark-options"].addEventListener("change", benchmarkController.onBenchmarkOptionsChanged, true);
-        document.forms["graph-type"].addEventListener("change", benchmarkController.onGraphTypeChanged, true);
-        document.forms["time-graph-options"].addEventListener("change", benchmarkController.onTimeGraphOptionsChanged, true);
-        document.forms["complexity-graph-options"].addEventListener("change", benchmarkController.onComplexityGraphOptionsChanged, true);
+        document.forms["benchmark-options"].addEventListener("change", () => { this.onBenchmarkOptionsChanged() }, true);
+        document.forms["graph-type"].addEventListener("change", () => { this.graphController.onGraphTypeChanged() }, true);
+        document.forms["time-graph-options"].addEventListener("change", () => { this.graphController.onTimeGraphOptionsChanged() }, true);
+        document.forms["complexity-graph-options"].addEventListener("change", () => { this.graphController.onComplexityGraphOptionsChanged() }, true);
         optionsManager.updateUIFromLocalStorage();
         optionsManager.updateDisplay();
         optionsManager.updateTiles();
@@ -552,6 +550,17 @@ Utilities.extendObject(window.benchmarkController, {
         suitesManager.updateUIFromLocalStorage();
         suitesManager.updateEditsElementsState();
 
+        this.#setupDropTarget();
+
+        this.frameRateDetectionComplete = false;
+        this.updateStartButtonState();
+
+        let progressElement = document.querySelector("#frame-rate-detection span");
+        await this.detectFrameRate(progressElement);
+    }
+    
+    #setupDropTarget()
+    {
         var dropTarget = document.getElementById("drop-target");
         function stopEvent(e) {
             e.stopPropagation();
@@ -569,7 +578,7 @@ Utilities.extendObject(window.benchmarkController, {
             stopEvent(e);
         }, false);
 
-        dropTarget.addEventListener("drop", function (e) {
+        dropTarget.addEventListener("drop", (e) => {
             stopEvent(e);
 
             if (!e.dataTransfer.files.length) {
@@ -588,30 +597,18 @@ Utilities.extendObject(window.benchmarkController, {
                 if (run.debugOutput instanceof Array)
                     run = run.debugOutput[0];
 
-                benchmarkController.migrateImportedData(run);
-                benchmarkRunnerClient.results = new ResultsDashboard(run.version, run.options, run.data);
-                benchmarkController.showResults();
+                this.migrateImportedData(run);
+                this.ensureRunnerClient([ ], { });
+                this.runnerClient.results = new ResultsDashboard(run.version, run.options, run.data);
+                this.showResults();
             };
 
             reader.readAsText(file);
             document.title = "File: " + reader.filename;
         }, false);
+    }
 
-        this.frameRateDetectionComplete = false;
-        this.updateStartButtonState();
-
-        let progressElement = document.querySelector("#frame-rate-detection span");
-
-        let targetFrameRate;
-        try {
-            targetFrameRate = await benchmarkController.determineFrameRate(progressElement);
-        } catch (e) {
-        }
-        
-        this.frameRateDeterminationComplete(targetFrameRate);
-    },
-
-    migrateImportedData: function(runData)
+    migrateImportedData(runData)
     {
         if (!("version" in runData))
             runData.version = "1.0";
@@ -625,9 +622,9 @@ Utilities.extendObject(window.benchmarkController, {
             runData.options["system-frame-rate"] = 60;
             console.log("No system-frame-rate data; assuming 60fps")
         }
-    },
+    }
 
-    frameRateDeterminationComplete: function(targetFrameRate)
+    frameRateDeterminationComplete(targetFrameRate)
     {
         let frameRateLabelContent = Strings.text.usingFrameRate.replace("%s", targetFrameRate);
         
@@ -642,9 +639,9 @@ Utilities.extendObject(window.benchmarkController, {
 
         this.frameRateDetectionComplete = true;
         this.updateStartButtonState();
-    },
+    }
 
-    updateStartButtonState: function()
+    updateStartButtonState()
     {
         var startButton = document.getElementById("start-button");
         if ("isInLandscapeOrientation" in this && !this.isInLandscapeOrientation) {
@@ -653,9 +650,9 @@ Utilities.extendObject(window.benchmarkController, {
         }
         
         startButton.disabled = (!suitesManager.isAtLeastOneTestSelected()) || !this.frameRateDetectionComplete;
-    },
+    }
 
-    onBenchmarkOptionsChanged: function(event)
+    onBenchmarkOptionsChanged(event)
     {
         switch (event.target.name) {
         case "controller":
@@ -668,17 +665,17 @@ Utilities.extendObject(window.benchmarkController, {
             optionsManager.updateTiles();
             break;
         }
-    },
+    }
 
-    startBenchmark: function()
+    startBenchmark()
     {
         benchmarkController.determineCanvasSize();
         benchmarkController.options = Utilities.mergeObjects(this.benchmarkDefaultParameters, optionsManager.updateLocalStorageFromUI());
         benchmarkController.suites = suitesManager.updateLocalStorageFromUI();
         this._startBenchmark(benchmarkController.suites, benchmarkController.options, "running-test");
-    },
+    }
 
-    startBenchmarkImmediatelyIfEncoded: function()
+    startBenchmarkImmediatelyIfEncoded()
     {
         benchmarkController.determineCanvasSize();
         benchmarkController.options = Utilities.convertQueryStringToObject(location.search);
@@ -693,21 +690,21 @@ Utilities.extendObject(window.benchmarkController, {
             this._startBenchmark(benchmarkController.suites, benchmarkController.options, "running-test");
         }.bind(this), 0);
         return true;
-    },
+    }
 
-    restartBenchmark: function()
+    restartBenchmark()
     {
         this._startBenchmark(benchmarkController.suites, benchmarkController.options, "running-test");
-    },
+    }
 
-    showResults: function()
+    showResults()
     {
         if (!this.addedKeyEvent) {
             document.addEventListener("keypress", this.handleKeyPress, false);
             this.addedKeyEvent = true;
         }
 
-        var dashboard = benchmarkRunnerClient.results;
+        var dashboard = this.runnerClient.results;
         if (dashboard.options["controller"] == "ramp")
             Headers.details[3].disabled = true;
         else {
@@ -732,12 +729,16 @@ Utilities.extendObject(window.benchmarkController, {
         sectionsManager.showSection("results", true);
 
         suitesManager.updateLocalStorageFromJSON(dashboard.results[0]);
-    },
+    }
 
-    showTestGraph: function(testName, testResult, testData)
+    showTestGraph(testName, testResult, testData)
     {
         sectionsManager.setSectionHeader("test-graph", testName);
         sectionsManager.showSection("test-graph", true);
-        this.updateGraphData(testResult, testData, benchmarkRunnerClient.results.options);
+        this.graphController.updateGraphData(testResult, testData, this.runnerClient.results.options);
     }
-});
+}
+
+window.benchmarkControllerClass = DebugBenchmarkController;
+window.benchmarkRunnerClientClass = DebugBenchmarkRunnerClient;
+window.sectionsManagerClass = DebugSectionsManager;
