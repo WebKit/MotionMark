@@ -92,11 +92,6 @@ class FocusStage extends Stage {
     static maxBlurValue = 15;
     static maxCenterObjectBlurValue = 5;
     
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);

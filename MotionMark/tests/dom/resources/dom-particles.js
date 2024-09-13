@@ -59,11 +59,6 @@ class DOMParticle extends Particle {
 }
 
 class DOMParticleStage extends ParticlesStage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark)
     {
         super.initialize(benchmark);

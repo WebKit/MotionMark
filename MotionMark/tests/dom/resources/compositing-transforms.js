@@ -53,11 +53,6 @@ class BouncingCompositedImage extends BouncingParticle {
 }
 
 class CompositingTransformsStage extends BouncingParticlesStage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);

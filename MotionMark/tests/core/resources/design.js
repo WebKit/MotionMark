@@ -24,7 +24,7 @@
  */
 
 class TextStage extends Stage {
-    static shadowFalloff;
+    static shadowFalloff = new UnitBezier(new Point(0.015, 0.750), new Point(0.755, 0.235));
     static shimmerAverage = 0;
     static shimmerMax = 0.5;
     static millisecondsPerRotation = 1000 / (.26 * Math.PI * 2);
@@ -35,11 +35,9 @@ class TextStage extends Stage {
         [101, 100, 117, 80, 230, 175],
         [232, 165, 30, 69, 186, 172]
     ];
-    
+
     constructor()
     {
-        TextStage.shadowFalloff = new UnitBezier(new Point(0.015, 0.750), new Point(0.755, 0.235));
-        
         super();
 
         this.testElements = [];

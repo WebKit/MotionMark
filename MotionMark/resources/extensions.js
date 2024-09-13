@@ -298,12 +298,12 @@ class Point {
 
     length()
     {
-        return Math.sqrt( this.x * this.x + this.y * this.y );
+        return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
     normalize()
     {
-        var l = Math.sqrt( this.x * this.x + this.y * this.y );
+        var l = Math.sqrt(this.x * this.x + this.y * this.y);
         this.x /= l;
         this.y /= l;
         return this;

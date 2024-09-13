@@ -50,11 +50,6 @@ class BouncingCssImage extends BouncingParticle {
 }
 
 class BouncingCssImagesStage extends BouncingParticlesStage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);

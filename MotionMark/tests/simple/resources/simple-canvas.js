@@ -24,11 +24,6 @@
  */
 
 class SimpleCanvasStage extends CanvasStage {
-    constructor(canvasObject)
-    {
-        super(canvasObject)
-    }
-    
     tune(count)
     {
         if (count == 0)

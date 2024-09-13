@@ -24,11 +24,6 @@
  */
 
 class WebGLStage extends Stage {
-    constructor(element, options)
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);

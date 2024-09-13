@@ -75,11 +75,6 @@ class BouncingCssShape extends BouncingParticle {
 }
 
 class BouncingCssShapesStage extends BouncingParticlesStage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);
