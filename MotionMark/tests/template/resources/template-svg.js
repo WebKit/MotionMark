@@ -24,11 +24,6 @@
  */
 
 class TemplateSvgStage extends Stage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);

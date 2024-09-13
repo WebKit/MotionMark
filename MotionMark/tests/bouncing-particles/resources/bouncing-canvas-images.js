@@ -40,11 +40,6 @@ class BouncingCanvasImage extends BouncingCanvasParticle {
 }
 
 class BouncingCanvasImagesStage extends BouncingCanvasParticlesStage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);

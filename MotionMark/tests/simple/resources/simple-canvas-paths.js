@@ -338,10 +338,6 @@ class CanvasFill {
 // === STAGES ===
 
 class SimpleCanvasPathStrokeStage extends SimpleCanvasStage {
-    constructor(canvasObject) {
-        super(canvasObject);
-    }
-
     animate()
     {
         var context = this.context;
@@ -357,10 +353,6 @@ class SimpleCanvasPathStrokeStage extends SimpleCanvasStage {
 }
 
 class SimpleCanvasPathFillStage extends SimpleCanvasStage {
-    constructor(canvasObject) {
-        super(canvasObject);
-    }
-
     animate()
     {
         var context = this.context;

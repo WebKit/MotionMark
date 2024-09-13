@@ -55,11 +55,6 @@ class BouncingSvgParticle extends BouncingParticle {
 }
 
 class BouncingSvgParticlesStage extends BouncingParticlesStage {
-    constructor()
-    {
-        super();
-    }
-
     _createDefs()
     {
         return Utilities.createSVGElement("defs", {}, {}, this.element);

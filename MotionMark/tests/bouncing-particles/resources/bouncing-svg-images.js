@@ -36,11 +36,6 @@ class BouncingSvgImage extends BouncingSvgParticle {
 )
 
 class BouncingSvgImagesStage extends BouncingSvgParticlesStage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);

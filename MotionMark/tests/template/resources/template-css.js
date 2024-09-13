@@ -24,11 +24,6 @@
  */
 
 class TemplateCssStage extends Stage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark, options)
     {
         super.initialize(benchmark, options);

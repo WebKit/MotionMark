@@ -98,11 +98,6 @@ class SuitsParticle extends Particle {
 }
 
 class SuitsStage extends ParticlesStage {
-    constructor()
-    {
-        super();
-    }
-
     initialize(benchmark)
     {
         super.initialize(benchmark);
