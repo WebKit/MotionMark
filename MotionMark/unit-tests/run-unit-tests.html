@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title>MotionMark Unit Tests</title>
+
+    <script src="../resources/strings.js"></script>
+    <script src="../resources/extensions.js"></script>
+    <script src="../resources/statistics.js"></script>
+
+    <script src="../resources/runner/tests.js"></script>
+    <script src="../resources/debug-runner/tests.js"></script>
+
+    <script src="../resources/runner/benchmark-runner.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/expect.js/0.2.0/expect.min.js"></script>
+    <script src="https://unpkg.com/mocha/mocha.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+    <link rel="stylesheet" href="../resources/runner/motionmark.css">
+    <link rel="stylesheet" href="../resources/debug-runner/motionmark.css">
+
+    <style>
+        body {
+            -webkit-user-select: text;
+            cursor: auto;
+            margin: 8px;
+        }
+
+        #mocha {
+            margin: 20px 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MotionMark Unit Tests</h1>
+    <div id="mocha"></div>
+
+    <script class="mocha-init">
+        mocha.setup('bdd');
+        mocha.checkLeaks();
+    </script>
+
+    <script src="tests/test-random.js"></script>
+    <script src="tests/test-statistics.js"></script>
+
+    <script class="mocha-exec">
+        mocha.run();
+    </script>
+</body>
+</html>
