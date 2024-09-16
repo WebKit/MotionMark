@@ -350,19 +350,19 @@ class BenchmarkController {
 
         var data = Utilities.createElement("div", {}, container);
         data.textContent = "Please wait...";
-        setTimeout(function() {
+        setTimeout(() => {
             var output = {
                 version: this.runnerClient.results.version,
                 options: this.runnerClient.results.options,
                 data: this.runnerClient.results.data
             };
-            data.textContent = JSON.stringify(output, function(key, value) {
+            data.textContent = JSON.stringify(output, (key, value) => {
                 if (typeof value === 'number')
                     return Utilities.toFixedNumber(value, 3);
                 return value;
             }, 1);
         }, 0);
-        data.onclick = function() {
+        data.onclick = () => {
             var selection = window.getSelection();
             selection.removeAllRanges();
             var range = document.createRange();
@@ -372,8 +372,8 @@ class BenchmarkController {
 
         var button = Utilities.createElement("button", {}, container);
         button.textContent = "Done";
-        button.onclick = function() {
-            benchmarkController.hideDebugInfo();
+        button.onclick = () => {
+            this.hideDebugInfo();
         };
     }
 

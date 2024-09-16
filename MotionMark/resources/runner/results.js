@@ -32,6 +32,11 @@ class ResultsDashboard {
         this._version = version;
         this._targetFrameRate = options["frame-rate"];
         this._systemFrameRate = options["system-frame-rate"];
+
+        const defaultBootstrapIterations = 2500;
+        if (!Object.hasOwn(this._options, Strings.json.bootstrapIterations))
+            this._options[Strings.json.bootstrapIterations] = defaultBootstrapIterations;
+        
         if (testData) {
             this._iterationsSamplers = testData;
             this._processData();
@@ -188,7 +193,7 @@ class ResultsDashboard {
             experimentResult[Strings.json.measurements.stdev] = timeComplexity.standardDeviation();
             experimentResult[Strings.json.measurements.percent] = timeComplexity.percentage();
 
-            const bootstrapIterations = 2500;
+            const bootstrapIterations = this._options[Strings.json.bootstrapIterations];
             var bootstrapResult = Regression.bootstrap(regressionResult.samples.data, bootstrapIterations, function(resampleData) {
                 var complexityIndex = regressionResult.samples.fieldMap[Strings.json.complexity];
                 resampleData.sort(function(a, b) {

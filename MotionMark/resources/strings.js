@@ -60,6 +60,7 @@ var Strings = {
         scoreUpperBound: "scoreUpperBound",
         fps: "fps",
         bootstrap: "bootstrap",
+        bootstrapIterations: "bootstrapIterations",
         measurements: {
             average: "average",
             concern: "concern",
