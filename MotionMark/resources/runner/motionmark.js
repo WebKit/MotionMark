@@ -33,19 +33,29 @@ class BenchmarkRunnerClient {
         this.options = options;
     }
 
+    get scoreCalculator()
+    {
+        return this._scoreCalculator;
+    }
+
+    set scoreCalculator(calculator)
+    {
+        this._scoreCalculator = calculator;
+    }
+
     willStartFirstIteration()
     {
-        this.results = new ResultsDashboard(Strings.version, this.options);
+        this.scoreCalculator = new ScoreCalculator(Strings.version, this.options);
     }
 
     didRunSuites(suitesSamplers)
     {
-        this.results.push(suitesSamplers);
+        this._scoreCalculator.push(suitesSamplers);
     }
 
     didRunTest(testData)
     {
-        this.results.calculateScore(testData);
+        this._scoreCalculator.calculateScore(testData);
     }
 
     didFinishLastIteration()
@@ -89,10 +99,10 @@ class SectionsManager {
             document.querySelector("#" + sectionIdentifier + " .confidence").textContent = confidence;
     }
 
-    populateTable(tableIdentifier, headers, dashboard)
+    populateTable(tableIdentifier, headers, scoreCalculator)
     {
         var table = new ResultsTable(document.getElementById(tableIdentifier), headers);
-        table.showIterations(dashboard);
+        table.showIterations(scoreCalculator);
     }
 }
 
@@ -299,15 +309,15 @@ class BenchmarkController {
             this.addedKeyEvent = true;
         }
 
-        const dashboard = this.runnerClient.results;
-        const score = dashboard.score;
-        const confidence = "±" + (Statistics.largestDeviationPercentage(dashboard.scoreLowerBound, score, dashboard.scoreUpperBound) * 100).toFixed(2) + "%";
-        const fps = dashboard._targetFrameRate;
-        sectionsManager.setSectionVersion("results", dashboard.version);
+        const scoreCalculator = this.runnerClient.scoreCalculator;
+        const score = scoreCalculator.score;
+        const confidence = "±" + (Statistics.largestDeviationPercentage(scoreCalculator.scoreLowerBound, score, scoreCalculator.scoreUpperBound) * 100).toFixed(2) + "%";
+        const fps = scoreCalculator.targetFrameRate;
+        sectionsManager.setSectionVersion("results", scoreCalculator.version);
         sectionsManager.setSectionScore("results", score.toFixed(2), confidence, fps);
-        sectionsManager.populateTable("results-header", Headers.testName, dashboard);
-        sectionsManager.populateTable("results-score", Headers.score, dashboard);
-        sectionsManager.populateTable("results-data", Headers.details, dashboard);
+        sectionsManager.populateTable("results-header", Headers.testName, scoreCalculator);
+        sectionsManager.populateTable("results-score", Headers.score, scoreCalculator);
+        sectionsManager.populateTable("results-data", Headers.details, scoreCalculator);
         sectionsManager.showSection("results", true);
     }
 
@@ -352,9 +362,9 @@ class BenchmarkController {
         data.textContent = "Please wait...";
         setTimeout(() => {
             var output = {
-                version: this.runnerClient.results.version,
-                options: this.runnerClient.results.options,
-                data: this.runnerClient.results.data
+                version: this.runnerClient.scoreCalculator.version,
+                options: this.runnerClient.scoreCalculator.options,
+                data: this.runnerClient.scoreCalculator.data
             };
             data.textContent = JSON.stringify(output, (key, value) => {
                 if (typeof value === 'number')
