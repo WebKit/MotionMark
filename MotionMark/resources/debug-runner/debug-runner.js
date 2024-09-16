@@ -152,10 +152,10 @@ class DebugSectionsManager extends SectionsManager {
         document.querySelector("#" + sectionIdentifier + " h1").textContent = title;
     }
 
-    populateTable(tableIdentifier, headers, dashboard)
+    populateTable(tableIdentifier, headers, scoreCalculator)
     {
         var table = new DeveloperResultsTable(document.getElementById(tableIdentifier), headers);
-        table.showIterations(dashboard);
+        table.showIterations(scoreCalculator);
     }
 }
 
@@ -599,7 +599,7 @@ class DebugBenchmarkController extends BenchmarkController {
 
                 this.migrateImportedData(run);
                 this.ensureRunnerClient([ ], { });
-                this.runnerClient.results = new ResultsDashboard(run.version, run.options, run.data);
+                this.runnerClient.scoreCalculator = new ScoreCalculator(run.version, run.options, run.data);
                 this.showResults();
             };
 
@@ -704,38 +704,38 @@ class DebugBenchmarkController extends BenchmarkController {
             this.addedKeyEvent = true;
         }
 
-        var dashboard = this.runnerClient.results;
-        if (dashboard.options["controller"] == "ramp")
+        var scoreCalculator = this.runnerClient.scoreCalculator;
+        if (scoreCalculator.options["controller"] == "ramp")
             Headers.details[3].disabled = true;
         else {
             Headers.details[1].disabled = true;
             Headers.details[4].disabled = true;
         }
 
-        if (dashboard.options[Strings.json.configuration]) {
+        if (scoreCalculator.options[Strings.json.configuration]) {
             document.body.classList.remove("small", "medium", "large");
-            document.body.classList.add(dashboard.options[Strings.json.configuration]);
+            document.body.classList.add(scoreCalculator.options[Strings.json.configuration]);
         }
 
-        var score = dashboard.score;
-        var confidence = ((dashboard.scoreLowerBound / score - 1) * 100).toFixed(2) +
-            "% / +" + ((dashboard.scoreUpperBound / score - 1) * 100).toFixed(2) + "%";
-        var fps = dashboard._systemFrameRate;
-        sectionsManager.setSectionVersion("results", dashboard.version);
+        var score = scoreCalculator.score;
+        var confidence = ((scoreCalculator.scoreLowerBound / score - 1) * 100).toFixed(2) +
+            "% / +" + ((scoreCalculator.scoreUpperBound / score - 1) * 100).toFixed(2) + "%";
+        var fps = scoreCalculator._systemFrameRate;
+        sectionsManager.setSectionVersion("results", scoreCalculator.version);
         sectionsManager.setSectionScore("results", score.toFixed(2), confidence, fps);
-        sectionsManager.populateTable("results-header", Headers.testName, dashboard);
-        sectionsManager.populateTable("results-score", Headers.score, dashboard);
-        sectionsManager.populateTable("results-data", Headers.details, dashboard);
+        sectionsManager.populateTable("results-header", Headers.testName, scoreCalculator);
+        sectionsManager.populateTable("results-score", Headers.score, scoreCalculator);
+        sectionsManager.populateTable("results-data", Headers.details, scoreCalculator);
         sectionsManager.showSection("results", true);
 
-        suitesManager.updateLocalStorageFromJSON(dashboard.results[0]);
+        suitesManager.updateLocalStorageFromJSON(scoreCalculator.results[0]);
     }
 
     showTestGraph(testName, testResult, testData)
     {
         sectionsManager.setSectionHeader("test-graph", testName);
         sectionsManager.showSection("test-graph", true);
-        this.graphController.updateGraphData(testResult, testData, this.runnerClient.results.options);
+        this.graphController.updateGraphData(testResult, testData, this.runnerClient.scoreCalculator.options);
     }
 }
 

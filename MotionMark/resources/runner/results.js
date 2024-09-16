@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class ResultsDashboard {
+class ScoreCalculator {
     constructor(version, options, testData)
     {
         this._iterationsSamplers = [];
@@ -41,6 +41,11 @@ class ResultsDashboard {
             this._iterationsSamplers = testData;
             this._processData();
         }
+    }
+    
+    get targetFrameRate()
+    {
+        return this._targetFrameRate;
     }
 
     push(suitesSamplers)
@@ -394,15 +399,15 @@ class ResultsTable {
         }
     }
 
-    showIterations(dashboard)
+    showIterations(scoreCalculator)
     {
         this.clear();
         this._addHeader();
         this._addBody();
 
-        var iterationsResults = dashboard.results;
+        var iterationsResults = scoreCalculator.results;
         iterationsResults.forEach(function(iterationResult, index) {
-            this._addIteration(iterationResult, dashboard.data[index], dashboard.options);
+            this._addIteration(iterationResult, scoreCalculator.data[index], scoreCalculator.options);
         }, this);
     }
 }

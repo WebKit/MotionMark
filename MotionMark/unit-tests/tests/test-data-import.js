@@ -46,8 +46,8 @@ describe('Data Import', function() {
         // Make the results analysis faster.
         this.json.options[Strings.json.bootstrapIterations] = 10;
 
-        const dashboard = new ResultsDashboard(this.json.version, this.json.options, this.json.data);
-        this.results = dashboard.results;
+        const calculator = new ScoreCalculator(this.json.version, this.json.options, this.json.data);
+        this.results = calculator.results;
         expect(this.results instanceof Array).to.be(true);
     });
 
