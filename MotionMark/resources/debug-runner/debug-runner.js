@@ -593,35 +593,22 @@ class DebugBenchmarkController extends BenchmarkController {
             var reader = new FileReader();
             reader.filename = file.name;
             reader.onload = (e) => {
-                var run = JSON.parse(e.target.result);
-                if (run.debugOutput instanceof Array)
-                    run = run.debugOutput[0];
+                const data = JSON.parse(e.target.result);
+                
+                let results;
+                if (data['debugOutput'] instanceof Array)
+                    results = RunData.resultsDataFromBenchmarkRunnerData(data['debugOutput']);
+                else
+                    results = RunData.resultsDataFromSingleRunData(data);
 
-                this.migrateImportedData(run);
                 this.ensureRunnerClient([ ], { });
-                this.runnerClient.scoreCalculator = new ScoreCalculator(new RunData(run.version, run.options, run.data));
+                this.runnerClient.scoreCalculator = new ScoreCalculator(results);
                 this.showResults();
             };
 
             reader.readAsText(file);
             document.title = "File: " + reader.filename;
         }, false);
-    }
-
-    migrateImportedData(runData)
-    {
-        if (!("version" in runData))
-            runData.version = "1.0";
-        
-        if (!("frame-rate" in runData.options)) {
-            runData.options["frame-rate"] = 60;
-            console.log("No frame-rate data; assuming 60fps")
-        }
-
-        if (!("system-frame-rate" in runData.options)) {
-            runData.options["system-frame-rate"] = 60;
-            console.log("No system-frame-rate data; assuming 60fps")
-        }
     }
 
     frameRateDeterminationComplete(targetFrameRate)
@@ -704,7 +691,7 @@ class DebugBenchmarkController extends BenchmarkController {
             this.addedKeyEvent = true;
         }
 
-        var scoreCalculator = this.runnerClient.scoreCalculator;
+        const scoreCalculator = this.runnerClient.scoreCalculator;
         if (scoreCalculator.options["controller"] == "ramp")
             Headers.details[3].disabled = true;
         else {
@@ -717,10 +704,10 @@ class DebugBenchmarkController extends BenchmarkController {
             document.body.classList.add(scoreCalculator.options[Strings.json.configuration]);
         }
 
-        var score = scoreCalculator.score;
-        var confidence = ((scoreCalculator.scoreLowerBound / score - 1) * 100).toFixed(2) +
+        const score = scoreCalculator.score;
+        const confidence = ((scoreCalculator.scoreLowerBound / score - 1) * 100).toFixed(2) +
             "% / +" + ((scoreCalculator.scoreUpperBound / score - 1) * 100).toFixed(2) + "%";
-        var fps = scoreCalculator._systemFrameRate;
+        const fps = scoreCalculator._systemFrameRate;
         sectionsManager.setSectionVersion("results", scoreCalculator.version);
         sectionsManager.setSectionScore("results", score.toFixed(2), confidence, fps);
         sectionsManager.populateTable("results-header", Headers.testName, scoreCalculator);

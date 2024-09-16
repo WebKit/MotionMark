@@ -140,7 +140,7 @@ class BenchmarkController {
         try {
             targetFrameRate = await this.determineFrameRate(progressElement);
         } catch (e) {
-            console.log('Frame rate detection failed ' + e);
+            console.error('Frame rate detection failed ' + e);
         }
         this.frameRateDeterminationComplete(targetFrameRate);
     }
