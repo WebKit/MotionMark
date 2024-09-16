@@ -45,7 +45,7 @@ class BenchmarkRunnerClient {
 
     willStartFirstIteration()
     {
-        this.scoreCalculator = new ScoreCalculator(Strings.version, this.options);
+        this.scoreCalculator = new ScoreCalculator(new RunData(Strings.version, this.options));
     }
 
     didRunSuites(suitesSamplers)
