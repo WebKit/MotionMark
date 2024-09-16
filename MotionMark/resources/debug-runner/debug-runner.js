@@ -599,7 +599,7 @@ class DebugBenchmarkController extends BenchmarkController {
 
                 this.migrateImportedData(run);
                 this.ensureRunnerClient([ ], { });
-                this.runnerClient.scoreCalculator = new ScoreCalculator(run.version, run.options, run.data);
+                this.runnerClient.scoreCalculator = new ScoreCalculator(new RunData(run.version, run.options, run.data));
                 this.showResults();
             };
 

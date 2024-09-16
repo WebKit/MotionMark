@@ -23,24 +23,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class ScoreCalculator {
-    constructor(version, options, testData)
+class RunData {
+    constructor(version, options, runs = [])
     {
-        this._iterationsSamplers = [];
-        this._options = options;
+        this.version = version;
+        this.options = options;
+        this.runs = runs;
+    }
+}
+
+class ScoreCalculator {
+    constructor(runData)
+    {
+        this._runData = runData;
         this._results = null;
-        this._version = version;
-        this._targetFrameRate = options["frame-rate"];
-        this._systemFrameRate = options["system-frame-rate"];
+        this._targetFrameRate = runData.options["frame-rate"];
+        this._systemFrameRate = runData.options["system-frame-rate"];
 
         const defaultBootstrapIterations = 2500;
-        if (!Object.hasOwn(this._options, Strings.json.bootstrapIterations))
-            this._options[Strings.json.bootstrapIterations] = defaultBootstrapIterations;
+        if (!Object.hasOwn(this._runData.options, Strings.json.bootstrapIterations))
+            this._runData.options[Strings.json.bootstrapIterations] = defaultBootstrapIterations;
         
-        if (testData) {
-            this._iterationsSamplers = testData;
+        if (this._runData.runs.length > 0)
             this._processData();
-        }
     }
     
     get targetFrameRate()
@@ -50,7 +55,7 @@ class ScoreCalculator {
 
     push(suitesSamplers)
     {
-        this._iterationsSamplers.push(suitesSamplers);
+        this._runData.runs.push(suitesSamplers);
     }
 
     _processData()
@@ -59,7 +64,7 @@ class ScoreCalculator {
         this._results[Strings.json.results.iterations] = [];
 
         var iterationsScores = [];
-        this._iterationsSamplers.forEach(function(iteration, index) {
+        this._runData.runs.forEach(function(iteration, index) {
             var testsScores = [];
             var testsLowerBoundScores = [];
             var testsUpperBoundScores = [];
@@ -95,7 +100,7 @@ class ScoreCalculator {
             iterationsScores.push(result[Strings.json.score]);
         }, this);
 
-        this._results[Strings.json.version] = this._version;
+        this._results[Strings.json.version] = this._runData.version;
         this._results[Strings.json.fps] = this._targetFrameRate;
         this._results[Strings.json.score] = Statistics.sampleMean(iterationsScores.length, iterationsScores.reduce(function(a, b) { return a + b; }));
         this._results[Strings.json.scoreLowerBound] = this._results[Strings.json.results.iterations][0][Strings.json.scoreLowerBound];
@@ -149,7 +154,7 @@ class ScoreCalculator {
                 samples[seriesName] = new SampleData(series.fieldMap, series.data);
         });
 
-        var isRampController = this._options["controller"] == "ramp";
+        var isRampController = this._runData.options[Strings.json.controller] == "ramp";
         var predominantProfile = "";
         if (isRampController) {
             var profiles = {};
@@ -198,7 +203,7 @@ class ScoreCalculator {
             experimentResult[Strings.json.measurements.stdev] = timeComplexity.standardDeviation();
             experimentResult[Strings.json.measurements.percent] = timeComplexity.percentage();
 
-            const bootstrapIterations = this._options[Strings.json.bootstrapIterations];
+            const bootstrapIterations = this._runData.options[Strings.json.bootstrapIterations];
             var bootstrapResult = Regression.bootstrap(regressionResult.samples.data, bootstrapIterations, function(resampleData) {
                 var complexityIndex = regressionResult.samples.fieldMap[Strings.json.complexity];
                 resampleData.sort(function(a, b) {
@@ -265,7 +270,7 @@ class ScoreCalculator {
 
     get data()
     {
-        return this._iterationsSamplers;
+        return this._runData.runs;
     }
 
     get results()
@@ -278,12 +283,12 @@ class ScoreCalculator {
 
     get options()
     {
-        return this._options;
+        return this._runData.options;
     }
 
     get version()
     {
-        return this._version;
+        return this._runData.version;
     }
 
     _getResultsProperty(property)
