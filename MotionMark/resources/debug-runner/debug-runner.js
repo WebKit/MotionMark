@@ -534,7 +534,7 @@ class DebugBenchmarkController extends BenchmarkController {
         this.updateUIStrings();
         this.graphController = new GraphController;
 
-        document.forms["benchmark-options"].addEventListener("change", () => { this.onBenchmarkOptionsChanged() }, true);
+        document.forms["benchmark-options"].addEventListener("change", (event) => { this.onBenchmarkOptionsChanged(event) }, true);
         document.forms["graph-type"].addEventListener("change", () => { this.graphController.onGraphTypeChanged() }, true);
         document.forms["time-graph-options"].addEventListener("change", () => { this.graphController.onTimeGraphOptionsChanged() }, true);
         document.forms["complexity-graph-options"].addEventListener("change", () => { this.graphController.onComplexityGraphOptionsChanged() }, true);
