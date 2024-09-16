@@ -30,6 +30,56 @@ class RunData {
         this.options = options;
         this.runs = runs;
     }
+    
+    static resultsDataFromSingleRunData(singleRunData)
+    {
+        RunData.#migrateImportedData(singleRunData);
+        
+        if (!singleRunData.data instanceof Array) {
+            console.log('Imported singleRunData.data is not an array. Bailing');
+            return null;
+        }
+        
+        return new RunData(singleRunData.version, singleRunData.options, singleRunData.data);
+    }
+
+    static resultsDataFromBenchmarkRunnerData(benchmarkData)
+    {
+        if (!benchmarkData instanceof Array) {
+            console.log('Imported benchmarkData is not an array. Bailing');
+            return null;
+        }
+        
+        let runData = [];
+        for (let run of benchmarkData) {
+            RunData.#migrateImportedData(run);
+            if (run.data.length !== 1) {
+                console.log('Imported benchmarkData has a "data" array with an unexpected number of items. Bailing');
+                return null;
+            }
+        
+            runData.push(run.data[0]);
+        }
+        
+        // Version and options data should be these same for each run. Use the first run's information.
+        return new RunData(benchmarkData[0].version, benchmarkData[0].options, runData);
+    }
+    
+    static #migrateImportedData(options)
+    {
+        if (!("version" in options))
+            options.version = "1.0";
+        
+        if (!("frame-rate" in options)) {
+            options.options["frame-rate"] = 60;
+            console.log("No frame-rate data; assuming 60fps")
+        }
+
+        if (!("system-frame-rate" in options)) {
+            options.options["system-frame-rate"] = 60;
+            console.log("No system-frame-rate data; assuming 60fps")
+        }
+    }
 }
 
 class ScoreCalculator {

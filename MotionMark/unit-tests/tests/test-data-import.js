@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-describe('Data Import', function() {
+describe('Data Single Run Import', function() {
     it('Fetch test data', async function() {
         this.timeout(200);
 
@@ -46,14 +46,13 @@ describe('Data Import', function() {
         // Make the results analysis faster.
         this.json.options[Strings.json.bootstrapIterations] = 10;
 
-        const runData = new RunData(this.json.version, this.json.options, this.json.data);
+        const runData = RunData.resultsDataFromSingleRunData(this.json);
         const calculator = new ScoreCalculator(runData);
         this.results = calculator.results;
         expect(this.results instanceof Array).to.be(true);
     });
 
     it('Validate results', function() {
-
         // Check that we have results, not their exact values.
         const firstResults = this.results[0];
 
@@ -74,5 +73,65 @@ describe('Data Import', function() {
         expect(typeof multiplyResults[Strings.json.score]).to.be('number');
         expect(typeof multiplyResults[Strings.json.scoreLowerBound]).to.be('number');
         expect(typeof multiplyResults[Strings.json.scoreUpperBound]).to.be('number');
+    });
+});
+
+// Tests import of the JSON produced by `run-benchmark`.
+describe('Data Benchmark Run Import', function() {
+    it('Fetch benchmark test data', async function() {
+        this.timeout(200);
+
+        const url = "data/two-suite-multiple-iterations-benchmark-data.json";
+        const response = await fetch(url);
+        expect(response.ok).to.be(true);
+
+        this.json = await response.json();
+        expect(this.json['debugOutput'] instanceof Array).to.be(true);
+    });
+
+    it('Validate benchmark runs', function() {
+        for (const runData of this.json['debugOutput']) {
+            expect(runData.options instanceof Object).to.be(true);
+            expect(runData.data instanceof Array).to.be(true);
+        }
+    });
+
+    it('Create benchmark results', function() {
+        this.timeout(500);
+
+        for (const runData of this.json['debugOutput']) {
+            // Make the results analysis faster.
+            runData.options[Strings.json.bootstrapIterations] = 10;
+        }
+
+        const benchmarkData = this.json['debugOutput'];
+        const runData = RunData.resultsDataFromBenchmarkRunnerData(benchmarkData);
+
+        const calculator = new ScoreCalculator(runData);
+        this.results = calculator.results;
+        expect(this.results instanceof Array).to.be(true);
+    });
+
+    it('Validate benchmark results', function() {
+        // Check that we have results, not their exact values.
+        for (const iteration of this.results) {
+            expect(typeof iteration[Strings.json.score]).to.be('number');
+            expect(typeof iteration[Strings.json.scoreLowerBound]).to.be('number');
+            expect(typeof iteration[Strings.json.scoreUpperBound]).to.be('number');
+        
+            expect(iteration[Strings.json.results.tests] instanceof Object).to.be(true);
+
+            const testsResults = iteration[Strings.json.results.tests];
+            expect(testsResults['MotionMark'] instanceof Object).to.be(true);
+
+            const motionMarkResults = testsResults['MotionMark'];
+            expect(motionMarkResults['Multiply'] instanceof Object).to.be(true);
+            expect(motionMarkResults['Suits'] instanceof Object).to.be(true);
+
+            const multiplyResults = motionMarkResults['Multiply'];
+            expect(typeof multiplyResults[Strings.json.score]).to.be('number');
+            expect(typeof multiplyResults[Strings.json.scoreLowerBound]).to.be('number');
+            expect(typeof multiplyResults[Strings.json.scoreUpperBound]).to.be('number');
+        }
     });
 });
