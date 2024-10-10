@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 var minimumDiameter = 30;
 var sizeVariance = 20;
@@ -35,9 +34,11 @@ var opacityMultiplier = 30;
 var focusDuration = 1000;
 var movementDuration = 2500;
 
-var FocusElement = Utilities.createClass(
-    function(stage)
+class FocusElement {
+    constructor(stage)
     {
+        super(stage);
+
         var size = minimumDiameter + sizeVariance;
 
         // Size and blurring are a function of depth.
@@ -60,19 +61,19 @@ var FocusElement = Utilities.createClass(
         this._cosMultiplier = Pseudo.random() * Stage.randomSign() * depthMultiplier * travelDistance;
 
         this.animate(stage, 0, 0);
-    }, {
+    }
 
-    hide: function()
+    hide()
     {
         this.particle.style.display = "none";
-    },
+    }
 
-    show: function()
+    show()
     {
         this.particle.style.display = "block";
-    },
+    }
 
-    animate: function(stage, sinFactor, cosFactor)
+    animate(stage, sinFactor, cosFactor)
     {
         var top = sinFactor * this._sinMultiplier;
         var left = cosFactor * this._cosMultiplier;
@@ -83,29 +84,24 @@ var FocusElement = Utilities.createClass(
         Utilities.setElementPrefixedProperty(this.particle, "filter", "blur(" + blur + "px) opacity(" + opacity + "%)");
         this.particle.style.transform = "translate3d(" + left + "%, " + top + "%, 0)";
     }
-});
+}
 
-var FocusStage = Utilities.createSubclass(Stage,
-    function()
+class FocusStage extends Stage {
+    initialize(benchmark, options)
     {
-        Stage.call(this);
-    }, {
-
-    initialize: function(benchmark, options)
-    {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
 
         this._testElements = [];
         this._offsetIndex = 0;
         this.focalPoint = 0.5;
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return this._offsetIndex;
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -126,9 +122,9 @@ var FocusStage = Utilities.createSubclass(Stage,
         for (var i = this._offsetIndex; i < newIndex; ++i)
             this._testElements[i].show();
         this._offsetIndex = newIndex;
-    },
+    }
 
-    animate: function()
+    animate()
     {
         var time = this._benchmark.timestamp;
         var sinFactor = Math.sin(time / movementDuration);
@@ -139,15 +135,13 @@ var FocusStage = Utilities.createSubclass(Stage,
         for (var i = 0; i < this._offsetIndex; ++i)
             this._testElements[i].animate(this, sinFactor, cosFactor);
     }
-});
+}
 
-var FocusBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class FocusBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new FocusStage(), options);
+        super(new FocusStage(), options);
     }
-);
+}
 
 window.benchmarkClass = FocusBenchmark;
-
-}());

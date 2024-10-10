@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,29 +22,32 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-window.Leaf = Utilities.createSubclass(Particle,
-    function(stage)
+class Leaf extends Particle {
+    static get sizeMinimum() { return 20; }
+    static get sizeRange() { return 30; }
+    static get usesOpacity() { return true; }
+
+    constructor(stage)
     {
+        super(stage);
+    }
+    
+    initialize()
+    {
+        super.initialize();
         this.element = document.createElement("img");
-        this.element.setAttribute("src", Stage.randomElementInArray(stage.images).src);
-        stage.element.appendChild(this.element);
+        this.element.setAttribute("src", Stage.randomElementInArray(this.stage.images).src);
+        this.stage.element.appendChild(this.element);
+    }
 
-        Particle.call(this, stage);
-    }, {
-
-    sizeMinimum: 20,
-    sizeRange: 30,
-    usesOpacity: true,
-
-    reset: function()
+    reset()
     {
-        Particle.prototype.reset.call(this);
+        super.reset();
         this.element.style.width = this.size.x + "px";
         this.element.style.height = this.size.y + "px";
 
-        if (this.usesOpacity) {
+        if (this.constructor.usesOpacity) {
             this._opacity = .01;
             this._opacityRate = 0.02 * Stage.random(1, 6);
         } else
@@ -52,16 +55,16 @@ window.Leaf = Utilities.createSubclass(Particle,
 
         this._position = new Point(Stage.random(0, this.maxPosition.x), Stage.random(-this.size.height, this.maxPosition.y));
         this._velocity = new Point(Stage.random(-6, -2), .1 * this.size.y + Stage.random(-1, 1));
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.rotater.next(timeDelta);
 
         this._position.x += this._velocity.x + 8 * this.stage.focusX;
         this._position.y += this._velocity.y;
 
-        if (this.usesOpacity) {
+        if (this.constructor.usesOpacity) {
             this._opacity += this._opacityRate;
             if (this._opacity > 1) {
                 this._opacity = 1;
@@ -77,18 +80,18 @@ window.Leaf = Utilities.createSubclass(Particle,
         if (this._position.x < -this.size.width || this._position.x > this.stage.size.width)
             this._position.x = this._position.x - Math.sign(this._position.x) * (this.size.width + this.stage.size.width);
         this.move();
-    },
+    }
 
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
         this.element.style.opacity = this._opacity;
     }
-});
+}
 
-Utilities.extendObject(ParticlesStage.prototype, {
+class LeavesStage extends ParticlesStage {
 
-    imageSrcs: [
+    static imageSrcs = [
         "compass",
         "console",
         "contribute",
@@ -102,16 +105,21 @@ Utilities.extendObject(ParticlesStage.prototype, {
         "storage",
         "styles",
         "timeline"
-    ],
-    images: [],
-
-    initialize: function(benchmark)
+    ];
+    
+    constructor()
     {
-        Stage.prototype.initialize.call(this, benchmark);
+        super();
+        this.images = [];
+    }
+
+    initialize(benchmark)
+    {
+        super.initialize(benchmark);
 
         var lastPromise;
         var images = this.images;
-        this.imageSrcs.forEach(function(imageSrc) {
+        LeavesStage.imageSrcs.forEach(function(imageSrc) {
             var promise = this._loadImage("../core/resources/" + imageSrc + "100.png");
             if (!lastPromise)
                 lastPromise = promise;
@@ -127,9 +135,9 @@ Utilities.extendObject(ParticlesStage.prototype, {
             images.push(img);
             benchmark.readyPromise.resolve();
         });
-    },
+    }
 
-    _loadImage: function(src) {
+    _loadImage(src) {
         var img = new Image;
         var promise = new SimplePromise;
 
@@ -139,41 +147,39 @@ Utilities.extendObject(ParticlesStage.prototype, {
 
         img.src = src;
         return promise;
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.focusX = 0.5 + 0.5 * Math.sin(Stage.dateFractionalValue(10000) * Math.PI * 2);
         timeDelta /= 4;
         this.particles.forEach(function(particle) {
             particle.animate(timeDelta);
         });
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new Leaf(this);
-    },
+    }
 
-    willRemoveParticle: function(particle)
+    willRemoveParticle(particle)
     {
         particle.element.remove();
     }
-});
+}
 
-var LeavesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class LeavesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new ParticlesStage(), options);
-    }, {
+        super(new LeavesStage(), options);
+    }
 
-    waitUntilReady: function() {
+    waitUntilReady()
+    {
         this.readyPromise = new SimplePromise;
         return this.readyPromise;
     }
-
-});
+}
 
 window.benchmarkClass = LeavesBenchmark;
-
-})();

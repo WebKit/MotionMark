@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
 var maxVerticalOffset = 50;
 var minimumDiameter = 30;
@@ -32,8 +31,8 @@ var travelDistance = 50;
 
 var opacityMultiplier = 30;
 
-var FocusElement = Utilities.createClass(
-    function(stage)
+class FocusElement {
+    constructor(stage)
     {
         var size = minimumDiameter + sizeVariance;
 
@@ -61,19 +60,19 @@ var FocusElement = Utilities.createClass(
         var depthMultiplier = Utilities.lerp(1 - this._depth, 0.8, 1);
         this._sinMultiplier = Pseudo.random() * Stage.randomSign() * depthMultiplier * travelDistance;
         this._cosMultiplier = Pseudo.random() * Stage.randomSign() * depthMultiplier * travelDistance;
-    }, {
+    }
 
-    hide: function()
+    hide()
     {
         this.container.style.display = "none";
-    },
+    }
 
-    show: function()
+    show()
     {
         this.container.style.display = "block";
-    },
+    }
 
-    animate: function(stage, sinFactor, cosFactor)
+    animate(stage, sinFactor, cosFactor)
     {
         var top = sinFactor * this._sinMultiplier;
         var left = cosFactor * this._cosMultiplier;
@@ -81,52 +80,47 @@ var FocusElement = Utilities.createClass(
         Utilities.setElementPrefixedProperty(this.container, "filter", "blur(" + stage.getBlurValue(this._depth) + "px) opacity(" + stage.getOpacityValue(this._depth) + "%)");
         this.container.style.transform = "translate3d(" + left + "%, " + top + "%, 0)";
     }
-});
+}
 
-var FocusStage = Utilities.createSubclass(Stage,
-    function()
+class FocusStage extends Stage {
+    static movementDuration = 2500;
+    static focusDuration = 1000;
+
+    static centerObjectDepth = 0.0;
+
+    static minBlurValue = 1.5;
+    static maxBlurValue = 15;
+    static maxCenterObjectBlurValue = 5;
+    
+    initialize(benchmark, options)
     {
-        Stage.call(this);
-    }, {
-
-    movementDuration: 2500,
-    focusDuration: 1000,
-
-    centerObjectDepth: 0.0,
-
-    minBlurValue: 1.5,
-    maxBlurValue: 15,
-    maxCenterObjectBlurValue: 5,
-
-    initialize: function(benchmark, options)
-    {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
 
         this._testElements = [];
         this._focalPoint = 0.5;
         this._offsetIndex = 0;
 
         this._centerElement = document.getElementById("center-text");
-        this._centerElement.style.width = (centerDiameter + this.maxCenterObjectBlurValue * 6) + "px";
-        this._centerElement.style.height = (centerDiameter + this.maxCenterObjectBlurValue * 6) + "px";
-        this._centerElement.style.zIndex = Math.round(10 * this.centerObjectDepth);
+        this._centerElement.style.width = (centerDiameter + FocusStage.maxCenterObjectBlurValue * 6) + "px";
+        this._centerElement.style.height = (centerDiameter + FocusStage.maxCenterObjectBlurValue * 6) + "px";
+        this._centerElement.style.zIndex = Math.round(10 * FocusStage.centerObjectDepth);
 
         var particle = document.querySelector("#center-text div");
         particle.style.width = centerDiameter + "px";
         particle.style.height = centerDiameter + "px";
-        particle.style.top = (this.maxCenterObjectBlurValue * 3) + "px";
-        particle.style.left = (this.maxCenterObjectBlurValue * 3) + "px";
+        particle.style.top = (FocusStage.maxCenterObjectBlurValue * 3) + "px";
+        particle.style.left = (FocusStage.maxCenterObjectBlurValue * 3) + "px";
 
-        var blur = this.getBlurValue(this.centerObjectDepth, true);
+        var blur = this.getBlurValue(FocusStage.centerObjectDepth, true);
         Utilities.setElementPrefixedProperty(this._centerElement, "filter", "blur(" + blur + "px)");
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return 1 + this._offsetIndex;
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -147,44 +141,42 @@ var FocusStage = Utilities.createSubclass(Stage,
         for (var i = this._offsetIndex; i < newIndex; ++i)
             this._testElements[i].show();
         this._offsetIndex = newIndex;
-    },
+    }
 
-    animate: function()
+    animate()
     {
         var time = this._benchmark.timestamp;
-        var sinFactor = Math.sin(time / this.movementDuration);
-        var cosFactor = Math.cos(time / this.movementDuration);
+        var sinFactor = Math.sin(time / FocusStage.movementDuration);
+        var cosFactor = Math.cos(time / FocusStage.movementDuration);
 
-        var focusProgress = 0.5 + 0.5 * Math.sin(time / this.focusDuration);
+        var focusProgress = 0.5 + 0.5 * Math.sin(time / FocusStage.focusDuration);
         this._focalPoint = focusProgress;
 
-        Utilities.setElementPrefixedProperty(this._centerElement, "filter", "blur(" + this.getBlurValue(this.centerObjectDepth, true) + "px)");
+        Utilities.setElementPrefixedProperty(this._centerElement, "filter", "blur(" + this.getBlurValue(FocusStage.centerObjectDepth, true) + "px)");
 
         for (var i = 0; i < this._offsetIndex; ++i)
             this._testElements[i].animate(this, sinFactor, cosFactor);
-    },
+    }
 
-    getBlurValue: function(depth, isCenter)
+    getBlurValue(depth, isCenter)
     {
         if (isCenter)
-            return 1 + Math.abs(depth - this._focalPoint) * (this.maxCenterObjectBlurValue - 1);
+            return 1 + Math.abs(depth - this._focalPoint) * (FocusStage.maxCenterObjectBlurValue - 1);
 
-        return Utilities.lerp(Math.abs(depth - this._focalPoint), this.minBlurValue, this.maxBlurValue);
-    },
+        return Utilities.lerp(Math.abs(depth - this._focalPoint), FocusStage.minBlurValue, FocusStage.maxBlurValue);
+    }
 
-    getOpacityValue: function(depth)
+    getOpacityValue(depth)
     {
         return Math.max(1, opacityMultiplier * (1 - Math.abs(depth - this._focalPoint)));
-    },
-});
-
-var FocusBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
-    {
-        Benchmark.call(this, new FocusStage(), options);
     }
-);
+}
+
+class FocusBenchmark extends Benchmark {
+    constructor(options)
+    {
+        super(new FocusStage(), options);
+    }
+}
 
 window.benchmarkClass = FocusBenchmark;
-
-}());

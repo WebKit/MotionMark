@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,38 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SimpleCanvasStage extends CanvasStage {
-    tune(count)
-    {
-        if (count == 0)
-            return;
-
-        if (count < 0) {
-            this.offsetIndex = Math.max(this.offsetIndex + count, 0);
-            return;
-        }
-
-        this.offsetIndex = this.offsetIndex + count;
-        if (this.offsetIndex > this.objects.length) {
-            // For some tests, it may be easier to see how well the test is going
-            // by limiting the range of coordinates in which new objects can reside
-            var coordinateMaximumFactor = Math.min(this.objects.length, Math.min(this.size.x, this.size.y)) / Math.min(this.size.x, this.size.y);
-            var newIndex = this.offsetIndex - this.objects.length;
-            for (var i = 0; i < newIndex; ++i)
-                this.objects.push(new this._canvasObject(this, coordinateMaximumFactor));
-        }
-    }
-
-    animate()
-    {
-        var context = this.context;
-        context.clearRect(0, 0, this.size.x, this.size.y);
-        for (var i = 0, length = this.offsetIndex; i < length; ++i)
-            this.objects[i].draw(context);
-    }
-
-    complexity()
-    {
-        return this.offsetIndex;
-    }
-}
+describe('Random', function() {
+    it('Check random sequence', function() {
+        Pseudo.resetRandomSeed();
+        expect(Pseudo.randomSeed).to.be(49734321);
+        expect(Pseudo.random().toFixed(6)).to.be('0.987282');
+        expect(Pseudo.random().toFixed(6)).to.be('0.348803');
+        expect(Pseudo.random().toFixed(6)).to.be('0.563193');
+    });
+});

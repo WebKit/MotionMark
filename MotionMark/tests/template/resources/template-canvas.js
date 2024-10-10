@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,23 +22,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-function TemplateCanvasObject(stage)
+class TemplateCanvasObject
 {
+    constructor(stage)
+    {
+        super(stage);
+    }
+
     // For the canvas stage, most likely you will need to create your
     // animated object since it's only draw time thing.
 
     // Fill in your object data.
-}
-
-TemplateCanvasObject.prototype = {
-    _draw: function()
+    
+    _draw()
     {
         // Draw your object.
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         // Redraw the animated object. The last time this animated
         // item was drawn before 'timeDelta'.
@@ -48,32 +50,27 @@ TemplateCanvasObject.prototype = {
         // Redraw your object.
         this._draw();
     }
-};
+}
 
-TemplateCanvasStage = Utilities.createSubclass(Stage,
-    function()
+class TemplateCanvasStage extends Stage {
+    initialize(benchmark, options)
     {
-        Stage.call(this);
-    }, {
-
-    initialize: function(benchmark, options)
-    {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
 
         // Define a collection for your objects.
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         // If count is -ve, -count elements need to be removed form the
         // stage. If count is +ve, +count elements need to be added to
         // the stage.
 
         // Change objects in the stage.
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         // Animate the elements such that all of them are redrawn. Most
         // likely you will need to call TemplateCanvasObject.animate()
@@ -84,13 +81,13 @@ TemplateCanvasStage = Utilities.createSubclass(Stage,
 
         // Loop through all your objects and ask them to animate.
     }
-});
+}
 
-TemplateCanvasBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TemplateCanvasBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TemplateCanvasStage(), options);
-    }, {
+        super(new TemplateCanvasStage(), options);
+    }
 
     // Override this function if the benchmark needs to wait for resources to be
     // loaded.
@@ -98,7 +95,7 @@ TemplateCanvasBenchmark = Utilities.createSubclass(Benchmark,
     // Default implementation returns a resolved promise, so that the benchmark
     // benchmark starts right away. Here's an example where we're waiting 5
     // seconds before starting the benchmark.
-    waitUntilReady: function()
+    waitUntilReady()
     {
         var promise = new SimplePromise;
         window.setTimeout(function() {
@@ -106,8 +103,6 @@ TemplateCanvasBenchmark = Utilities.createSubclass(Benchmark,
         }, 5000);
         return promise;
     }
-});
+}
 
 window.benchmarkClass = TemplateCanvasBenchmark;
-
-})();

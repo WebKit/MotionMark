@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020 Apple Inc. All rights reserved.
+ * Copyright (C) 2018-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,8 +22,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
- ResultsDashboard = Utilities.createClass(
-    function(version, options, testData)
+
+class ResultsDashboard {
+    constructor(version, options, testData)
     {
         this._iterationsSamplers = [];
         this._options = options;
@@ -35,14 +36,14 @@
             this._iterationsSamplers = testData;
             this._processData();
         }
-    }, {
+    }
 
-    push: function(suitesSamplers)
+    push(suitesSamplers)
     {
         this._iterationsSamplers.push(suitesSamplers);
-    },
+    }
 
-    _processData: function()
+    _processData()
     {
         this._results = {};
         this._results[Strings.json.results.iterations] = [];
@@ -89,9 +90,9 @@
         this._results[Strings.json.score] = Statistics.sampleMean(iterationsScores.length, iterationsScores.reduce(function(a, b) { return a + b; }));
         this._results[Strings.json.scoreLowerBound] = this._results[Strings.json.results.iterations][0][Strings.json.scoreLowerBound];
         this._results[Strings.json.scoreUpperBound] = this._results[Strings.json.results.iterations][0][Strings.json.scoreUpperBound];
-    },
+    }
 
-    calculateScore: function(data)
+    calculateScore(data)
     {
         var result = {};
         data[Strings.json.result] = result;
@@ -196,7 +197,7 @@
 
                 var resample = new SampleData(regressionResult.samples.fieldMap, resampleData);
                 var bootstrapRegressionResult = findRegression(resample, predominantProfile);
-		if (bootstrapRegressionResult.regression.t2 < 0) {
+                if (bootstrapRegressionResult.regression.t2 < 0) {
                   // A positive slope means the frame rate decreased with increased complexity (which is the expected
                   // benavior). OTOH, a negative slope means the framerate increased as the complexity increased. This
                   // likely means the max complexity needs to be increased. None-the-less, if the slope is negative use
@@ -235,27 +236,27 @@
             var experimentResult = {};
             result[Strings.json.controller] = experimentResult;
             experimentResult[Strings.json.measurements.average] = averageComplexity.mean();
-            experimentResult[Strings.json.measurements.concern] = averageComplexity.concern(Experiment.defaults.CONCERN);
+            experimentResult[Strings.json.measurements.concern] = averageComplexity.concern(Experiment.DEFAULT_CONCERN);
             experimentResult[Strings.json.measurements.stdev] = averageComplexity.standardDeviation();
             experimentResult[Strings.json.measurements.percent] = averageComplexity.percentage();
 
             experimentResult = {};
             result[Strings.json.frameLength] = experimentResult;
             experimentResult[Strings.json.measurements.average] = 1000 / averageFrameLength.mean();
-            experimentResult[Strings.json.measurements.concern] = averageFrameLength.concern(Experiment.defaults.CONCERN);
+            experimentResult[Strings.json.measurements.concern] = averageFrameLength.concern(Experiment.DEFAULT_CONCERN);
             experimentResult[Strings.json.measurements.stdev] = averageFrameLength.standardDeviation();
             experimentResult[Strings.json.measurements.percent] = averageFrameLength.percentage();
 
-            result[Strings.json.score] = averageComplexity.score(Experiment.defaults.CONCERN);
+            result[Strings.json.score] = averageComplexity.score(Experiment.DEFAULT_CONCERN);
             result[Strings.json.scoreLowerBound] = result[Strings.json.score] - averageFrameLength.standardDeviation();
             result[Strings.json.scoreUpperBound] = result[Strings.json.score] + averageFrameLength.standardDeviation();
         }
-    },
+    }
 
     get data()
     {
         return this._iterationsSamplers;
-    },
+    }
 
     get results()
     {
@@ -263,44 +264,44 @@
             return this._results[Strings.json.results.iterations];
         this._processData();
         return this._results[Strings.json.results.iterations];
-    },
+    }
 
     get options()
     {
         return this._options;
-    },
+    }
 
     get version()
     {
         return this._version;
-    },
+    }
 
-    _getResultsProperty: function(property)
+    _getResultsProperty(property)
     {
         if (this._results)
             return this._results[property];
         this._processData();
         return this._results[property];
-    },
+    }
 
     get score()
     {
         return this._getResultsProperty(Strings.json.score);
-    },
+    }
 
     get scoreLowerBound()
     {
         return this._getResultsProperty(Strings.json.scoreLowerBound);
-    },
+    }
 
     get scoreUpperBound()
     {
         return this._getResultsProperty(Strings.json.scoreUpperBound);
     }
-});
+}
 
-ResultsTable = Utilities.createClass(
-    function(element, headers)
+class ResultsTable {
+    constructor(element, headers)
     {
         this.element = element;
         this._headers = headers;
@@ -321,14 +322,14 @@ ResultsTable = Utilities.createClass(
         });
 
         this.clear();
-    }, {
+    }
 
-    clear: function()
+    clear()
     {
         this.element.textContent = "";
-    },
+    }
 
-    _addHeader: function()
+    _addHeader()
     {
         var thead = Utilities.createElement("thead", {}, this.element);
         var row = Utilities.createElement("tr", {}, thead);
@@ -343,22 +344,22 @@ ResultsTable = Utilities.createClass(
             if (header.children)
                 th.colSpan = header.children.length;
         });
-    },
+    }
 
-    _addBody: function()
+    _addBody()
     {
         this.tbody = Utilities.createElement("tbody", {}, this.element);
-    },
+    }
 
-    _addEmptyRow: function()
+    _addEmptyRow()
     {
         var row = Utilities.createElement("tr", {}, this.tbody);
         this._flattenedHeaders.forEach(function (header) {
             return Utilities.createElement("td", { class: "suites-separator" }, row);
         });
-    },
+    }
 
-    _addTest: function(testName, testResult, options)
+    _addTest(testName, testResult, options)
     {
         var row = Utilities.createElement("tr", {}, this.tbody);
 
@@ -374,9 +375,9 @@ ResultsTable = Utilities.createClass(
             } else
                 td.innerHTML = header.text(testResult);
         }, this);
-    },
+    }
 
-    _addIteration: function(iterationResult, iterationData, options)
+    _addIteration(iterationResult, iterationData, options)
     {
         var testsResults = iterationResult[Strings.json.results.tests];
         for (var suiteName in testsResults) {
@@ -386,9 +387,9 @@ ResultsTable = Utilities.createClass(
             for (var testName in suiteResult)
                 this._addTest(testName, suiteResult[testName], options, suiteData[testName]);
         }
-    },
+    }
 
-    showIterations: function(dashboard)
+    showIterations(dashboard)
     {
         this.clear();
         this._addHeader();
@@ -399,41 +400,41 @@ ResultsTable = Utilities.createClass(
             this._addIteration(iterationResult, dashboard.data[index], dashboard.options);
         }, this);
     }
-});
+}
 
-window.benchmarkRunnerClient = {
-    iterationCount: 1,
-    options: null,
-    results: null,
-
-    initialize: function(suites, options)
+class BenchmarkRunnerClient {
+    iterationCount = 1;
+    options = null;
+    results = null;
+    
+    constructor(suites, options)
     {
         this.options = options;
-    },
+    }
 
-    willStartFirstIteration: function()
+    willStartFirstIteration()
     {
         this.results = new ResultsDashboard(Strings.version, this.options);
-    },
+    }
 
-    didRunSuites: function(suitesSamplers)
+    didRunSuites(suitesSamplers)
     {
         this.results.push(suitesSamplers);
-    },
+    }
 
-    didRunTest: function(testData)
+    didRunTest(testData)
     {
         this.results.calculateScore(testData);
-    },
+    }
 
-    didFinishLastIteration: function()
+    didFinishLastIteration()
     {
         benchmarkController.showResults();
     }
-};
+}
 
-window.sectionsManager = {
-    showSection: function(sectionIdentifier, pushState)
+class SectionsManager {
+    showSection(sectionIdentifier, pushState)
     {
         var sections = document.querySelectorAll("main > section");
         for (var i = 0; i < sections.length; ++i) {
@@ -452,30 +453,30 @@ window.sectionsManager = {
 
         if (pushState)
             history.pushState({section: sectionIdentifier}, document.title);
-    },
+    }
 
-    setSectionVersion: function(sectionIdentifier, version)
+    setSectionVersion(sectionIdentifier, version)
     {
         document.querySelector("#" + sectionIdentifier + " .version").textContent = version;
-    },
+    }
 
-    setSectionScore: function(sectionIdentifier, score, confidence, fps)
+    setSectionScore(sectionIdentifier, score, confidence, fps)
     {
         if (fps && score)
             document.querySelector("#" + sectionIdentifier + " .score").textContent = `${score} @ ${fps}fps`;
         if (confidence)
             document.querySelector("#" + sectionIdentifier + " .confidence").textContent = confidence;
-    },
+    }
 
-    populateTable: function(tableIdentifier, headers, dashboard)
+    populateTable(tableIdentifier, headers, dashboard)
     {
         var table = new ResultsTable(document.getElementById(tableIdentifier), headers);
         table.showIterations(dashboard);
     }
-};
+}
 
-window.benchmarkController = {
-    benchmarkDefaultParameters: {
+class BenchmarkController {
+    benchmarkDefaultParameters = {
         "test-interval": 30,
         "display": "minimal",
         "tiles": "big",
@@ -488,29 +489,40 @@ window.benchmarkController = {
         "first-frame-minimum-length": 0,
         "system-frame-rate": 60,
         "frame-rate": 60,
-    },
+    };
 
-    initialize: async function()
+    async initialize()
     {
-        document.title = Strings.text.title.replace("%s", Strings.version);
-        document.querySelectorAll(".version").forEach(function(e) {
-            e.textContent = Strings.version;
-        });
+        this.updateUIStrings();
         benchmarkController.addOrientationListenerIfNecessary();
 
         this._startButton = document.getElementById("start-button");
         this._startButton.disabled = true;
         this._startButton.textContent = Strings.text.determininingFrameRate;
 
+        await this.detectFrameRate();
+    }
+    
+    async detectFrameRate(progressElement = undefined)
+    {
         let targetFrameRate;
         try {
-            targetFrameRate = await benchmarkController.determineFrameRate();
+            targetFrameRate = await this.determineFrameRate(progressElement);
         } catch (e) {
+            console.log('Frame rate detection failed ' + e);
         }
         this.frameRateDeterminationComplete(targetFrameRate);
-    },
+    }
     
-    frameRateDeterminationComplete: function(frameRate)
+    updateUIStrings()
+    {
+        document.title = Strings.text.title.replace("%s", Strings.version);
+        document.querySelectorAll(".version").forEach(function(e) {
+            e.textContent = Strings.version;
+        });
+    }
+    
+    frameRateDeterminationComplete(frameRate)
     {
         const frameRateLabel = document.getElementById("frame-rate-label");
 
@@ -530,9 +542,9 @@ window.benchmarkController = {
 
         this._startButton.textContent = Strings.text.runBenchmark;
         this._startButton.disabled = false;
-    },
+    }
 
-    determineCanvasSize: function()
+    determineCanvasSize()
     {
         var match = window.matchMedia("(max-device-width: 760px)");
         if (match.matches) {
@@ -553,9 +565,9 @@ window.benchmarkController = {
         }
 
         document.body.classList.add("large");
-    },
+    }
 
-    determineFrameRate: function(detectionProgressElement)
+    determineFrameRate(detectionProgressElement)
     {
         return new Promise((resolve, reject) => {
             let firstTimestamp;
@@ -604,9 +616,9 @@ window.benchmarkController = {
 
             requestAnimationFrame(tick);
         })
-    },
+    }
 
-    addOrientationListenerIfNecessary: function()
+    addOrientationListenerIfNecessary()
     {
         if (!("orientation" in window))
             return;
@@ -614,9 +626,9 @@ window.benchmarkController = {
         this.orientationQuery = window.matchMedia("(orientation: landscape)");
         this._orientationChanged(this.orientationQuery);
         this.orientationQuery.addListener(this._orientationChanged);
-    },
+    }
 
-    _orientationChanged: function(match)
+    _orientationChanged(match)
     {
         benchmarkController.isInLandscapeOrientation = match.matches;
         if (match.matches)
@@ -625,43 +637,48 @@ window.benchmarkController = {
             document.querySelector(".portrait-orientation-check").classList.remove("hidden");
 
         benchmarkController.updateStartButtonState();
-    },
+    }
 
-    updateStartButtonState: function()
+    updateStartButtonState()
     {
         document.getElementById("start-button").disabled = !this.isInLandscapeOrientation;
-    },
+    }
 
-    _startBenchmark: function(suites, options, frameContainerID)
+    _startBenchmark(suites, options, frameContainerID)
     {
         var configuration = document.body.className.match(/small|medium|large/);
         if (configuration)
             options[Strings.json.configuration] = configuration[0];
 
-        benchmarkRunnerClient.initialize(suites, options);
+        this.ensureRunnerClient(suites, options);
         var frameContainer = document.getElementById(frameContainerID);
-        var runner = new BenchmarkRunner(suites, frameContainer, benchmarkRunnerClient);
+        var runner = new BenchmarkRunner(suites, frameContainer, this.runnerClient);
         runner.runMultipleIterations();
 
         sectionsManager.showSection("test-container");
-    },
+    }
+    
+    ensureRunnerClient(suites, options)
+    {
+        this.runnerClient = new benchmarkRunnerClientClass(suites, options);
+    }
 
-    startBenchmark: async function()
+    async startBenchmark()
     {
         benchmarkController.determineCanvasSize();
 
         let options = this.benchmarkDefaultParameters;
         this._startBenchmark(Suites, options, "test-container");
-    },
+    }
 
-    showResults: function()
+    showResults()
     {
         if (!this.addedKeyEvent) {
             document.addEventListener("keypress", this.handleKeyPress, false);
             this.addedKeyEvent = true;
         }
 
-        const dashboard = benchmarkRunnerClient.results;
+        const dashboard = this.runnerClient.results;
         const score = dashboard.score;
         const confidence = "±" + (Statistics.largestDeviationPercentage(dashboard.scoreLowerBound, score, dashboard.scoreUpperBound) * 100).toFixed(2) + "%";
         const fps = dashboard._targetFrameRate;
@@ -671,9 +688,9 @@ window.benchmarkController = {
         sectionsManager.populateTable("results-score", Headers.score, dashboard);
         sectionsManager.populateTable("results-data", Headers.details, dashboard);
         sectionsManager.showSection("results", true);
-    },
+    }
 
-    handleKeyPress: function(event)
+    handleKeyPress(event)
     {
         switch (event.charCode)
         {
@@ -687,17 +704,17 @@ window.benchmarkController = {
             benchmarkController.selectResults(event.target);
             break;
         }
-    },
+    }
 
-    hideDebugInfo: function()
+    hideDebugInfo()
     {
         var overlay = document.getElementById("overlay");
         if (!overlay)
             return;
         document.body.removeChild(overlay);
-    },
+    }
 
-    showDebugInfo: function()
+    showDebugInfo()
     {
         if (document.getElementById("overlay"))
             return;
@@ -714,9 +731,9 @@ window.benchmarkController = {
         data.textContent = "Please wait...";
         setTimeout(function() {
             var output = {
-                version: benchmarkRunnerClient.results.version,
-                options: benchmarkRunnerClient.results.options,
-                data: benchmarkRunnerClient.results.data
+                version: this.runnerClient.results.version,
+                options: this.runnerClient.results.options,
+                data: this.runnerClient.results.data
             };
             data.textContent = JSON.stringify(output, function(key, value) {
                 if (typeof value === 'number')
@@ -737,9 +754,9 @@ window.benchmarkController = {
         button.onclick = function() {
             benchmarkController.hideDebugInfo();
         };
-    },
+    }
 
-    selectResults: function(target)
+    selectResults(target)
     {
         target.selectRange = ((target.selectRange || 0) + 1) % 3;
 
@@ -763,7 +780,16 @@ window.benchmarkController = {
         }
         selection.addRange(range);
     }
-};
+}
 
-window.addEventListener("load", function() { benchmarkController.initialize(); });
+window.benchmarkControllerClass = BenchmarkController;
+window.benchmarkRunnerClientClass = BenchmarkRunnerClient;
+window.sectionsManagerClass = SectionsManager;
 
+window.addEventListener("load", () => {
+
+    window.sectionsManager = new sectionsManagerClass();
+    window.benchmarkController = new benchmarkControllerClass();
+
+    benchmarkController.initialize();
+});

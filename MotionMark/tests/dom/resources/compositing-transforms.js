@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,12 +22,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-BouncingCompositedImage = Utilities.createSubclass(BouncingParticle,
-    function(stage)
+class BouncingCompositedImage extends BouncingParticle {
+    constructor(stage)
     {
-        BouncingParticle.call(this, stage);
+        super(stage);
 
         this.element = document.createElement("img");
         this.element.style.width = this.size.x + "px";
@@ -39,52 +38,45 @@ BouncingCompositedImage = Utilities.createSubclass(BouncingParticle,
 
         stage.element.appendChild(this.element);
         this._move();
-    }, {
+    }
 
-    _move: function()
+    _move()
     {
         this.element.style.transform = "translate3d(" + this.position.x + "px," + this.position.y + "px, 0) " + this.rotater.rotateZ();
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
-        BouncingParticle.prototype.animate.call(this, timeDelta);
+        super.animate(timeDelta);
         this._move();
     }
-});
+}
 
-CompositingTransformsStage = Utilities.createSubclass(BouncingParticlesStage,
-    function()
+class CompositingTransformsStage extends BouncingParticlesStage {
+    initialize(benchmark, options)
     {
-        BouncingParticlesStage.call(this);
-    }, {
-
-    initialize: function(benchmark, options)
-    {
-        BouncingParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
 
         this.imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
         this.useFilters = options["filters"] == "yes";
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingCompositedImage(this);
-    },
+    }
 
-    particleWillBeRemoved: function(particle)
+    particleWillBeRemoved(particle)
     {
         particle.element.remove();
     }
-});
+}
 
-CompositedTransformsBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class CompositedTransformsBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new CompositingTransformsStage(), options);
+        super(new CompositingTransformsStage(), options);
     }
-);
+}
 
 window.benchmarkClass = CompositedTransformsBenchmark;
-
-})();

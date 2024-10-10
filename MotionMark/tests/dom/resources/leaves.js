@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,62 +22,59 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-var SuperLeaf = window.Leaf;
-var SimpleLeaf = Utilities.createSubclass(SuperLeaf,
-    function(stage)
+class SimpleLeaf extends Leaf {
+    static get sizeMinimum() { return 25; }
+    static get sizeRange() { return 0; }
+    static get usesOpacity() { return false; }
+
+    constructor(stage)
     {
-        SuperLeaf.call(this, stage);
-    }, {
+        super(stage);
+    }
 
-    sizeMinimum: 25,
-    sizeRange: 0,
-    usesOpacity: false,
-
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
     }
-});
+}
 
-var ScaleLeaf = Utilities.createSubclass(SuperLeaf,
-    function(stage)
+class ScaleLeaf extends Leaf {
+    static get sizeMinimum() { return 20; }
+    static get sizeRange() { return 30; }
+    static get usesOpacity() { return false; }
+
+    constructor(stage)
     {
-        SuperLeaf.call(this, stage);
-    }, {
+        super(stage);
+    }
 
-    sizeMinimum: 20,
-    sizeRange: 30,
-    usesOpacity: false,
-
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
     }
-});
+}
 
-var OpacityLeaf = Utilities.createSubclass(SuperLeaf,
-    function(stage)
+class OpacityLeaf extends Leaf {
+    static get sizeMinimum() { return 25; }
+    static get sizeRange() { return 0; }
+    static get usesOpacity() { return true; }
+
+    constructor(stage)
     {
-        SuperLeaf.call(this, stage);
-    }, {
+        super(stage);
+    }
 
-    sizeMinimum: 25,
-    sizeRange: 0,
-    usesOpacity: true,
-
-    move: function()
+    move()
     {
         this.element.style.transform = "translate(" + this._position.x + "px, " + this._position.y + "px)" + this.rotater.rotateZ();
         this.element.style.opacity = this._opacity;
     }
-});
+}
 
 
-var LeavesBenchmark = window.benchmarkClass;
-var LeavesDerivedBenchmark = Utilities.createSubclass(LeavesBenchmark,
-    function(options)
+class LeavesDerivedBenchmark extends LeavesBenchmark {
+    constructor(options)
     {
         switch (options["style"]) {
         case "simple":
@@ -90,10 +87,8 @@ var LeavesDerivedBenchmark = Utilities.createSubclass(LeavesBenchmark,
             window.Leaf = OpacityLeaf;
             break;
         }
-        LeavesBenchmark.call(this, options);
+        super(options);
     }
-);
+}
 
 window.benchmarkClass = LeavesDerivedBenchmark;
-
-})();

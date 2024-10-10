@@ -22,46 +22,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-window.SuitsParticle = Utilities.createSubclass(Particle,
-    function(stage)
+class SuitsParticle extends Particle {
+    static get sizeMinimum() { return 30; }
+    static get sizeRange() { return 40; }
+    static get hasGradient() { return true; }
+
+    constructor(stage)
     {
-        this.isClipPath = stage.particleCounter % 2;
-        this.initialize(stage);
-    }, {
+        super(stage);
+    }
 
-    sizeMinimum: 30,
-    sizeRange: 40,
-    hasGradient: true,
-
-    initialize: function(stage)
+    initialize()
     {
-        var shapeId = "#shape-" + Stage.randomInt(1, stage.particleTypeCount);
+        super.initialize();
+
+        this.isClipPath = this.stage.particleCounter % 2;
+        var shapeId = "#shape-" + Stage.randomInt(1, this.stage.particleTypeCount);
         if (this.isClipPath) {
             this.element = Utilities.createSVGElement("rect", {
                 x: 0,
                 y: 0,
                 "clip-path": "url(" + shapeId + ")"
-            }, {}, stage.element);
+            }, {}, this.stage.element);
         } else {
             var shapePath = document.querySelector(shapeId + " path");
             this.element = shapePath.cloneNode();
-            stage.element.appendChild(this.element);
+            this.stage.element.appendChild(this.element);
         }
 
-        if (this.hasGradient) {
+        if (this.constructor.hasGradient) {
             this.gradient = document.getElementById("default-gradient").cloneNode(true);
-            this.gradient.id = "gradient-" + stage.gradientsCounter++;
-            stage.gradientsDefs.appendChild(this.gradient);
+            this.gradient.id = "gradient-" + this.stage.gradientsCounter++;
+            this.stage.gradientsDefs.appendChild(this.gradient);
             this.element.setAttribute("fill", "url(#" + this.gradient.id + ")");
         }
-        Particle.call(this, stage);
-    },
+    }
 
-    reset: function()
+    reset()
     {
-        Particle.prototype.reset.call(this);
+        super.reset();
 
         this.position = Stage.randomElementInArray(this.stage.emitLocation);
 
@@ -79,7 +79,7 @@ window.SuitsParticle = Utilities.createSubclass(Particle,
 
         this.stage.colorOffset = (this.stage.colorOffset + .5) % 360;
 
-        if (this.hasGradient) {
+        if (this.constructor.hasGradient) {
             var transform = this.stage.element.createSVGTransform();
             transform.setRotate(Stage.randomInt(0, 359), 0, 0);
             this.gradient.gradientTransform.baseVal.initialize(transform);
@@ -89,23 +89,18 @@ window.SuitsParticle = Utilities.createSubclass(Particle,
             stops[1].setAttribute("stop-color", "hsl(" + ((this.stage.colorOffset + Stage.randomInt(50,100)) % 360) + ", 70%, 65%)");
         } else
             this.element.setAttribute("fill", "hsl(" + this.stage.colorOffset + ", 70%, 65%)");
-    },
+    }
 
-    move: function()
+    move()
     {
         this.element.setAttribute("transform", "translate(" + this.position.x + "," + this.position.y + ") " + this.rotater.rotate(Point.zero) + this.transformSuffix);
     }
-});
+}
 
-var SuitsStage = Utilities.createSubclass(ParticlesStage,
-    function()
+class SuitsStage extends ParticlesStage {
+    initialize(benchmark)
     {
-        ParticlesStage.call(this);
-    }, {
-
-    initialize: function(benchmark)
-    {
-        ParticlesStage.prototype.initialize.call(this, benchmark);
+        super.initialize(benchmark);
         this.emissionSpin = Stage.random(0, 3);
         this.emitSteps = Stage.randomInt(4, 6);
         this.emitLocation = [
@@ -119,29 +114,27 @@ var SuitsStage = Utilities.createSubclass(ParticlesStage,
         this.gradientsDefs = document.getElementById("gradients");
         this.gradientsCounter = 0;
         this.particleCounter = 0;
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         this.particleCounter++;
         return new SuitsParticle(this);
-    },
+    }
 
-    willRemoveParticle: function(particle)
+    willRemoveParticle(particle)
     {
         particle.element.remove();
         if (particle.gradient)
             particle.gradient.remove();
     }
-});
+}
 
-var SuitsBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class SuitsBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new SuitsStage(), options);
+        super(new SuitsStage(), options);
     }
-);
+}
 
 window.benchmarkClass = SuitsBenchmark;
-
-})();

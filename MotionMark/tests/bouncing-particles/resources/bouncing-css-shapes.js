@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,12 +22,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-BouncingCssShape = Utilities.createSubclass(BouncingParticle,
-    function(stage)
+class BouncingCssShape extends BouncingParticle {
+    constructor(stage)
     {
-        BouncingParticle.call(this, stage);
+        super(stage);
 
         this.element = this._createSpan(stage);
 
@@ -50,9 +49,9 @@ BouncingCssShape = Utilities.createSubclass(BouncingParticle,
             Utilities.setElementPrefixedProperty(this.element, "filter", Stage.randomStyleFilter());
 
         this._move();
-    }, {
+    }
 
-    _createSpan: function(stage)
+    _createSpan(stage)
     {
         var span = document.createElement("span");
         span.className = stage.shape + " " + stage.clip;
@@ -60,51 +59,44 @@ BouncingCssShape = Utilities.createSubclass(BouncingParticle,
         span.style.height = this.size.y + "px";
         stage.element.appendChild(span);
         return span;
-    },
+    }
 
-    _move: function()
+    _move()
     {
         this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px)" + this.rotater.rotateZ();
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
-        BouncingParticle.prototype.animate.call(this, timeDelta);
+        super.animate(timeDelta);
         this.rotater.next(timeDelta);
         this._move();
     }
-});
+}
 
-BouncingCssShapesStage = Utilities.createSubclass(BouncingParticlesStage,
-    function()
+class BouncingCssShapesStage extends BouncingParticlesStage {
+    initialize(benchmark, options)
     {
-        BouncingParticlesStage.call(this);
-    }, {
-
-    initialize: function(benchmark, options)
-    {
-        BouncingParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.parseShapeParameters(options);
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingCssShape(this);
-    },
+    }
 
-    particleWillBeRemoved: function(particle)
+    particleWillBeRemoved(particle)
     {
         particle.element.remove();
     }
-});
+}
 
-BouncingCssShapesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class BouncingCssShapesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new BouncingCssShapesStage(), options);
+        super(new BouncingCssShapesStage(), options);
     }
-);
+}
 
 window.benchmarkClass = BouncingCssShapesBenchmark;
-
-})();

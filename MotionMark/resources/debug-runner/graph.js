@@ -25,8 +25,8 @@
 
 const msPerSecond = 1000;
 
-Utilities.extendObject(window.benchmarkController, {
-    updateGraphData: function(testResult, testData, options)
+class GraphController {
+    updateGraphData(testResult, testData, options)
     {
         var element = document.getElementById("test-graph-data");
         element.innerHTML = "";
@@ -37,7 +37,7 @@ Utilities.extendObject(window.benchmarkController, {
         var margins = new Insets(30, 30, 50, 40);
         // Note that changes to header content (in onGraphTypeChanged()) can change the available size, so we prepopulate
         // "score" and "confidence" elements with non-breaking spaces in the HTML.
-        var size = Point.elementClientSize(element);
+        var size = GeometryHelpers.elementClientSize(element);
 
         // Convert from compact JSON output to propertied data
         var samplesWithProperties = {};
@@ -48,18 +48,18 @@ Utilities.extendObject(window.benchmarkController, {
 
         this._targetFrameRate = options["frame-rate"];
 
-        this.createTimeGraph(testResult, samplesWithProperties[Strings.json.controller], testData[Strings.json.marks], testData[Strings.json.controller], options, margins, size);
+        this._createTimeGraph(testResult, samplesWithProperties[Strings.json.controller], testData[Strings.json.marks], testData[Strings.json.controller], options, margins, size);
         this.onTimeGraphOptionsChanged();
 
         this._showOrHideNodes(true, "form[name=graph-type]");
         document.forms["graph-type"].elements["type"] = "complexity";
-        this.createComplexityGraph(testResult, testData[Strings.json.controller], samplesWithProperties, options, margins, size);
+        this._createComplexityGraph(testResult, testData[Strings.json.controller], samplesWithProperties, options, margins, size);
         this.onComplexityGraphOptionsChanged();
 
         this.onGraphTypeChanged();
-    },
+    }
 
-    _addRegressionLine: function(parent, xScale, yScale, points, range, isAlongYAxis)
+    _addRegressionLine(parent, xScale, yScale, points, range, isAlongYAxis)
     {
         var polygon = [];
         var line = []
@@ -91,9 +91,9 @@ Utilities.extendObject(window.benchmarkController, {
             .attr("y1", line[1])
             .attr("x2", line[2])
             .attr("y2", line[3]);
-    },
+    }
 
-    _addRegression: function(data, svg, xScale, yScale)
+    _addRegression(data, svg, xScale, yScale)
     {
         svg.append("circle")
             .attr("cx", xScale(data.segment1[1][0]))
@@ -101,9 +101,9 @@ Utilities.extendObject(window.benchmarkController, {
             .attr("r", 3);
         this._addRegressionLine(svg, xScale, yScale, data.segment1, data.stdev);
         this._addRegressionLine(svg, xScale, yScale, data.segment2, data.stdev);
-    },
+    }
     
-    _tickValuesForFrameRate: function(frameRate, minValue, maxValue)
+    _tickValuesForFrameRate(frameRate, minValue, maxValue)
     {
         // Tick labels go up to 1.5x frame rate
         const buildInFrameRates = {
@@ -130,19 +130,19 @@ Utilities.extendObject(window.benchmarkController, {
         
         tickValues = tickValues.map((x) => msPerSecond / x);
         return tickValues;
-    },
+    }
     
-    _minFrameRate: function()
+    _minFrameRate()
     {
         return this._targetFrameRate / 4;
-    },
+    }
 
-    _maxFrameRate: function()
+    _maxFrameRate()
     {
         return this._targetFrameRate * 1.5;
-    },
+    }
 
-    createComplexityGraph: function(result, timeRegressions, data, options, margins, size)
+    _createComplexityGraph(result, timeRegressions, data, options, margins, size)
     {
         var svg = d3.select("#test-graph-data").append("svg")
             .attr("id", "complexity-graph")
@@ -220,7 +220,7 @@ Utilities.extendObject(window.benchmarkController, {
             var yBootstrapScale = d3.scale.linear()
                 .range([axisHeight/2, 0])
                 .domain([0, d3.max(histogram, function(d) { return d.y; })]);
-            group = svg.append("g").attr("class", "bootstrap");
+            let group = svg.append("g").attr("class", "bootstrap");
             var bar = group.selectAll(".bar")
                 .data(histogram)
                 .enter().append("g")
@@ -240,7 +240,7 @@ Utilities.extendObject(window.benchmarkController, {
         }
 
         // series
-        group = svg.append("g")
+        let group = svg.append("g")
             .attr("class", "series raw")
             .selectAll("line")
                 .data(data[Strings.json.complexity])
@@ -313,9 +313,9 @@ Utilities.extendObject(window.benchmarkController, {
                 .attr("y", location[1])
                 .text((msPerSecond / location_domain[1]).toFixed(1));
         });
-    },
+    }
 
-    createTimeGraph: function(result, samples, marks, regressions, options, margins, size)
+    _createTimeGraph(result, samples, marks, regressions, options, margins, size)
     {
         const axisWidth = size.width - margins.left - margins.right;
         const axisHeight = size.height - margins.top - margins.bottom;
@@ -618,9 +618,10 @@ Utilities.extendObject(window.benchmarkController, {
                 .attr("y2", Math.max.apply(null, ys));
 
         });
-    },
+    }
 
-    _showOrHideNodes: function(isShown, selector) {
+    _showOrHideNodes(isShown, selector)
+    {
         var nodeList = document.querySelectorAll(selector);
         if (isShown) {
             for (var i = 0; i < nodeList.length; ++i)
@@ -629,35 +630,38 @@ Utilities.extendObject(window.benchmarkController, {
             for (var i = 0; i < nodeList.length; ++i)
                 nodeList[i].classList.add("hidden");
         }
-    },
+    }
 
-    onComplexityGraphOptionsChanged: function() {
+    onComplexityGraphOptionsChanged()
+    {
         var form = document.forms["complexity-graph-options"].elements;
-        benchmarkController._showOrHideNodes(form["series-raw"].checked, "#complexity-graph .series.raw");
-        benchmarkController._showOrHideNodes(form["regression-time-score"].checked, "#complexity-graph .mean.complexity");
-        benchmarkController._showOrHideNodes(form["bootstrap-score"].checked, "#complexity-graph .bootstrap");
-        benchmarkController._showOrHideNodes(form["complexity-regression-aggregate-raw"].checked, "#complexity-graph .regression.raw");
-    },
+        this._showOrHideNodes(form["series-raw"].checked, "#complexity-graph .series.raw");
+        this._showOrHideNodes(form["regression-time-score"].checked, "#complexity-graph .mean.complexity");
+        this._showOrHideNodes(form["bootstrap-score"].checked, "#complexity-graph .bootstrap");
+        this._showOrHideNodes(form["complexity-regression-aggregate-raw"].checked, "#complexity-graph .regression.raw");
+    }
 
-    onTimeGraphOptionsChanged: function() {
+    onTimeGraphOptionsChanged()
+    {
         var form = document.forms["time-graph-options"].elements;
-        benchmarkController._showOrHideNodes(form["markers"].checked, ".marker");
-        benchmarkController._showOrHideNodes(form["averages"].checked, "#test-graph-data .mean");
-        benchmarkController._showOrHideNodes(form["complexity"].checked, "#complexity");
-        benchmarkController._showOrHideNodes(form["rawFPS"].checked, "#rawFPS");
-        benchmarkController._showOrHideNodes(form["filteredFPS"].checked, "#filteredFPS");
-        benchmarkController._showOrHideNodes(form["regressions"].checked, "#regressions");
-    },
+        this._showOrHideNodes(form["markers"].checked, ".marker");
+        this._showOrHideNodes(form["averages"].checked, "#test-graph-data .mean");
+        this._showOrHideNodes(form["complexity"].checked, "#complexity");
+        this._showOrHideNodes(form["rawFPS"].checked, "#rawFPS");
+        this._showOrHideNodes(form["filteredFPS"].checked, "#filteredFPS");
+        this._showOrHideNodes(form["regressions"].checked, "#regressions");
+    }
 
-    onGraphTypeChanged: function() {
+    onGraphTypeChanged()
+    {
         var form = document.forms["graph-type"].elements;
         var testResult = document.getElementById("test-graph-data")._testResult;
         var isTimeSelected = form["graph-type"].value == "time";
 
-        benchmarkController._showOrHideNodes(isTimeSelected, "#time-graph");
-        benchmarkController._showOrHideNodes(isTimeSelected, "form[name=time-graph-options]");
-        benchmarkController._showOrHideNodes(!isTimeSelected, "#complexity-graph");
-        benchmarkController._showOrHideNodes(!isTimeSelected, "form[name=complexity-graph-options]");
+        this._showOrHideNodes(isTimeSelected, "#time-graph");
+        this._showOrHideNodes(isTimeSelected, "form[name=time-graph-options]");
+        this._showOrHideNodes(!isTimeSelected, "#complexity-graph");
+        this._showOrHideNodes(!isTimeSelected, "form[name=complexity-graph-options]");
 
         var score = "", mean = "";
         if (isTimeSelected) {
@@ -696,4 +700,4 @@ Utilities.extendObject(window.benchmarkController, {
 
         sectionsManager.setSectionScore("test-graph", score, mean, this._targetFrameRate);
     }
-});
+}

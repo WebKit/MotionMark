@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,28 +22,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-function Particle(stage)
-{
-    this.stage = stage;
-    this.rotater = Stage.randomRotater();
-    this.reset();
-    this.move();
-}
 
-Particle.prototype =
-{
-    sizeMinimum: 40,
-    sizeRange: 10,
+class Particle {
+    static get sizeMinimum() { return 40; }
+    static get sizeRange() { return 10; }
 
-    reset: function()
+    constructor(stage)
     {
-        var randSize = Math.round(Math.pow(Pseudo.random(), 4) * this.sizeRange + this.sizeMinimum);
+        this.stage = stage;
+        this.rotater = Stage.randomRotater();
+        this.initialize();
+        this.reset();
+        this.move();
+    }
+    
+    initialize()
+    {
+    }
+
+    reset()
+    {
+        var randSize = Math.round(Math.pow(Pseudo.random(), 4) * this.constructor.sizeRange + this.constructor.sizeMinimum);
         this.size = new Point(randSize, randSize);
         this.minPosition = this.size.center;
         this.maxPosition = this.stage.size.subtract(this.minPosition);
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.rotater.next(timeDelta);
 
@@ -86,29 +91,29 @@ Particle.prototype =
         }
 
         this.move();
-    },
+    }
 
-    move: function()
+    move()
     {
     }
 }
 
-ParticlesStage = Utilities.createSubclass(Stage,
-    function()
+class ParticlesStage extends Stage {
+    constructor()
     {
-        Stage.call(this);
+        super();
         this.particles = [];
-    }, {
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         timeDelta /= 4;
         this.particles.forEach(function(particle) {
             particle.animate(timeDelta);
         });
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -127,10 +132,10 @@ ParticlesStage = Utilities.createSubclass(Stage,
         }
 
         this.particles.splice(0, count);
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return this.particles.length;
     }
-});
+}

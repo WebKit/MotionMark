@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2021 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,8 +22,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-Sampler = Utilities.createClass(
-    function(seriesCount, expectedSampleCount, processor)
+
+class Sampler {
+    constructor(seriesCount, expectedSampleCount, processor)
     {
         this._processor = processor;
 
@@ -34,18 +35,18 @@ Sampler = Utilities.createClass(
             this.samples[i] = array;
         }
         this.sampleCount = 0;
-    }, {
+    }
 
-    record: function()
+    record()
     {
         // Assume that arguments.length == this.samples.length
         for (var i = 0; i < arguments.length; i++) {
             this.samples[i][this.sampleCount] = arguments[i];
         }
         ++this.sampleCount;
-    },
+    }
 
-    processSamples: function()
+    processSamples()
     {
         var results = {};
 
@@ -58,15 +59,15 @@ Sampler = Utilities.createClass(
 
         return results;
     }
-});
+}
 
 const sampleTypeIndex = 0;
 const sampleTimeIndex = 1;
 const sampleComplexityIndex = 2;
 const sampleFrameLengthEstimateIndex = 3;
 
-Controller = Utilities.createClass(
-    function(benchmark, options)
+class Controller {
+    constructor(benchmark, options)
     {
         // Initialize timestamps relative to the start of the benchmark
         // In start() the timestamps are offset by the start timestamp
@@ -85,42 +86,42 @@ Controller = Utilities.createClass(
         this.intervalSamplingLength = 100;
 
         this.initialComplexity = 1;
-    }, {
+    }
 
     set isFrameLengthEstimatorEnabled(enabled)
     {
         this._isFrameLengthEstimatorEnabled = enabled;
-    },
+    }
 
-    start: function(startTimestamp, stage)
+    start(startTimestamp, stage)
     {
         this._startTimestamp = startTimestamp;
         this._endTimestamp += startTimestamp;
         this._previousTimestamp = startTimestamp;
         this._measureAndResetInterval(startTimestamp);
         this.recordFirstSample(startTimestamp, stage);
-    },
+    }
 
-    recordFirstSample: function(startTimestamp, stage)
+    recordFirstSample(startTimestamp, stage)
     {
         this._sampler.record(Strings.json.mutationFrameType, startTimestamp, stage.complexity(), -1);
         this.mark(Strings.json.samplingStartTimeOffset, startTimestamp);
-    },
+    }
 
-    mark: function(comment, timestamp, data)
+    mark(comment, timestamp, data)
     {
         data = data || {};
         data.time = timestamp;
         data.index = this._sampler.sampleCount;
         this._marks[comment] = data;
-    },
+    }
 
-    containsMark: function(comment)
+    containsMark(comment)
     {
         return comment in this._marks;
-    },
+    }
 
-    filterOutOutliers: function(array)
+    filterOutOutliers(array)
     {
         if (array.length == 0)
             return [];
@@ -132,9 +133,9 @@ Controller = Utilities.createClass(
         var minimum = q1 - interquartileRange * 1.5;
         var maximum = q3 + interquartileRange * 1.5;
         return array.filter(x => x >= minimum && x <= maximum);
-    },
+    }
 
-    _measureAndResetInterval: function(currentTimestamp)
+    _measureAndResetInterval(currentTimestamp)
     {
         var sampleCount = this._sampler.sampleCount;
         var averageFrameLength = 0;
@@ -153,32 +154,32 @@ Controller = Utilities.createClass(
         this._intervalEndTimestamp = currentTimestamp + this.intervalSamplingLength;
 
         return averageFrameLength;
-    },
+    }
 
-    _getFrameType: function(samples, i)
+    _getFrameType(samples, i)
     {
         return samples[sampleTypeIndex][i];
-    },
+    }
 
-    _getComplexity: function(samples, i)
+    _getComplexity(samples, i)
     {
         return samples[sampleComplexityIndex][i];
-    },
+    }
 
-    _getFrameLength: function(samples, i)
+    _getFrameLength(samples, i)
     {
         return samples[sampleTimeIndex][i] - samples[sampleTimeIndex][i - 1];
-    },
+    }
     
-    _previousFrameComplexity: function(samples, i)
+    _previousFrameComplexity(samples, i)
     {
         if (i > 0)
             return this._getComplexity(samples, i - 1);
 
         return 0;
-    },
+    }
 
-    update: function(timestamp, stage)
+    update(timestamp, stage)
     {
         const frameType = this._previousFrameComplexity(this._sampler.samples, this._sampler.sampleCount) != stage.complexity() ? Strings.json.mutationFrameType : Strings.json.animationFrameType
         var lastFrameLength = timestamp - this._previousTimestamp;
@@ -186,6 +187,7 @@ Controller = Utilities.createClass(
 
         var frameLengthEstimate = -1, intervalAverageFrameLength = -1;
         var didFinishInterval = false;
+        
         if (!this.intervalSamplingLength) {
             if (this._isFrameLengthEstimatorEnabled) {
                 this._frameLengthEstimator.sample(lastFrameLength);
@@ -211,50 +213,50 @@ Controller = Utilities.createClass(
         }
 
         this.tune(timestamp, stage, lastFrameLength, didFinishInterval, intervalAverageFrameLength);
-    },
+    }
 
-    registerFrameTime: function(lastFrameLength)
+    registerFrameTime(lastFrameLength)
     {
-    },
+    }
 
-    intervalHasConcluded: function(timestamp)
+    intervalHasConcluded(timestamp)
     {
         return timestamp >= this._intervalEndTimestamp;
-    },
+    }
 
-    didFinishInterval: function(timestamp, stage, intervalAverageFrameLength)
+    didFinishInterval(timestamp, stage, intervalAverageFrameLength)
     {
-    },
+    }
 
-    tune: function(timestamp, stage, lastFrameLength, didFinishInterval, intervalAverageFrameLength)
+    tune(timestamp, stage, lastFrameLength, didFinishInterval, intervalAverageFrameLength)
     {
-    },
+    }
 
-    shouldStop: function(timestamp)
+    shouldStop(timestamp)
     {
         return timestamp > this._endTimestamp;
-    },
+    }
 
-    results: function()
+    results()
     {
         return this._sampler.processSamples();
-    },
+    }
 
-    _processComplexitySamples: function(complexitySamples)
+    _processComplexitySamples(complexitySamples)
     {
         complexitySamples.sort(function(a, b) {
             return complexitySamples.getFieldInDatum(a, Strings.json.complexity) - complexitySamples.getFieldInDatum(b, Strings.json.complexity);
         });
-    },
+    }
 
-    _processMarks: function()
+    _processMarks()
     {
         for (var markName in this._marks)
             this._marks[markName].time -= this._startTimestamp;
         return this._marks;
-    },
+    }
 
-    _processControllerSamples: function()
+    _processControllerSamples()
     {
         const processedSampleTypeIndex = 0;
         const processedSampleTimeIndex = 1;
@@ -290,9 +292,9 @@ Controller = Utilities.createClass(
         }, this);
 
         return controllerSamples;
-    },
+    }
 
-    processSamples: function(results)
+    processSamples(results)
     {
         results[Strings.json.marks] = this._processMarks();
 
@@ -307,22 +309,22 @@ Controller = Utilities.createClass(
         });
         this._processComplexitySamples(complexitySamples);
     }
-});
+}
 
-FixedController = Utilities.createSubclass(Controller,
-    function(benchmark, options)
+class FixedController extends Controller {
+    constructor(benchmark, options)
     {
-        Controller.call(this, benchmark, options);
+        super(benchmark, options);
         this.initialComplexity = options["complexity"];
         this.intervalSamplingLength = 0;
     }
-);
+}
 
-AdaptiveController = Utilities.createSubclass(Controller,
-    function(benchmark, options)
+class AdaptiveController extends Controller {
+    constructor(benchmark, options)
     {
         // Data series: timestamp, complexity, estimatedIntervalFrameLength
-        Controller.call(this, benchmark, options);
+        super(benchmark, options);
 
         // All tests start at 0, so we expect to see the target fps quickly.
         this._samplingTimestamp = options["test-interval"] / 2;
@@ -332,22 +334,22 @@ AdaptiveController = Utilities.createSubclass(Controller,
 
         this._intervalFrameCount = 0;
         this._numberOfFramesToMeasurePerInterval = 4;
-    }, {
+    }
 
-    start: function(startTimestamp, stage)
+    start(startTimestamp, stage)
     {
-        Controller.prototype.start.call(this, startTimestamp, stage);
+        super.start(startTimestamp, stage);
 
         this._samplingTimestamp += startTimestamp;
         this._intervalTimestamp = startTimestamp;
-    },
+    }
 
-    recordFirstSample: function(startTimestamp, stage)
+    recordFirstSample(startTimestamp, stage)
     {
         this._sampler.record(Strings.json.mutationFrameType, startTimestamp, stage.complexity(), -1);
-    },
+    }
 
-    update: function(timestamp, stage)
+    update(timestamp, stage)
     {
         if (!this._startedSampling && timestamp >= this._samplingTimestamp) {
             this._startedSampling = true;
@@ -376,16 +378,27 @@ AdaptiveController = Utilities.createSubclass(Controller,
         this._intervalFrameCount = 0;
         this._intervalTimestamp = timestamp;
     }
-});
+}
 
-RampController = Utilities.createSubclass(Controller,
-    function(benchmark, options)
+class RampController extends Controller {
+    // If the engine can handle the tier's complexity at the desired frame rate, test for a short
+    // period, then move on to the next tier
+    static tierFastTestLength = 250;
+    // If the engine is under stress, let the test run a little longer to let the measurement settle
+    static tierSlowTestLength = 750;
+    // Tier intervals must have this number of non-outlier frames in order to end.
+    static numberOfFramesRequiredInInterval = 9;
+
+    static rampWarmupLength = 200;
+    
+    constructor(benchmark, options)
     {
-        this.targetFPS = options["frame-rate"];
-
+        const targetFPS = options["frame-rate"];
         // The tier warmup takes at most 5 seconds
-        options["sample-capacity"] = (options["test-interval"] / 1000 + 5) * this.targetFPS;
-        Controller.call(this, benchmark, options);
+        options["sample-capacity"] = (options["test-interval"] / 1000 + 5) * targetFPS;
+        super(benchmark, options);
+        
+        this.targetFPS = targetFPS;
 
         // Initially start with a tier test to find the bounds
         // The number of objects in a tier test is 10^|_tier|
@@ -421,51 +434,41 @@ RampController = Utilities.createSubclass(Controller,
         this.frameLengthRampLowerThreshold = 1000/(this.targetFPS * 0.75);
         // Do not let the regression calculation at the maximum complexity of a ramp get slower than this threshold
         this.frameLengthRampUpperThreshold = 1000/(this.targetFPS / 3);
-    }, {
+    }
 
-    // If the engine can handle the tier's complexity at the desired frame rate, test for a short
-    // period, then move on to the next tier
-    tierFastTestLength: 250,
-    // If the engine is under stress, let the test run a little longer to let the measurement settle
-    tierSlowTestLength: 750,
-    // Tier intervals must have this number of non-outlier frames in order to end.
-    numberOfFramesRequiredInInterval: 9,
-
-    rampWarmupLength: 200,
-
-    start: function(startTimestamp, stage)
+    start(startTimestamp, stage)
     {
-        Controller.prototype.start.call(this, startTimestamp, stage);
+        super.start(startTimestamp, stage);
         this._rampStartTimestamp = 0;
         this.intervalSamplingLength = 100;
         this._frameTimeHistory = [];
-    },
+    }
 
-    registerFrameTime: function(lastFrameLength)
+    registerFrameTime(lastFrameLength)
     {
         this._frameTimeHistory.push(lastFrameLength);
-    },
+    }
 
-    intervalHasConcluded: function(timestamp)
+    intervalHasConcluded(timestamp)
     {
-        if (!Controller.prototype.intervalHasConcluded.call(this, timestamp))
+        if (!super.intervalHasConcluded(timestamp))
             return false;
 
-        return this._finishedTierSampling || this.filterOutOutliers(this._frameTimeHistory).length > this.numberOfFramesRequiredInInterval;
-    },
+        return this._finishedTierSampling || this.filterOutOutliers(this._frameTimeHistory).length > RampController.numberOfFramesRequiredInInterval;
+    }
 
-    didFinishInterval: function(timestamp, stage, intervalAverageFrameLength)
+    didFinishInterval(timestamp, stage, intervalAverageFrameLength)
     {
         this._frameTimeHistory = [];
         if (!this._finishedTierSampling) {
-            if (this._tierStartTimestamp > 0 && timestamp < this._tierStartTimestamp + this.tierFastTestLength)
+            if (this._tierStartTimestamp > 0 && timestamp < this._tierStartTimestamp + RampController.tierFastTestLength)
                 return;
 
             var currentComplexity = stage.complexity();
             var currentFrameLength = this._frameLengthEstimator.estimate;
             if (currentFrameLength < this.frameLengthTierThreshold) {
                 var isAnimatingAtTargetFPS = currentFrameLength < this.frameLengthDesiredThreshold;
-                var hasFinishedSlowTierTest = timestamp > this._tierStartTimestamp + this.tierSlowTestLength;
+                var hasFinishedSlowTierTest = timestamp > this._tierStartTimestamp + RampController.tierSlowTestLength;
 
                 if (!isAnimatingAtTargetFPS && !hasFinishedSlowTierTest)
                     return;
@@ -492,7 +495,7 @@ RampController = Utilities.createSubclass(Controller,
                     this.mark("Complexity: " + nextTierComplexity, timestamp);
                     return;
                 }
-            } else if (timestamp < this._tierStartTimestamp + this.tierSlowTestLength)
+            } else if (timestamp < this._tierStartTimestamp + RampController.tierSlowTestLength)
                 return;
 
             this._finishedTierSampling = true;
@@ -517,6 +520,7 @@ RampController = Utilities.createSubclass(Controller,
                 // If the browser is capable of handling the most complex version of the test, use that
                 this._maximumComplexity = currentComplexity;
             }
+            
             this._possibleMaximumComplexity = this._maximumComplexity;
 
             // If we get ourselves onto a ramp where the maximum complexity does not yield slow enough FPS,
@@ -532,7 +536,7 @@ RampController = Utilities.createSubclass(Controller,
             return;
         }
 
-        if ((timestamp - this._rampStartTimestamp) < this.rampWarmupLength)
+        if ((timestamp - this._rampStartTimestamp) < RampController.rampWarmupLength)
             return;
 
         if (this._rampDidWarmup)
@@ -543,9 +547,9 @@ RampController = Utilities.createSubclass(Controller,
         // Start timestamp represents start of ramp down, after warm up
         this._rampStartTimestamp = timestamp;
         this._rampStartIndex = this._sampler.sampleCount;
-    },
+    }
 
-    tune: function(timestamp, stage, lastFrameLength, didFinishInterval, intervalAverageFrameLength)
+    tune(timestamp, stage, lastFrameLength, didFinishInterval, intervalAverageFrameLength)
     {
         if (!this._rampDidWarmup)
             return;
@@ -619,9 +623,9 @@ RampController = Utilities.createSubclass(Controller,
         this._rampStartTimestamp = timestamp;
         this._possibleMinimumComplexity = 1;
         this._possibleMaximumComplexity = this._maximumComplexity;
-    },
+    }
 
-    processSamples: function(results)
+    processSamples(results)
     {
         results[Strings.json.marks] = this._processMarks();
         // Have samplingTimeOffset represent time 0
@@ -675,96 +679,94 @@ RampController = Utilities.createSubclass(Controller,
 
         this._processComplexitySamples(complexitySamples);
     }
-});
+}
 
-Stage = Utilities.createClass(
-    function()
+class Stage {
+    constructor()
     {
-    }, {
+    }
 
-    initialize: function(benchmark)
+    initialize(benchmark)
     {
         this._benchmark = benchmark;
         this._element = document.getElementById("stage");
         this._element.setAttribute("width", document.body.offsetWidth);
         this._element.setAttribute("height", document.body.offsetHeight);
-        this._size = Point.elementClientSize(this._element).subtract(Insets.elementPadding(this._element).size);
-    },
+        this._size = GeometryHelpers.elementClientSize(this._element).subtract(Insets.elementPadding(this._element).size);
+    }
 
     get element()
     {
         return this._element;
-    },
+    }
 
     get size()
     {
         return this._size;
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return 0;
-    },
+    }
 
-    tune: function()
+    tune()
     {
         throw "Not implemented";
-    },
+    }
 
-    animate: function()
+    animate()
     {
         throw "Not implemented";
-    },
+    }
 
-    clear: function()
+    clear()
     {
         return this.tune(-this.tune(0));
     }
-});
 
-Utilities.extendObject(Stage, {
-    random: function(min, max)
+    static random(min, max)
     {
         return (Pseudo.random() * (max - min)) + min;
-    },
+    }
 
-    randomBool: function()
+    static randomBool()
     {
         return !!Math.round(Pseudo.random());
-    },
+    }
 
-    randomSign: function()
+    static randomSign()
     {
         return Pseudo.random() >= .5 ? 1 : -1;
-    },
+    }
 
-    randomInt: function(min, max)
+    static randomInt(min, max)
     {
         return Math.floor(this.random(min, max + 1));
-    },
+    }
 
-    randomPosition: function(maxPosition)
+    static randomPosition(maxPosition)
     {
         return new Point(this.randomInt(0, maxPosition.x), this.randomInt(0, maxPosition.y));
-    },
+    }
 
-    randomSquareSize: function(min, max)
+    static randomSquareSize(min, max)
     {
         var side = this.random(min, max);
         return new Point(side, side);
-    },
+    }
 
-    randomVelocity: function(maxVelocity)
+    static randomVelocity(maxVelocity)
     {
         return this.random(maxVelocity / 8, maxVelocity);
-    },
+    }
 
-    randomAngle: function()
+    static randomAngle()
     {
         return this.random(0, Math.PI * 2);
-    },
+    }
 
-    randomColor: function()
+    static randomColor()
     {
         var min = 32;
         var max = 256 - 32;
@@ -772,9 +774,9 @@ Utilities.extendObject(Stage, {
             + this.randomInt(min, max).toString(16)
             + this.randomInt(min, max).toString(16)
             + this.randomInt(min, max).toString(16);
-    },
+    }
 
-    randomStyleMixBlendMode: function()
+    static randomStyleMixBlendMode()
     {
         var mixBlendModeList = [
           'normal',
@@ -796,9 +798,9 @@ Utilities.extendObject(Stage, {
         ];
 
         return mixBlendModeList[this.randomInt(0, mixBlendModeList.length)];
-    },
+    }
 
-    randomStyleFilter: function()
+    static randomStyleFilter()
     {
         var filterList = [
             'grayscale(50%)',
@@ -814,75 +816,75 @@ Utilities.extendObject(Stage, {
         ];
 
         return filterList[this.randomInt(0, filterList.length)];
-    },
+    }
 
-    randomElementInArray: function(array)
+    static randomElementInArray(array)
     {
         return array[Stage.randomInt(0, array.length - 1)];
-    },
+    }
 
-    rotatingColor: function(cycleLengthMs, saturation, lightness)
+    static rotatingColor(cycleLengthMs, saturation, lightness)
     {
         return "hsl("
             + Stage.dateFractionalValue(cycleLengthMs) * 360 + ", "
             + ((saturation || .8) * 100).toFixed(0) + "%, "
             + ((lightness || .35) * 100).toFixed(0) + "%)";
-    },
+    }
 
     // Returns a fractional value that wraps around within [0,1]
-    dateFractionalValue: function(cycleLengthMs)
+    static dateFractionalValue(cycleLengthMs)
     {
         return (Date.now() / (cycleLengthMs || 2000)) % 1;
-    },
+    }
 
     // Returns an increasing value slowed down by factor
-    dateCounterValue: function(factor)
+    static dateCounterValue(factor)
     {
         return Date.now() / factor;
-    },
+    }
 
-    randomRotater: function()
+    static randomRotater()
     {
         return new Rotater(this.random(1000, 10000));
     }
-});
+}
 
-Rotater = Utilities.createClass(
-    function(rotateInterval)
+class Rotater {
+    constructor(rotateInterval)
     {
         this._timeDelta = 0;
         this._rotateInterval = rotateInterval;
         this._isSampling = false;
-    }, {
+    }
 
     get interval()
     {
         return this._rotateInterval;
-    },
+    }
 
-    next: function(timeDelta)
+    next(timeDelta)
     {
         this._timeDelta = (this._timeDelta + timeDelta) % this._rotateInterval;
-    },
+    }
 
-    degree: function()
+    degree()
     {
         return (360 * this._timeDelta) / this._rotateInterval;
-    },
+    }
 
-    rotateZ: function()
+    rotateZ()
     {
         return "rotateZ(" + Math.floor(this.degree()) + "deg)";
-    },
+    }
 
-    rotate: function(center)
+    rotate(center)
     {
         return "rotate(" + Math.floor(this.degree()) + ", " + center.x + "," + center.y + ")";
     }
-});
+}
 
-Benchmark = Utilities.createClass(
-    function(stage, options)
+class Benchmark {
+    constructor(stage, options)
     {
         this._animateLoop = this._animateLoop.bind(this);
         this._warmupLength = options["warmup-length"];
@@ -922,25 +924,25 @@ Benchmark = Utilities.createClass(
             this._controller = new RampController(this, options);
             break;
         }
-    }, {
+    }
 
     get stage()
     {
         return this._stage;
-    },
+    }
 
     get timestamp()
     {
         return this._currentTimestamp - this._benchmarkStartTimestamp;
-    },
+    }
 
-    backgroundColor: function()
+    backgroundColor()
     {
         var stage = window.getComputedStyle(document.getElementById("stage"));
         return stage["background-color"];
-    },
+    }
 
-    run: function()
+    run()
     {
         return this.waitUntilReady().then(function() {
             this._finishPromise = new SimplePromise;
@@ -950,17 +952,17 @@ Benchmark = Utilities.createClass(
             this._animateLoop();
             return this._finishPromise;
         }.bind(this));
-    },
+    }
 
     // Subclasses should override this if they have setup to do prior to commencing.
-    waitUntilReady: function()
+    waitUntilReady()
     {
         var promise = new SimplePromise;
         promise.resolve();
         return promise;
-    },
+    }
 
-    _animateLoop: function(timestamp)
+    _animateLoop(timestamp)
     {
         timestamp = (this._getTimestamp && this._getTimestamp()) || timestamp;
         this._currentTimestamp = timestamp;
@@ -995,4 +997,4 @@ Benchmark = Utilities.createClass(
         this._previousTimestamp = timestamp;
         requestAnimationFrame(this._animateLoop);
     }
-});
+}

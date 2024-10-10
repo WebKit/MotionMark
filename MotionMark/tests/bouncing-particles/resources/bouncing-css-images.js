@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,12 +22,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-BouncingCssImage = Utilities.createSubclass(BouncingParticle,
-    function(stage)
+class BouncingCssImage extends BouncingParticle {
+    constructor(stage)
     {
-        BouncingParticle.call(this, stage);
+        super(stage);
 
         this.element = document.createElement("img");
         this.element.style.width = this.size.x + "px";
@@ -36,50 +35,43 @@ BouncingCssImage = Utilities.createSubclass(BouncingParticle,
 
         stage.element.appendChild(this.element);
         this._move();
-    }, {
+    }
 
-    _move: function()
+    _move()
     {
         this.element.style.transform = "translate(" + this.position.x + "px," + this.position.y + "px) " + this.rotater.rotateZ();
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
-        BouncingParticle.prototype.animate.call(this, timeDelta);
+        super.animate(timeDelta);
         this._move();
     }
-});
+}
 
-BouncingCssImagesStage = Utilities.createSubclass(BouncingParticlesStage,
-    function()
+class BouncingCssImagesStage extends BouncingParticlesStage {
+    initialize(benchmark, options)
     {
-        BouncingParticlesStage.call(this);
-    }, {
-
-    initialize: function(benchmark, options)
-    {
-        BouncingParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingCssImage(this);
-    },
+    }
 
-    particleWillBeRemoved: function(particle)
+    particleWillBeRemoved(particle)
     {
         particle.element.remove();
     }
-});
+}
 
-BouncingCssImagesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class BouncingCssImagesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new BouncingCssImagesStage(), options);
+        super(new BouncingCssImagesStage(), options);
     }
-);
+}
 
 window.benchmarkClass = BouncingCssImagesBenchmark;
-
-})();

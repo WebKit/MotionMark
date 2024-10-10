@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2023 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,50 +22,42 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-BouncingCanvasImage = Utilities.createSubclass(BouncingCanvasParticle,
-    function(stage)
+class BouncingCanvasImage extends BouncingCanvasParticle {
+    constructor(stage)
     {
-        BouncingCanvasParticle.call(this, stage, "image");
+        super(stage, "image");
         this._imageElement = stage.imageElement;
-    }, {
+    }
 
-    _draw: function()
+    _draw()
     {
         this.context.save();
             this.applyRotation();
             this.context.drawImage(this._imageElement, 0, 0, this.size.x, this.size.y);
         this.context.restore();
     }
-});
+}
 
-BouncingCanvasImagesStage = Utilities.createSubclass(BouncingCanvasParticlesStage,
-    function()
+class BouncingCanvasImagesStage extends BouncingCanvasParticlesStage {
+    initialize(benchmark, options)
     {
-        BouncingCanvasParticlesStage.call(this);
-    }, {
-
-    initialize: function(benchmark, options)
-    {
-        BouncingCanvasParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         var imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
         this.imageElement = document.querySelector(".hidden[src=\"" + imageSrc + "\"]");
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingCanvasImage(this);
     }
-});
+}
 
-BouncingCanvasImagesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class BouncingCanvasImagesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new BouncingCanvasImagesStage(), options);
+        super(new BouncingCanvasImagesStage(), options);
     }
-);
+}
 
 window.benchmarkClass = BouncingCanvasImagesBenchmark;
-
-})();

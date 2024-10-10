@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,40 +22,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-var TextStage = Utilities.createSubclass(Stage,
-    function()
-    {
-        Stage.call(this);
-
-        this.testElements = [];
-        this._offsetIndex = 0;
-    }, {
-
-    shadowFalloff: new UnitBezier(new Point(0.015, 0.750), new Point(0.755, 0.235)),
-    shimmerAverage: 0,
-    shimmerMax: 0.5,
-    millisecondsPerRotation: 1000 / (.26 * Math.PI * 2),
-    particleDistanceX: 1.5,
-    particleDistanceY: .5,
-    lightnessMin: 13,
-    lightnessMax: 94,
-    gradients: [
+class TextStage extends Stage {
+    static shadowFalloff = new UnitBezier(new Point(0.015, 0.750), new Point(0.755, 0.235));
+    static shimmerAverage = 0;
+    static shimmerMax = 0.5;
+    static millisecondsPerRotation = 1000 / (.26 * Math.PI * 2);
+    static gradients = [
         [10, 176, 176, 209, 148, 140],
         [171, 120, 154, 245, 196, 154],
         [224, 99, 99, 71, 134, 148],
         [101, 100, 117, 80, 230, 175],
         [232, 165, 30, 69, 186, 172]
-    ],
+    ];
 
-    initialize: function(benchmark)
+    constructor()
     {
-        Stage.prototype.initialize.call(this, benchmark);
+        super();
+
+        this.testElements = [];
+        this._offsetIndex = 0;
+    }
+    
+    initialize(benchmark)
+    {
+        super.initialize(benchmark);
 
         this._template = document.getElementById("template");
         
-        const templateSize = Point.elementClientSize(this._template);
+        const templateSize = GeometryHelpers.elementClientSize(this._template);
         this._offset = this.size.subtract(templateSize).multiply(.5);
         this._maxOffset = templateSize.height / 4;
 
@@ -63,9 +58,9 @@ var TextStage = Utilities.createSubclass(Stage,
         this._template.style.top = this._offset.height + "px";
 
         this._stepProgress = 0;
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -94,13 +89,13 @@ var TextStage = Utilities.createSubclass(Stage,
             this.testElements.push(clone);
             this.element.insertBefore(clone, this.element.firstChild);
         }
-    },
+    }
 
-    animate: function(timeDelta) 
+    animate(timeDelta) 
     {
-        const angle = Stage.dateCounterValue(this.millisecondsPerRotation);
+        const angle = Stage.dateCounterValue(TextStage.millisecondsPerRotation);
 
-        const gradient = this.gradients[Math.floor(angle / (Math.PI * 2)) % this.gradients.length];
+        const gradient = TextStage.gradients[Math.floor(angle / (Math.PI * 2)) % TextStage.gradients.length];
         const offset = Stage.dateCounterValue(200);
         const maxX = Math.sin(angle) * this._maxOffset;
         const maxY = Math.cos(angle) * this._maxOffset;
@@ -109,9 +104,9 @@ var TextStage = Utilities.createSubclass(Stage,
         for (let i = 0; i < this._offsetIndex; ++i) {
             const element = this.testElements[i];
 
-            let colorProgress = this.shadowFalloff.solve(progress);
+            let colorProgress = TextStage.shadowFalloff.solve(progress);
             const shimmer = Math.sin(offset - colorProgress);
-            colorProgress = Math.max(Math.min(colorProgress + Utilities.lerp(shimmer, this.shimmerAverage, this.shimmerMax), 1), 0);
+            colorProgress = Math.max(Math.min(colorProgress + Utilities.lerp(shimmer, TextStage.shimmerAverage, TextStage.shimmerMax), 1), 0);
             const r = Math.round(Utilities.lerp(colorProgress, gradient[0], gradient[3]));
             const g = Math.round(Utilities.lerp(colorProgress, gradient[1], gradient[4]));
             const b = Math.round(Utilities.lerp(colorProgress, gradient[2], gradient[5]));
@@ -123,21 +118,19 @@ var TextStage = Utilities.createSubclass(Stage,
 
             progress += this._stepProgress;
         }
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return 1 + this._offsetIndex;
     }
-});
+}
 
-var TextBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TextBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TextStage(), options);
+        super(new TextStage(), options);
     }
-);
+}
 
 window.benchmarkClass = TextBenchmark;
-
-}());

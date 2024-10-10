@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2023 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,46 +22,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-BouncingSvgImage = Utilities.createSubclass(BouncingSvgParticle,
-    function(stage)
+class BouncingSvgImage extends BouncingSvgParticle {
+    constructor(stage)
     {
-        BouncingSvgParticle.call(this, stage, "image");
+        super(stage, "image");
 
         var attrs = { x: 0, y: 0, width: this.size.x, height: this.size.y };
         var xlinkAttrs = { href: stage.imageSrc };
         this.element = Utilities.createSVGElement("image", attrs, xlinkAttrs, stage.element);
         this._move();
     }
-);
+)
 
-BouncingSvgImagesStage = Utilities.createSubclass(BouncingSvgParticlesStage,
-    function()
+class BouncingSvgImagesStage extends BouncingSvgParticlesStage {
+    initialize(benchmark, options)
     {
-        BouncingSvgParticlesStage.call(this);
-    }, {
-
-    initialize: function(benchmark, options)
-    {
-        BouncingSvgParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingSvgImage(this);
     }
-});
+}
 
-BouncingSvgImagesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class BouncingSvgImagesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new BouncingSvgImagesStage(), options);
+        super(new BouncingSvgImagesStage(), options);
     }
-);
+}
 
 window.benchmarkClass = BouncingSvgImagesBenchmark;
-
-})();
-

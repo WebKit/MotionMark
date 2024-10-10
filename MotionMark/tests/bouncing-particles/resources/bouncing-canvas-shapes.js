@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,18 +22,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
-    function(stage)
+class BouncingCanvasShape extends BouncingCanvasParticle {
+    constructor(stage)
     {
-        BouncingCanvasParticle.call(this, stage, stage.shape);
+        super(stage, stage.shape);
         this._fill = stage.fill;
         this._color0 = Stage.randomColor();
         this._color1 = Stage.randomColor();
-    }, {
+    }
 
-    _applyFill: function()
+    _applyFill()
     {
         switch (this._fill) {
         case "gradient":
@@ -48,9 +47,9 @@ BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
             this.context.fillStyle = this._color0;
             break;
         }
-    },
+    }
 
-    _drawShape: function()
+    _drawShape()
     {
         this.context.beginPath();
 
@@ -68,9 +67,9 @@ BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
         }
 
         this.context.fill();
-    },
+    }
 
-    _draw: function()
+    _draw()
     {
         this.context.save();
             this._applyFill();
@@ -79,33 +78,31 @@ BouncingCanvasShape = Utilities.createSubclass(BouncingCanvasParticle,
             this._drawShape();
         this.context.restore();
     }
-});
+}
 
-BouncingCanvasShapesStage = Utilities.createSubclass(BouncingCanvasParticlesStage,
-    function ()
+class BouncingCanvasShapesStage extends BouncingCanvasParticlesStage {
+    constructor ()
     {
-        BouncingCanvasParticlesStage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        BouncingCanvasParticlesStage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.parseShapeParameters(options);
-    },
+    }
 
-    createParticle: function()
+    createParticle()
     {
         return new BouncingCanvasShape(this);
     }
-});
+}
 
-BouncingCanvasShapesBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class BouncingCanvasShapesBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new BouncingCanvasShapesStage(), options);
+        super(new BouncingCanvasShapesStage(), options);
     }
-);
+}
 
 window.benchmarkClass = BouncingCanvasShapesBenchmark;
-
-})();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,25 +22,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-function BouncingParticle(stage)
-{
-    this._stageSize = stage.size;
-    this.size = stage.particleSize;
 
-    this.position = Stage.randomPosition(stage.size.subtract(stage.particleSize));
-    this._angle = Stage.randomAngle();
-    this._velocity = Stage.randomVelocity(stage.maxVelocity);
-    this.rotater = Stage.randomRotater();
-}
+class BouncingParticle {
+    constructor(stage)
+    {
+        this._stageSize = stage.size;
+        this.size = stage.particleSize;
 
-BouncingParticle.prototype =
-{
+        this.position = Stage.randomPosition(stage.size.subtract(stage.particleSize));
+        this._angle = Stage.randomAngle();
+        this._velocity = Stage.randomVelocity(stage.maxVelocity);
+        this.rotater = Stage.randomRotater();
+    }
+
     get center()
     {
         return this.position.add(this.size.center);
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.position = this.position.move(this._angle, this._velocity, timeDelta);
         this.rotater.next(timeDelta);
@@ -89,37 +89,37 @@ BouncingParticle.prototype =
     }
 }
 
-BouncingParticlesStage = Utilities.createSubclass(Stage,
-    function()
+class BouncingParticlesStage extends Stage {
+    constructor()
     {
-        Stage.call(this);
+        super();
         this.particles = [];
-    }, {
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.particleSize = new Point(parseInt(options["particleWidth"]) || 10, parseInt(options["particleHeight"]) || 10);
         this.maxVelocity = Math.max(parseInt(options["maxVelocity"]) || 500, 100);
-    },
+    }
 
-    parseShapeParameters: function(options)
+    parseShapeParameters(options)
     {
         this.shape = options["shape"] || "circle";
         this.fill = options["fill"] || "solid";
         this.clip = options["clip"] || "";
         this.blend = options["blend"] || false;
         this.filter = options["filter"] || false;
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this.particles.forEach(function(particle) {
             particle.animate(timeDelta);
         });
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -138,10 +138,10 @@ BouncingParticlesStage = Utilities.createSubclass(Stage,
         }
 
         this.particles.splice(-count, count);
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return this.particles.length;
     }
-});
+}

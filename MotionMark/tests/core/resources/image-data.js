@@ -22,23 +22,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-var ImageDataStage = Utilities.createSubclass(Stage,
-    function() {
-        Stage.call(this);
-
-        this.testElements = [];
-        this._offsetIndex = 0;
-    }, {
-
-    imageWidth: 50,
-    imageHeight: 50,
-    pixelStride: 4,
-    rowStride: 200,
-    weightNegativeThreshold: 0.04,
-    weightPositiveThreshold: 0.96,
-    imageSrcs: [
+class ImageDataStage extends Stage {
+    static imageWidth = 50;
+    static imageHeight = 50;
+    static pixelStride = 4;
+    static rowStride = 200;
+    static weightNegativeThreshold = 0.04;
+    static weightPositiveThreshold = 0.96;
+    static imageSrcs = [
         "compass",
         "console",
         "contribute",
@@ -52,34 +44,43 @@ var ImageDataStage = Utilities.createSubclass(Stage,
         "storage",
         "styles",
         "timeline"
-    ],
-    images: [],
+    ];
 
-    initialize: function(benchmark)
+    constructor()
     {
-        Stage.prototype.initialize.call(this, benchmark);
+        super();
+
+        this.testElements = [];
+        this._offsetIndex = 0;
+        this.images = [];
+    }
+
+    initialize(benchmark)
+    {
+        super.initialize(benchmark);
 
         var lastPromise;
         var images = this.images;
-        this.imageSrcs.forEach(function(imageSrc) {
+        ImageDataStage.imageSrcs.forEach(imageSrc => {
             var promise = this._loadImage("resources/" + imageSrc + ".svg");
             if (!lastPromise)
                 lastPromise = promise;
             else {
-                lastPromise = lastPromise.then(function(img) {
-                    images.push(img);
+                lastPromise = lastPromise.then(img => {
+                    this.images.push(img);
                     return promise;
                 });
             }
-        }, this);
+        });
 
-        lastPromise.then(function(img) {
-            images.push(img);
+        lastPromise.then(img => {
+            this.images.push(img);
             benchmark.readyPromise.resolve();
-        }.bind(this));
-    },
+        });
+    }
 
-    _loadImage: function(src) {
+    _loadImage(src)
+    {
         var img = new Image;
         var promise = new SimplePromise;
 
@@ -90,9 +91,9 @@ var ImageDataStage = Utilities.createSubclass(Stage,
 
         img.src = src;
         return promise;
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -119,39 +120,42 @@ var ImageDataStage = Utilities.createSubclass(Stage,
             this.testElements.push(element);
             this.element.appendChild(element);
         }
-    },
+    }
 
-    _createTestElement: function() {
+    _createTestElement()
+    {
         var element = document.createElement('canvas');
-        element.width = this.imageWidth;
-        element.height = this.imageHeight;
-        element.style.width = this.imageWidth + 'px';
-        element.style.height = this.imageHeight + 'px';
+        element.width = ImageDataStage.imageWidth;
+        element.height = ImageDataStage.imageHeight;
+        element.style.width = ImageDataStage.imageWidth + 'px';
+        element.style.height = ImageDataStage.imageHeight + 'px';
 
         this._refreshElement(element);
         return element;
-    },
+    }
 
-    _refreshElement: function(element) {
-        var top = Stage.randomInt(0, Math.floor((this.size.height - this.imageHeight) / this.imageHeight)) * this.imageHeight;
-        var left = Stage.randomInt(0, Math.floor((this.size.width - this.imageWidth) / this.imageWidth)) * this.imageWidth;
+    _refreshElement(element)
+    {
+        var top = Stage.randomInt(0, Math.floor((this.size.height - ImageDataStage.imageHeight) / ImageDataStage.imageHeight)) * ImageDataStage.imageHeight;
+        var left = Stage.randomInt(0, Math.floor((this.size.width - ImageDataStage.imageWidth) / ImageDataStage.imageWidth)) * ImageDataStage.imageWidth;
 
         element.style.top = top + 'px';
         element.style.left = left + 'px';
-    },
+    }
 
-    animate: function(timeDelta) {
+    animate(timeDelta)
+    {
         for (var i = 0; i < this._offsetIndex; ++i) {
             var element = this.testElements[i];
             var context = element.getContext("2d");
 
             // Get image data
-            var imageData = context.getImageData(0, 0, this.imageWidth, this.imageHeight);
+            var imageData = context.getImageData(0, 0, ImageDataStage.imageWidth, ImageDataStage.imageHeight);
 
             var didDraw = false,
                 neighborPixelIndex,
                 dataLen = imageData.data.length;
-            for (var j = 0; j < dataLen; j += this.pixelStride) {
+            for (var j = 0; j < dataLen; j += ImageDataStage.pixelStride) {
                 if (imageData.data[j + 3] === 0)
                     continue;
 
@@ -170,36 +174,35 @@ var ImageDataStage = Utilities.createSubclass(Stage,
                 context.putImageData(imageData, 0, 0);
             else {
                 this._refreshElement(element);
-                element.getContext("2d").drawImage(Stage.randomElementInArray(this.images), 0, 0, this.imageWidth, this.imageHeight);
+                element.getContext("2d").drawImage(Stage.randomElementInArray(this.images), 0, 0, ImageDataStage.imageWidth, ImageDataStage.imageHeight);
             }
         }
-    },
+    }
 
-    _getRandomNeighboringPixelIndex: function(pixelIdx, pixelArrayLength)
+    _getRandomNeighboringPixelIndex(pixelIdx, pixelArrayLength)
     {
-        var xOffset = Math.floor((Pseudo.random() - this.weightNegativeThreshold) / (this.weightPositiveThreshold - this.weightNegativeThreshold));
-        var yOffset = Math.floor((Pseudo.random() - this.weightNegativeThreshold) / (this.weightPositiveThreshold - this.weightNegativeThreshold));
-        return (pixelIdx + this.pixelStride * xOffset + this.rowStride * yOffset) % pixelArrayLength;
-    },
+        var xOffset = Math.floor((Pseudo.random() - ImageDataStage.weightNegativeThreshold) / (ImageDataStage.weightPositiveThreshold - ImageDataStage.weightNegativeThreshold));
+        var yOffset = Math.floor((Pseudo.random() - ImageDataStage.weightNegativeThreshold) / (ImageDataStage.weightPositiveThreshold - ImageDataStage.weightNegativeThreshold));
+        return (pixelIdx + ImageDataStage.pixelStride * xOffset + ImageDataStage.rowStride * yOffset) % pixelArrayLength;
+    }
 
-    complexity: function()
+    complexity()
     {
         return this._offsetIndex;
     }
-});
+}
 
-var ImageDataBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class ImageDataBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new ImageDataStage(), options);
-    }, {
+        super(new ImageDataStage(), options);
+    }
 
-    waitUntilReady: function() {
+    waitUntilReady()
+    {
         this.readyPromise = new SimplePromise;
         return this.readyPromise;
     }
-});
+}
 
 window.benchmarkClass = ImageDataBenchmark;
-
-}());

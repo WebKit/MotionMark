@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-0224 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,31 +22,25 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-TemplateCssStage = Utilities.createSubclass(Stage,
-    function()
+class TemplateCssStage extends Stage {
+    initialize(benchmark, options)
     {
-        Stage.call(this);
-    }, {
-
-    initialize: function(benchmark, options)
-    {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
 
         // Do initialization here.
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         // If count is -ve, -count elements need to be removed form the
         // stage. If count is +ve, +count elements need to be added to
         // the stage.
 
         // Change objects in the stage.
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         // Animate the elements such that all of them are redrawn. You
         // may need to define your object so it keeps its animation data.
@@ -56,15 +50,13 @@ TemplateCssStage = Utilities.createSubclass(Stage,
 
         // Loop through all your objects and ask them to animate.
     }
-});
+}
 
-TemplateCssBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TemplateCssBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TemplateCssStage(), options);
+        super(new TemplateCssStage(), options);
     }
-);
+}
 
 window.benchmarkClass = TemplateCssBenchmark;
-
-})();

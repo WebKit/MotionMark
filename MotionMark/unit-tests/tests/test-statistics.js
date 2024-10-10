@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,38 +23,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SimpleCanvasStage extends CanvasStage {
-    tune(count)
-    {
-        if (count == 0)
-            return;
+describe('Statistics', function() {
+    describe('sampleMean()', function() {
+        it('sampleMean should compute the mean', function() {
+            expect(Statistics.sampleMean(10, 100)).to.be(10);
+        });
 
-        if (count < 0) {
-            this.offsetIndex = Math.max(this.offsetIndex + count, 0);
-            return;
-        }
+        it('sampleMean with zero samples should be zero', function() {
+            expect(Statistics.sampleMean(0, 100)).to.be(0);
+        });
+    });
 
-        this.offsetIndex = this.offsetIndex + count;
-        if (this.offsetIndex > this.objects.length) {
-            // For some tests, it may be easier to see how well the test is going
-            // by limiting the range of coordinates in which new objects can reside
-            var coordinateMaximumFactor = Math.min(this.objects.length, Math.min(this.size.x, this.size.y)) / Math.min(this.size.x, this.size.y);
-            var newIndex = this.offsetIndex - this.objects.length;
-            for (var i = 0; i < newIndex; ++i)
-                this.objects.push(new this._canvasObject(this, coordinateMaximumFactor));
-        }
-    }
+    describe('geometricMean()', function() {
+        it('geometricMean should compute the geometric mean', function() {
+            const values = [6, 2, 3, 5];
+            const result = Statistics.geometricMean(values).toFixed(3);
+            expect(result).to.be('3.663')
+        });
 
-    animate()
-    {
-        var context = this.context;
-        context.clearRect(0, 0, this.size.x, this.size.y);
-        for (var i = 0, length = this.offsetIndex; i < length; ++i)
-            this.objects[i].draw(context);
-    }
-
-    complexity()
-    {
-        return this.offsetIndex;
-    }
-}
+        it('geometricMean with a zero should compute to zero', function() {
+            const values = [6, 2, 0, 5];
+            const result = Statistics.geometricMean(values).toFixed(3);
+            expect(result).to.be('0.000')
+        });
+    });
+});

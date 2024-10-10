@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,22 +22,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-SimpleCanvasStage = Utilities.createSubclass(Stage,
-    function(canvasObject)
+
+class CanvasStage extends Stage {
+    constructor(canvasObject)
     {
-        Stage.call(this);
+        super();
         this._canvasObject = canvasObject;
         this.objects = [];
         this.offsetIndex = 0;
-    }, {
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         if (count == 0)
             return;
@@ -59,18 +60,18 @@ SimpleCanvasStage = Utilities.createSubclass(Stage,
             }
         } else
             this.offsetIndex = newIndex;
-    },
+    }
 
-    animate: function()
+    animate()
     {
         var context = this.context;
         context.clearRect(0, 0, this.size.x, this.size.y);
         for (var i = this.offsetIndex, length = this.objects.length; i < length; ++i)
             this.objects[i].draw(context);
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return this.objects.length - this.offsetIndex;
     }
-});
+}

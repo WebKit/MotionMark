@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,41 +22,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function() {
 
-CanvasImageTile = Utilities.createClass(
-    function(stage, source)
+class CanvasImageTile {
+    constructor(stage, source)
     {
         this._context = stage.context;
         this._size = stage.tileSize;
         this.source = source;
-    }, {
+    }
 
-    getImageData: function()
+    getImageData()
     {
         this._imagedata = this._context.getImageData(this.source.x, this.source.y, this._size.width, this._size.height);
-    },
+    }
 
-    putImageData: function(destination)
+    putImageData(destination)
     {
         this._context.putImageData(this._imagedata, destination.x, destination.y);
     }
-});
+}
 
-TiledCanvasImageStage = Utilities.createSubclass(Stage,
-    function(element, options)
+class TiledCanvasImageStage extends Stage {
+    constructor(element, options)
     {
-        Stage.call(this);
-    }, {
+        super();
+    }
 
-    initialize: function(benchmark, options)
+    initialize(benchmark, options)
     {
-        Stage.prototype.initialize.call(this, benchmark, options);
+        super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
         this._setupTiles();
-    },
+    }
 
-    _setupTiles: function()
+    _setupTiles()
     {
         const maxTilesPerRow = 50;
         const maxTilesPerCol = 50;
@@ -72,9 +71,9 @@ TiledCanvasImageStage = Utilities.createSubclass(Stage,
         }
 
         this._ctiles = 0;
-    },
+    }
 
-    _nextTilePosition: function(destination)
+    _nextTilePosition(destination)
     {
         var next = destination.add(this.tileSize);
 
@@ -82,17 +81,17 @@ TiledCanvasImageStage = Utilities.createSubclass(Stage,
             return new Point(0, next.y >= this._size.height ? 0 : next.y);
 
         return new Point(next.x, destination.y);
-    },
+    }
 
-    tune: function(count)
+    tune(count)
     {
         this._ctiles += count;
 
         this._ctiles = Math.max(this._ctiles, 0);
         this._ctiles = Math.min(this._ctiles, this._tiles.length);
-    },
+    }
 
-    _drawBackground: function()
+    _drawBackground()
     {
         var size = this._benchmark._stage.size;
         var gradient = this.context.createLinearGradient(0, 0, size.width, 0);
@@ -102,9 +101,9 @@ TiledCanvasImageStage = Utilities.createSubclass(Stage,
             this.context.fillStyle = gradient;
             this.context.fillRect(0, 0, size.width, size.height);
         this.context.restore();
-    },
+    }
 
-    animate: function(timeDelta)
+    animate(timeDelta)
     {
         this._drawBackground();
 
@@ -123,21 +122,19 @@ TiledCanvasImageStage = Utilities.createSubclass(Stage,
 
         for (var index = 0; index < this._ctiles; ++index)
             this._tiles[index].putImageData(destinations[index]);
-    },
+    }
 
-    complexity: function()
+    complexity()
     {
         return this._ctiles;
     }
-});
+}
 
-TiledCanvasImageBenchmark = Utilities.createSubclass(Benchmark,
-    function(options)
+class TiledCanvasImageBenchmark extends Benchmark {
+    constructor(options)
     {
-        Benchmark.call(this, new TiledCanvasImageStage(), options);
+        super(new TiledCanvasImageStage(), options);
     }
-);
+}
 
 window.benchmarkClass = TiledCanvasImageBenchmark;
-
-})();
