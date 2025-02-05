@@ -40,10 +40,10 @@ class BouncingCanvasImage extends BouncingCanvasParticle {
 }
 
 class BouncingCanvasImagesStage extends BouncingCanvasParticlesStage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
-        var imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
+        await super.initialize(benchmark, options);
+        const imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
         this.imageElement = document.querySelector(".hidden[src=\"" + imageSrc + "\"]");
     }
 

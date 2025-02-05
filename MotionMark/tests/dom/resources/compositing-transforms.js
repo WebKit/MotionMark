@@ -53,10 +53,9 @@ class BouncingCompositedImage extends BouncingParticle {
 }
 
 class CompositingTransformsStage extends BouncingParticlesStage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
-
+        await super.initialize(benchmark, options);
         this.imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
         this.useFilters = options["filters"] == "yes";
     }

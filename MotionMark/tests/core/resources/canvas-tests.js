@@ -205,9 +205,9 @@ class CanvasLineSegmentStage extends CanvasStage {
         super(CanvasLineSegment);
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.context.lineCap = options["lineCap"] || "butt";
         this.lineMinimum = 20;
         this.lineLengthMaximum = 40;
@@ -271,9 +271,9 @@ class CanvasLinePathStage extends CanvasStage {
         super([CanvasLinePoint, CanvasLinePoint, CanvasQuadraticSegment, CanvasBezierSegment]);
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.context.lineJoin = options["lineJoin"] || "bevel";
         this.context.lineCap = options["lineCap"] || "butt";
     }

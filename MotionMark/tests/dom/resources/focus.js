@@ -92,10 +92,9 @@ class FocusStage extends Stage {
     static maxBlurValue = 15;
     static maxCenterObjectBlurValue = 5;
     
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
-
+        await super.initialize(benchmark, options);
         this._testElements = [];
         this._focalPoint = 0.5;
         this._offsetIndex = 0;

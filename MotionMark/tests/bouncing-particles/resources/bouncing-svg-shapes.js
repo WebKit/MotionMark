@@ -69,9 +69,9 @@ class BouncingSvgShape extends BouncingSvgParticle {
 }
 
 class BouncingSvgShapesStage extends BouncingSvgParticlesStage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.parseShapeParameters(options);
         this._gradientsCount = 0;
     }

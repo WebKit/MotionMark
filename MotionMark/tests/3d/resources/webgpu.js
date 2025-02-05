@@ -71,110 +71,106 @@ class WebGPUStage extends Stage {
         super();
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
 
         this._numTriangles = 0;
 
         const gpuContext = this.element.getContext('gpu');
+        const adapter = await navigator.gpu.requestAdapter({ powerPreference: "low-power" });
+        const device = await adapter.requestDevice();
+        
+        this._device = device;
 
-        navigator.gpu.requestAdapter({ powerPreference: "low-power" }).then(adapter => {
-            return adapter.requestDevice().then(device => {
-                this._device = device;
-
-                const swapChainFormat = "bgra8unorm";
-                this._swapChain = gpuContext.configureSwapChain({
-                    device: device,
-                    format: swapChainFormat,
-                    usage: GPUTextureUsage.OUTPUT_ATTACHMENT
-                });
-
-                this._timeBindGroupLayout = device.createBindGroupLayout({
-                    bindings: [
-                        { binding: 0, visibility: GPUShaderStageBit.VERTEX, type: "uniform-buffer" },
-                    ],
-                });
-
-                this._bindGroupLayout = device.createBindGroupLayout({
-                    bindings: [
-                        { binding: 0, visibility: GPUShaderStageBit.VERTEX, type: "uniform-buffer" },
-                    ],
-                });
-
-                const vec4Size = 4 * Float32Array.BYTES_PER_ELEMENT;
-
-                const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [this._timeBindGroupLayout, this._bindGroupLayout] });
-                const shaderModule = device.createShaderModule({ code: whlslShaders, isWHLSL: true });
-
-                const pipelineDesc = {
-                    layout: pipelineLayout,
-                    vertexStage: {
-                        module: shaderModule,
-                        entryPoint: "vertexMain",
-                    },
-                    fragmentStage: {
-                        module: shaderModule,
-                        entryPoint: "fragmentMain"
-                    },
-
-                    primitiveTopology: "triangle-list",
-
-                    vertexInput: {
-                        indexFormat: "uint32",
-                        vertexBuffers: [{
-                            // vertex buffer
-                            stride: 2 * vec4Size,
-                            stepMode: "vertex",
-                            attributeSet: [{
-                                // vertex positions
-                                shaderLocation: 0,
-                                offset: 0,
-                                format: "float4"
-                            }, {
-                                // vertex colors
-                                shaderLocation: 1,
-                                offset: vec4Size,
-                                format: "float4"
-                            }],
-                        }],
-                    },
-
-                    rasterizationState: {
-                        frontFace: 'ccw',
-                        cullMode: 'none',
-                    },
-
-                    colorStates: [{
-                        format: swapChainFormat,
-                        alphaBlend: {},
-                        colorBlend: {},
-                    }],
-                };
-
-                this._pipeline = device.createRenderPipeline(pipelineDesc);
-
-                const [vertexBuffer, vertexArrayBuffer] = device.createBufferMapped({
-                    size: 2 * 3 * vec4Size,
-                    usage: GPUBufferUsage.VERTEX
-                });
-                const vertexWriteBuffer = new Float32Array(vertexArrayBuffer);
-                vertexWriteBuffer.set([
-                // position data  /**/ color data
-                0, 0.1, 0, 1,     /**/ 1, 0, 0, 1,
-                -0.1, -0.1, 0, 1, /**/ 0, 1, 0, 1,
-                0.1, -0.1, 0, 1,  /**/ 0, 0, 1, 1,
-                ]);
-                vertexBuffer.unmap();
-
-                this._vertexBuffer = vertexBuffer;
-                this._timeMappedBuffers = [];
-
-                this._resetIfNecessary();
-
-                benchmark._initPromise.resolve();
-            });
+        const swapChainFormat = "bgra8unorm";
+        this._swapChain = gpuContext.configureSwapChain({
+            device: device,
+            format: swapChainFormat,
+            usage: GPUTextureUsage.OUTPUT_ATTACHMENT
         });
+
+        this._timeBindGroupLayout = device.createBindGroupLayout({
+            bindings: [
+                { binding: 0, visibility: GPUShaderStageBit.VERTEX, type: "uniform-buffer" },
+            ],
+        });
+
+        this._bindGroupLayout = device.createBindGroupLayout({
+            bindings: [
+                { binding: 0, visibility: GPUShaderStageBit.VERTEX, type: "uniform-buffer" },
+            ],
+        });
+
+        const vec4Size = 4 * Float32Array.BYTES_PER_ELEMENT;
+
+        const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [this._timeBindGroupLayout, this._bindGroupLayout] });
+        const shaderModule = device.createShaderModule({ code: whlslShaders, isWHLSL: true });
+
+        const pipelineDesc = {
+            layout: pipelineLayout,
+            vertexStage: {
+                module: shaderModule,
+                entryPoint: "vertexMain",
+            },
+            fragmentStage: {
+                module: shaderModule,
+                entryPoint: "fragmentMain"
+            },
+
+            primitiveTopology: "triangle-list",
+
+            vertexInput: {
+                indexFormat: "uint32",
+                vertexBuffers: [{
+                    // vertex buffer
+                    stride: 2 * vec4Size,
+                    stepMode: "vertex",
+                    attributeSet: [{
+                        // vertex positions
+                        shaderLocation: 0,
+                        offset: 0,
+                        format: "float4"
+                    }, {
+                        // vertex colors
+                        shaderLocation: 1,
+                        offset: vec4Size,
+                        format: "float4"
+                    }],
+                }],
+            },
+
+            rasterizationState: {
+                frontFace: 'ccw',
+                cullMode: 'none',
+            },
+
+            colorStates: [{
+                format: swapChainFormat,
+                alphaBlend: {},
+                colorBlend: {},
+            }],
+        };
+
+        this._pipeline = device.createRenderPipeline(pipelineDesc);
+
+        const [vertexBuffer, vertexArrayBuffer] = device.createBufferMapped({
+            size: 2 * 3 * vec4Size,
+            usage: GPUBufferUsage.VERTEX
+        });
+        const vertexWriteBuffer = new Float32Array(vertexArrayBuffer);
+        vertexWriteBuffer.set([
+        // position data  /**/ color data
+        0, 0.1, 0, 1,     /**/ 1, 0, 0, 1,
+        -0.1, -0.1, 0, 1, /**/ 0, 1, 0, 1,
+        0.1, -0.1, 0, 1,  /**/ 0, 0, 1, 1,
+        ]);
+        vertexBuffer.unmap();
+
+        this._vertexBuffer = vertexBuffer;
+        this._timeMappedBuffers = [];
+
+        this._resetIfNecessary();
     }
 
     _getFunctionSource(id)
@@ -318,12 +314,6 @@ class WebGPUBenchmark extends Benchmark {
     constructor(options)
     {
         super(new WebGPUStage(), options);
-    }
-
-    waitUntilReady()
-    {
-        this._initPromise = new SimplePromise;
-        return this._initPromise;
     }
 }
 

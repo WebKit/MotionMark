@@ -34,23 +34,24 @@ class MultiplyStage extends Stage {
         this._offsetIndex = 0;
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
-        var tileSize = Math.round(this.size.height / MultiplyStage.totalRows);
+        await super.initialize(benchmark, options);
+
+        const tileSize = Math.round(this.size.height / MultiplyStage.totalRows);
         if (options.visibleCSS)
             MultiplyStage.visibleCSS = options.visibleCSS;
 
         // Fill the scene with elements
-        var x = Math.round((this.size.width - tileSize) / 2);
-        var y = Math.round((this.size.height - tileSize) / 2);
-        var tileStride = tileSize;
-        var direction = 0;
-        var spiralCounter = 2;
-        var nextIndex = 1;
-        var maxSide = Math.floor(y / tileStride) * 2 + 1;
+        let x = Math.round((this.size.width - tileSize) / 2);
+        let y = Math.round((this.size.height - tileSize) / 2);
+        const tileStride = tileSize;
+        let direction = 0;
+        let spiralCounter = 2;
+        let nextIndex = 1;
+        const maxSide = Math.floor(y / tileStride) * 2 + 1;
         this._centerSpiralCount = maxSide * maxSide;
-        for (var i = 0; i < this._centerSpiralCount; ++i) {
+        for (let i = 0; i < this._centerSpiralCount; ++i) {
             this._addTile(x, y, tileSize, Stage.randomInt(0, 359));
 
             if (i == nextIndex) {
@@ -69,9 +70,9 @@ class MultiplyStage extends Stage {
         }
 
         this._sidePanelCount = maxSide * Math.floor((this.size.width - x) / tileStride) * 2;
-        for (var i = 0; i < this._sidePanelCount; ++i) {
-            var sideX = x + Math.floor(Math.floor(i / maxSide) / 2) * tileStride;
-            var sideY = y - tileStride * (i % maxSide);
+        for (let i = 0; i < this._sidePanelCount; ++i) {
+            let sideX = x + Math.floor(Math.floor(i / maxSide) / 2) * tileStride;
+            let sideY = y - tileStride * (i % maxSide);
 
             if (Math.floor(i / maxSide) % 2 == 1)
                 sideX = this.size.width - sideX - tileSize + 1;
@@ -81,16 +82,16 @@ class MultiplyStage extends Stage {
 
     _addTile(x, y, tileSize, rotateDeg)
     {
-        var tile = Utilities.createElement("div", { class: "div-" + Stage.randomInt(0,6) }, this.element);
-        var halfTileSize = tileSize / 2;
+        const tile = Utilities.createElement("div", { class: "div-" + Stage.randomInt(0,6) }, this.element);
+        const halfTileSize = tileSize / 2;
         tile.style.left = x + 'px';
         tile.style.top = y + 'px';
         tile.style.width = tileSize + 'px';
         tile.style.height = tileSize + 'px';
-        var visibleCSS = MultiplyStage.visibleCSS[this.tiles.length % MultiplyStage.visibleCSS.length];
+        const visibleCSS = MultiplyStage.visibleCSS[this.tiles.length % MultiplyStage.visibleCSS.length];
         tile.style[visibleCSS[0]] = visibleCSS[1];
 
-        var distance = 1 / tileSize * this.size.multiply(0.5).subtract(new Point(x + halfTileSize, y + halfTileSize)).length();
+        const distance = 1 / tileSize * this.size.multiply(0.5).subtract(new Point(x + halfTileSize, y + halfTileSize)).length();
         this.tiles.push({
             element: tile,
             rotate: rotateDeg,

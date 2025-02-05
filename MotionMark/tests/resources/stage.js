@@ -62,7 +62,7 @@ class Stage {
     {
     }
 
-    initialize(benchmark)
+    async initialize(benchmark)
     {
         this._benchmark = benchmark;
         this._element = document.getElementById("stage");

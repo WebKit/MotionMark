@@ -24,10 +24,9 @@
  */
 
 class WebGLStage extends Stage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
-
+        await super.initialize(benchmark, options);
         this._numTriangles = 0;
         this._bufferSize = 0;
 

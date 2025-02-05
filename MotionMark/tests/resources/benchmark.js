@@ -33,7 +33,6 @@ class Benchmark {
         this._firstFrameMinimumLength = options["first-frame-minimum-length"];
 
         this._stage = stage;
-        this._stage.initialize(this, options);
 
         switch (options["time-measurement"])
         {
@@ -66,6 +65,12 @@ class Benchmark {
         }
     }
 
+    // Subclasses should override this if they have setup to do prior to commencing.
+    async initialize(options)
+    {
+        await this._stage.initialize(this, options);
+    }
+
     get stage()
     {
         return this._stage;
@@ -84,22 +89,13 @@ class Benchmark {
 
     run()
     {
-        return this.waitUntilReady().then(function() {
-            this._finishPromise = new SimplePromise;
+        return new Promise(resolve => {
+            this._completionFunction = resolve;
             this._previousTimestamp = undefined;
             this._didWarmUp = false;
             this._stage.tune(this._controller.initialComplexity - this._stage.complexity());
             this._animateLoop();
-            return this._finishPromise;
-        }.bind(this));
-    }
-
-    // Subclasses should override this if they have setup to do prior to commencing.
-    waitUntilReady()
-    {
-        var promise = new SimplePromise;
-        promise.resolve();
-        return promise;
+        });
     }
 
     _animateLoop(timestamp)
@@ -108,7 +104,7 @@ class Benchmark {
         this._currentTimestamp = timestamp;
 
         if (this._controller.shouldStop(timestamp)) {
-            this._finishPromise.resolve(this._controller.results());
+            this._completionFunction(this._controller.results());
             return;
         }
 
