@@ -87,10 +87,9 @@ class FocusElement {
 }
 
 class FocusStage extends Stage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
-
+        await super.initialize(benchmark, options);
         this._testElements = [];
         this._offsetIndex = 0;
         this.focalPoint = 0.5;

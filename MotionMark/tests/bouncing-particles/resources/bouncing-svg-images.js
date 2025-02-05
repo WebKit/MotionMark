@@ -33,12 +33,12 @@ class BouncingSvgImage extends BouncingSvgParticle {
         this.element = Utilities.createSVGElement("image", attrs, xlinkAttrs, stage.element);
         this._move();
     }
-)
+}
 
 class BouncingSvgImagesStage extends BouncingSvgParticlesStage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.imageSrc = options["imageSrc"] || "../resources/yin-yang.svg";
     }
 

@@ -96,9 +96,9 @@ class BouncingParticlesStage extends Stage {
         this.particles = [];
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.particleSize = new Point(parseInt(options["particleWidth"]) || 10, parseInt(options["particleHeight"]) || 10);
         this.maxVelocity = Math.max(parseInt(options["maxVelocity"]) || 500, 100);
     }

@@ -206,9 +206,9 @@ class CanvasArcSegment {
 }
 
 class CanvasArcSegmentFill extends CanvasArcSegment {
-    constructor()
+    constructor(stage)
     {
-        super();
+        super(stage);
     }
     
     draw(context)
@@ -372,9 +372,9 @@ class CanvasLineSegmentStage extends SimpleCanvasStage {
         super(CanvasLineSegment);
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.context.lineCap = options["lineCap"] || "butt";
     }
 }
@@ -385,9 +385,9 @@ class CanvasLinePathStage extends SimpleCanvasPathStrokeStage {
         super(CanvasLinePoint);
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.context.lineJoin = options["lineJoin"] || "bevel";
     }
 }
@@ -399,9 +399,9 @@ class CanvasLineDashStage extends SimpleCanvasStage {
         this._step = 0;
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.context.setLineDash([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         this.context.lineWidth = 1;
         this.context.strokeStyle = "#000";

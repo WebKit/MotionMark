@@ -53,12 +53,12 @@ class TemplateCanvasObject
 }
 
 class TemplateCanvasStage extends Stage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
-
         // Define a collection for your objects.
+        // await any async work (e.g. image loading).
     }
 
     tune(count)
@@ -87,21 +87,6 @@ class TemplateCanvasBenchmark extends Benchmark {
     constructor(options)
     {
         super(new TemplateCanvasStage(), options);
-    }
-
-    // Override this function if the benchmark needs to wait for resources to be
-    // loaded.
-    //
-    // Default implementation returns a resolved promise, so that the benchmark
-    // benchmark starts right away. Here's an example where we're waiting 5
-    // seconds before starting the benchmark.
-    waitUntilReady()
-    {
-        var promise = new SimplePromise;
-        window.setTimeout(function() {
-            promise.resolve();
-        }, 5000);
-        return promise;
     }
 }
 

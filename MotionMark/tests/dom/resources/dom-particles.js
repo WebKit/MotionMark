@@ -59,9 +59,9 @@ class DOMParticle extends Particle {
 }
 
 class DOMParticleStage extends ParticlesStage {
-    initialize(benchmark)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark);
+        await super.initialize(benchmark, options);
         this.emissionSpin = Stage.random(0, 3);
         this.emitSteps = Stage.randomInt(4, 6);
         this.emitLocation = [

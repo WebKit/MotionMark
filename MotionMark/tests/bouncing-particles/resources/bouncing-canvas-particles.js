@@ -93,9 +93,9 @@ class BouncingCanvasParticle extends BouncingParticle {
 }
 
 class BouncingCanvasParticlesStage extends BouncingParticlesStage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
     }
 

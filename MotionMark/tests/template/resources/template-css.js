@@ -24,10 +24,9 @@
  */
 
 class TemplateCssStage extends Stage {
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
-
+        await super.initialize(benchmark, options);
         // Do initialization here.
     }
 

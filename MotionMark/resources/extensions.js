@@ -434,44 +434,6 @@ class UnitBezier {
     }
 }
 
-class SimplePromise {
-    constructor()
-    {
-        this._chainedPromise = null;
-        this._callback = null;
-    }
-
-    then (callback)
-    {
-        if (this._callback)
-            throw "SimplePromise doesn't support multiple calls to then";
-
-        this._callback = callback;
-        this._chainedPromise = new SimplePromise;
-
-        if (this._resolved)
-            this.resolve(this._resolvedValue);
-
-        return this._chainedPromise;
-    }
-
-    resolve (value)
-    {
-        if (!this._callback) {
-            this._resolved = true;
-            this._resolvedValue = value;
-            return;
-        }
-
-        var result = this._callback(value);
-        if (result instanceof SimplePromise) {
-            var chainedPromise = this._chainedPromise;
-            result.then(function (result) { chainedPromise.resolve(result); });
-        } else
-            this._chainedPromise.resolve(result);
-    }
-}
-
 class Heap {
     
     static createMinHeap(maxSize)

@@ -55,42 +55,26 @@ class ImageDataStage extends Stage {
         this.images = [];
     }
 
-    initialize(benchmark)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark);
-
-        var lastPromise;
-        var images = this.images;
+        await super.initialize(benchmark, options);
+        const loadingPromises = [];
         ImageDataStage.imageSrcs.forEach(imageSrc => {
-            var promise = this._loadImage("resources/" + imageSrc + ".svg");
-            if (!lastPromise)
-                lastPromise = promise;
-            else {
-                lastPromise = lastPromise.then(img => {
-                    this.images.push(img);
-                    return promise;
-                });
-            }
+            loadingPromises.push(this._loadImage("resources/" + imageSrc + ".svg"));
         });
 
-        lastPromise.then(img => {
-            this.images.push(img);
-            benchmark.readyPromise.resolve();
-        });
+        await Promise.all(loadingPromises);
     }
 
     _loadImage(src)
     {
-        var img = new Image;
-        var promise = new SimplePromise;
-
-        img.addEventListener('load', function onImageLoad(e) {
-            img.removeEventListener('load', onImageLoad);
-            promise.resolve(img);
+        return new Promise((resolve, reject) => {
+            const img = new Image;
+            img.addEventListener('load', () => resolve(img));
+            img.addEventListener('error', (err) => reject(err));
+            img.src = src;
+            this.images.push(img);
         });
-
-        img.src = src;
-        return promise;
     }
 
     tune(count)
@@ -196,12 +180,6 @@ class ImageDataBenchmark extends Benchmark {
     constructor(options)
     {
         super(new ImageDataStage(), options);
-    }
-
-    waitUntilReady()
-    {
-        this.readyPromise = new SimplePromise;
-        return this.readyPromise;
     }
 }
 

@@ -64,12 +64,12 @@ class BenchmarkRunnerState {
 
     prepareCurrentTest(runner, frame)
     {
-        var test = this.currentTest();
-        var promise = new SimplePromise;
-
-        frame.onload = function() {
-            promise.resolve();
-        };
+        const test = this.currentTest();
+        const promise = new Promise(resolve => {
+            frame.onload = function() {
+                resolve();
+            };
+        });
 
         frame.src = "tests/" + test.url;
         return promise;
@@ -102,86 +102,80 @@ class BenchmarkRunner {
         }
     }
 
-    _runBenchmarkAndRecordResults(state)
+    async _runBenchmarkAndRecordResults(state)
     {
-        var promise = new SimplePromise;
-        var suite = state.currentSuite();
-        var test = state.currentTest();
+        const suite = state.currentSuite();
+        const test = state.currentTest();
 
         if (this._client && this._client.willRunTest)
             this._client.willRunTest(suite, test);
 
-        var contentWindow = this._frame.contentWindow;
-        var self = this;
+        const contentWindow = this._frame.contentWindow;
 
-        var options = { complexity: test.complexity };
+        const options = { complexity: test.complexity };
         Utilities.extendObject(options, this._client.options);
         Utilities.extendObject(options, Utilities.parseParameters(contentWindow.location));
 
-        var benchmark = new contentWindow.benchmarkClass(options);
-        document.body.style.backgroundColor = benchmark.backgroundColor();
-        benchmark.run().then(function(testData) {
-            var suiteResults = self._suitesResults[suite.name] || {};
-            suiteResults[test.name] = testData;
-            self._suitesResults[suite.name] = suiteResults;
+        const benchmark = new contentWindow.benchmarkClass(options);
+        document.body.style.backgroundColor = benchmark.backgroundColor(); // FIXME: Do this via a selector.
+        
+        await benchmark.initialize(options);
+        const testData = await benchmark.run();
+        const suiteResults = this._suitesResults[suite.name] || {};
+        suiteResults[test.name] = testData;
+        this._suitesResults[suite.name] = suiteResults;
 
-            if (self._client && self._client.didRunTest)
-                self._client.didRunTest(testData);
+        if (this._client && this._client.didRunTest)
+            this._client.didRunTest(testData);
 
-            state.next();
-            if (state.currentSuite() != suite)
-                self._removeFrame();
-            promise.resolve(state);
-        });
+        state.next();
+        if (state.currentSuite() != suite)
+            this._removeFrame();
 
-        return promise;
+        return state;
     }
 
-    step(state)
+    async step(state)
     {
         if (!state) {
             state = new BenchmarkRunnerState(this._suites);
             this._suitesResults = {};
         }
 
-        var suite = state.currentSuite();
+        const suite = state.currentSuite();
         if (!suite) {
             this._finalize();
-            var promise = new SimplePromise;
-            promise.resolve();
-            return promise;
+            return;
         }
 
-        if (state.isFirstTest()) {
+        if (state.isFirstTest())
             this._appendFrame();
-        }
 
-        return state.prepareCurrentTest(this, this._frame).then(function(prepareReturnValue) {
-            return this._runBenchmarkAndRecordResults(state);
-        }.bind(this));
+        await state.prepareCurrentTest(this, this._frame);
+        const nextState = await this._runBenchmarkAndRecordResults(state);
+        return nextState;
     }
 
     runAllSteps(startingState)
     {
-        var nextCallee = this.runAllSteps.bind(this);
-        this.step(startingState).then(function(nextState) {
-            if (nextState)
-                nextCallee(nextState);
+        this.step(startingState).then(nextState => {
+            if (!nextState)
+                return;
+            this.runAllSteps(nextState);
         });
     }
 
     runMultipleIterations()
     {
-        var self = this;
-        var currentIteration = 0;
+        let currentIteration = 0;
 
-        this._runNextIteration = function() {
-            currentIteration++;
-            if (currentIteration < self._client.iterationCount)
-                self.runAllSteps();
+        this._runNextIteration = () => {
+            ++currentIteration;
+            if (currentIteration < this._client.iterationCount)
+                this.runAllSteps();
             else if (this._client && this._client.didFinishLastIteration) {
-                document.body.style.backgroundColor = "";
-                self._client.didFinishLastIteration();
+                document.body.style.backgroundColor = ""; // FIXME: Do this via a selector.
+                this._client.didFinishLastIteration();
             }
         }
 

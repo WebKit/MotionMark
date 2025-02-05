@@ -113,40 +113,25 @@ class LeavesStage extends ParticlesStage {
         this.images = [];
     }
 
-    initialize(benchmark)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark);
-
-        var lastPromise;
-        var images = this.images;
-        LeavesStage.imageSrcs.forEach(function(imageSrc) {
-            var promise = this._loadImage("../core/resources/" + imageSrc + "100.png");
-            if (!lastPromise)
-                lastPromise = promise;
-            else {
-                lastPromise = lastPromise.then(function(img) {
-                    images.push(img);
-                    return promise;
-                });
-            }
-        }, this);
-
-        lastPromise.then(function(img) {
-            images.push(img);
-            benchmark.readyPromise.resolve();
+        await super.initialize(benchmark, options);
+        const loadingPromises = [];
+        LeavesStage.imageSrcs.forEach(imageSrc => {
+            loadingPromises.push(this._loadImage("../core/resources/" + imageSrc + "100.png"));
         });
+
+        await Promise.all(loadingPromises);
     }
 
-    _loadImage(src) {
-        var img = new Image;
-        var promise = new SimplePromise;
-
-        img.onload = function(e) {
-            promise.resolve(e.target);
-        };
-
-        img.src = src;
-        return promise;
+    _loadImage(src)
+    {
+        return new Promise(resolve => {
+            const img = new Image;
+            img.addEventListener('load', () => resolve(img));
+            img.src = src;
+            this.images.push(img);
+        });
     }
 
     animate(timeDelta)
@@ -173,12 +158,6 @@ class LeavesBenchmark extends Benchmark {
     constructor(options)
     {
         super(new LeavesStage(), options);
-    }
-
-    waitUntilReady()
-    {
-        this.readyPromise = new SimplePromise;
-        return this.readyPromise;
     }
 }
 

@@ -44,12 +44,11 @@ class TextStage extends Stage {
         this._offsetIndex = 0;
     }
     
-    initialize(benchmark)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark);
-
+        await super.initialize(benchmark, options);
         this._template = document.getElementById("template");
-        
+    
         const templateSize = GeometryHelpers.elementClientSize(this._template);
         this._offset = this.size.subtract(templateSize).multiply(.5);
         this._maxOffset = templateSize.height / 4;

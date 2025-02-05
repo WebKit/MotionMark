@@ -64,41 +64,24 @@ class BouncingTaggedImagesStage extends BouncingParticlesStage {
         this.images = [];
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
-
-        var lastPromise;
-        var images = this.images;
-        BouncingTaggedImagesStage.imageSrcs.forEach(function(imageSrc) {
-            var promise = this._loadImage("resources/" + imageSrc + ".jpg");
-            if (!lastPromise)
-                lastPromise = promise;
-            else {
-                lastPromise = lastPromise.then(function(img) {
-                    images.push(img);
-                    return promise;
-                });
-            }
-        }, this);
-
-        lastPromise.then(function(img) {
-            images.push(img);
-            benchmark.readyPromise.resolve();
+        await super.initialize(benchmark, options);
+        const loadingPromises = [];
+        BouncingTaggedImagesStage.imageSrcs.forEach(imageSrc => {
+            loadingPromises.push(this._loadImage("resources/" + imageSrc + ".jpg"));
         });
+        await Promise.all(loadingPromises);
     }
 
     _loadImage(src)
     {
-        var img = new Image;
-        var promise = new SimplePromise;
-
-        img.onload = function(e) {
-            promise.resolve(e.target);
-        };
-
-        img.src = src;
-        return promise;
+        return new Promise(resolve => {
+            const img = new Image;
+            img.addEventListener('load', () => resolve(img));
+            img.src = src;
+            this.images.push(img);
+        });
     }
 
     createParticle()
@@ -116,12 +99,6 @@ class BouncingTaggedImagesBenchmark extends Benchmark {
     constructor(options)
     {
         super(new BouncingTaggedImagesStage(), options);
-    }
-
-    waitUntilReady()
-    {
-        this.readyPromise = new SimplePromise;
-        return this.readyPromise;
     }
 }
 
