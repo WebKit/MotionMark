@@ -53,6 +53,27 @@ class MathHelpers {
     {
         return (offset + Date.now() / (cycleLengthMs || 2000)) % 1;
     }
+    
+    static cheapHash(s)
+    {
+        let hash = 0, i = 0, len = s.length;
+        while ( i < len )
+            hash  = ((hash << 5) - hash + s.charCodeAt(i++)) << 0;
+
+        return hash + 2147483647 + 1;
+    }
+    
+    // JavaScripts % operator is remainder, not modulo.
+    static modulo(dividend, divisor)
+    {
+        const quotient = Math.floor(dividend / divisor);
+        return dividend - divisor * quotient;
+    }
+
+    static normalizeRadians(radians)
+    {
+        return MathHelpers.modulo(radians, Math.PI * 2);
+    }
 }
 
 class ItemData {
@@ -61,8 +82,8 @@ class ItemData {
         this.deptNumber = deptNumber;
         this.label = label;
         this.imageURL = imageURL;
-        
-        this.hueOffset = MathHelpers.random(0.1, 0.2);
+
+        this.hueOffset = MathHelpers.cheapHash(label) / 0xFFFFFFFF;
         this.colorLightness = MathHelpers.random(0.5, 0.7);
         this.colorSaturation = MathHelpers.random(0.2, 0.5);
     }
@@ -178,7 +199,7 @@ class RadialChart {
     
     draw(ctx)
     {
-        this.numSpokes = this._complexity - 1;
+        this.numSpokes = this._complexity;
         this.wedgeAngleRadians = TwoPI / this.numSpokes;
         this.angleOffsetRadians = Math.PI / 2; // Start at the top, rather than the right.
 
@@ -268,45 +289,94 @@ class RadialChart {
     
     #drawWedgeLabels(ctx, index, instance)
     {
-        const midAngleRadians = this.#wedgeStartAngle(index) + 0.5 * this.wedgeAngleRadians;
+        const midAngleRadians = MathHelpers.normalizeRadians(this.#wedgeStartAngle(index) + 0.5 * this.wedgeAngleRadians);
 
-        const textInset = 15;
+        const textInset = -15;
         const textCenterPoint = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.innerRadius - textInset));
 
         const labelAngle = midAngleRadians + Math.PI / 2;
         
-        ctx.save();
-        ctx.font = '12px sans-serif';
-        ctx.fillStyle = 'black';
-        
-        ctx.translate(textCenterPoint.x, textCenterPoint.y);
-        ctx.rotate(labelAngle);
-        
-        const textSize = ctx.measureText(instance.deptNumber);
-        ctx.fillText(instance.deptNumber, -textSize.width / 2, 0);
-        ctx.restore();
-        
-        const textLabelGap = 5;
-        const outerLabelLocation = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius + textLabelGap));
-        
-        ctx.save();
+        {
+            ctx.save();
+            ctx.font = '12px "Helvetica Neue", Helvetica, sans-serif';
 
-        ctx.translate(outerLabelLocation.x, outerLabelLocation.y);
-        ctx.rotate(midAngleRadians + Math.PI / 2 - 0.5);
-
-        ctx.font = '12px sans-serif';
-        ctx.fillStyle = 'black';
-        ctx.fillText(instance.label, 0, 0);
-        ctx.restore();
+            // Numbers on inner ring.
+            ctx.translate(textCenterPoint.x, textCenterPoint.y);
+            ctx.rotate(labelAngle);
         
-        // const wedgeArrowEnd = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius));
-        // const arrowPath = this.#pathForArrow(outerLabelLocation, wedgeArrowEnd);
-        //
-        // ctx.save();
-        // ctx.strokeStyle = 'gray';
-        // ctx.setLineDash([10, 4]);
-        // ctx.stroke(arrowPath);
-        // ctx.restore();
+            const textSize = ctx.measureText(instance.deptNumber);
+
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+            ctx.strokeText(instance.deptNumber, -textSize.width / 2, 0);
+
+            {
+                ctx.save();
+                ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+                ctx.shadowBlur = 5;
+                ctx.fillStyle = 'white';
+                ctx.fillText(instance.deptNumber, -textSize.width / 2, 0);
+                ctx.restore();
+            }
+
+            ctx.restore();
+        }
+
+        // Labels around outside.
+        const labelDistance = 20;
+        const labelHorizontalOffset = 60;
+        const outsideMidSegmentPoint = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius + labelDistance));
+        let outerLabelLocation = outsideMidSegmentPoint;
+        const isRightSide = midAngleRadians < Math.PI /2 || midAngleRadians > Math.PI * 1.5;
+        if (isRightSide)
+            outerLabelLocation = outsideMidSegmentPoint.add(new Point(labelHorizontalOffset, 0));
+        else
+            outerLabelLocation = outsideMidSegmentPoint.add(new Point(-labelHorizontalOffset, 0));
+
+        {
+            ctx.save();
+
+            ctx.translate(outerLabelLocation.x, outerLabelLocation.y);
+
+            ctx.font = '12px "Helvetica Neue", Helvetica, sans-serif';
+            ctx.fillStyle = 'black';
+        
+            let textOffset = 0;
+            if (!isRightSide)
+                textOffset = -ctx.measureText(instance.label).width;
+
+            ctx.fillText(instance.label, textOffset, 0);
+            ctx.restore();
+        }
+        
+        const wedgeArrowEnd = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius));
+        const wedgeArrowEndAngle = MathHelpers.normalizeRadians(midAngleRadians + Math.PI);
+        const arrowPath = this.#pathForArrow(outerLabelLocation, wedgeArrowEnd, wedgeArrowEndAngle);
+
+        // Arrow.
+        {
+            ctx.save();
+            ctx.strokeStyle = 'gray';
+            ctx.setLineDash([4, 2]);
+            ctx.stroke(arrowPath);
+            ctx.restore();
+        }
+
+        // Arrowhead.
+        {
+            ctx.save();
+            const arrowheadPath = this.#pathForArrowHead();
+
+            ctx.translate(wedgeArrowEnd.x, wedgeArrowEnd.y);
+            const arrowheadSize = 12;
+            ctx.scale(arrowheadSize, arrowheadSize);
+            ctx.rotate(midAngleRadians);
+
+            ctx.fillStyle = 'gray';
+            ctx.fill(arrowheadPath);
+
+            ctx.restore();
+        }
     }
     
     #drawBadge(ctx, index, instance)
@@ -325,7 +395,6 @@ class RadialChart {
         ctx.translate(imageCenterPoint.x, imageCenterPoint.y);
         ctx.rotate(imageAngle);
 
-        // FIXME: This shadow makes Safari very slow.
         ctx.shadowColor = "black";
         ctx.shadowBlur = 5;
         
@@ -360,22 +429,38 @@ class RadialChart {
         }
     }
     
-    // Unused
-    #pathForArrow(startPoint, endPoint)
+    #pathForArrow(startPoint, endPoint, endAngle)
     {
         const arrowPath = new Path2D();
         arrowPath.moveTo(startPoint.x, startPoint.y);
         // Compute a bezier path that keeps the line horizontal at the start and end.
+        
+        const distance = startPoint.subtract(endPoint).length();
 
         const controlPointProportion = 0.5;
-
         const controlPoint1 = startPoint.add({ x: controlPointProportion * (endPoint.x - startPoint.x), y: 0});
-        const controlPoint2 = endPoint.subtract({ x: controlPointProportion * (endPoint.x - startPoint.x), y: 0});
-        arrowPath.bezierCurveTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
+        
+        const controlPoint2Offset = new Point(controlPointProportion * distance * Math.cos(endAngle), controlPointProportion * distance * Math.sin(endAngle));
+        const controlPoint2 = endPoint.subtract(controlPoint2Offset);
 
-        //arrowPath.lineTo(endPoint.x, endPoint.y);
-        // Add arrowhead
+        arrowPath.bezierCurveTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
         return arrowPath;
+    }
+
+    #pathForArrowHead()
+    {
+        // Arrowhead points left.
+        const arrowHeadPath = new Path2D();
+        const pointyness = 0.5;
+        const breadth = 0.4;
+        
+        arrowHeadPath.moveTo(0, 0);
+        arrowHeadPath.quadraticCurveTo(pointyness, 0, 1, breadth);
+        arrowHeadPath.lineTo(1, -breadth);
+        arrowHeadPath.quadraticCurveTo(pointyness, 0, 0, 0);
+        arrowHeadPath.closePath();
+        
+        return arrowHeadPath;
     }
 }
 
@@ -535,14 +620,14 @@ window.benchmarkClass = RadialChartBenchmark;
 class FakeController {
     constructor()
     {
-        this.initialComplexity = 102;
+        this.initialComplexity = 200;
         this.startTime = new Date;
     }
 
     shouldStop()
     {
         const now = new Date();
-        return (now - this.startTime) > 15000;
+        return (now - this.startTime) > 500;
     }
     
     results()
