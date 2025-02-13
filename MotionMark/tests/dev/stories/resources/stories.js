@@ -428,23 +428,15 @@ class FractalBoxesStage extends Stage {
         this._complexity = 0;
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         this.controller = new FractalBoxesController(this);
         
         this.images = [];
-        this.#startLoadingData(benchmark)
+        await this.#loadImages()
     }
 
-    #startLoadingData(benchmark)
-    {
-        setTimeout(async () => {
-            await this.#loadImages();
-            benchmark.readyPromise.resolve();
-        }, 0);
-    }
-    
     async #loadImages()
     {
         const promises = [];
@@ -490,12 +482,6 @@ class FractalBoxesBenchmark extends Benchmark {
         const stage = document.getElementById('stage');
         super(new FractalBoxesStage(stage), options);
     }
-
-    waitUntilReady()
-    {
-        this.readyPromise = new SimplePromise;
-        return this.readyPromise;
-    }
 }
 
 window.benchmarkClass = FractalBoxesBenchmark;
@@ -525,13 +511,13 @@ class FakeController {
 }
 
 // Testing
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     if (!(window === window.parent))
         return;
 
     var benchmark = new window.benchmarkClass({ });
+    await benchmark.initialize({ });
     benchmark._controller = new FakeController(benchmark);
-
     benchmark.run().then(function(testData) {
 
     });
