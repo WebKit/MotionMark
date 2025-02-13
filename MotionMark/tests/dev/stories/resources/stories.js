@@ -255,131 +255,6 @@ class BoxItem {
     }
 }
 
-class LayoutState {
-    constructor(position, size)
-    {
-        this.currentPosition = position;
-        this.remainingSize = size;
-    }
-}
-
-class TreeMapLayout {
-    constructor(areaSize, data)
-    {
-        this.areaSize = areaSize;
-        this.originalData = data;
-        this.data = this.#normalizeData(this.originalData);
-    }
-    
-    #normalizeData(data)
-    {
-        const factor = (this.areaSize.width * this.areaSize.height) / data.sum();
-        return data.map((x) => (x * factor));
-    }
-    
-    layout()
-    {
-        this.layoutResults = [];
-        const inputData = [...this.data];
-        this.#squarishLayoutIterative(inputData);        
-    }
-    
-    #squarishLayoutIterative(items)
-    {
-        const layoutState = new LayoutState(new Point(0, 0), structuredClone(this.areaSize));
-        const remainingItems = [...items];
-        let itemsInCurrentRow = [];
-        
-        let { value: availableSpace, vertical: currentlyVertical } = TreeMapLayout.#getSmallerDimension(layoutState.remainingSize);
-        
-        while (remainingItems.length > 1) {
-            const rowWithChild = [...itemsInCurrentRow, remainingItems[0]]
-
-            if (itemsInCurrentRow.length === 0 || TreeMapLayout.#worstRatio(itemsInCurrentRow, availableSpace) >= TreeMapLayout.#worstRatio(rowWithChild, availableSpace)) {
-                remainingItems.shift();
-                itemsInCurrentRow = rowWithChild;
-                continue;
-            }
-
-            this.#layoutRow(itemsInCurrentRow, availableSpace, currentlyVertical, layoutState);
-            ({ value: availableSpace, vertical: currentlyVertical } = TreeMapLayout.#getSmallerDimension(layoutState.remainingSize));
-            
-            itemsInCurrentRow = [];
-        }
-
-        this.#layoutLastRow(itemsInCurrentRow, remainingItems, availableSpace, layoutState);
-    }
-
-    static #worstRatio(rowValues, width)
-    {
-        const rowMax = rowValues.max();
-        const rowMin = rowValues.min();
-        const sumSquared = Math.pow(rowValues.sum(), 2);
-        const widthSquared = Math.pow(width, 2);
-        return Math.max((widthSquared * rowMax) / sumSquared, sumSquared / (widthSquared * rowMin));
-    }
-
-    #layoutRow(rowValues, width, isVertical, layoutState)
-    {
-        const rowHeight = rowValues.sum() / width;
-
-        rowValues.forEach((rowItem) => {
-            const rowWidth = rowItem / rowHeight;
-            const curXPos = layoutState.currentPosition.x;
-            const curYPos = layoutState.currentPosition.y;
-
-            let data;
-            if (isVertical) {
-                layoutState.currentPosition.y += rowWidth;
-                data = {
-                    x: curXPos,
-                    y: curYPos,
-                    width: rowHeight,
-                    height: rowWidth,
-                    dataIndex: this.layoutResults.length,
-                };
-            } else {
-                layoutState.currentPosition.x += rowWidth;
-                data = {
-                    x: curXPos,
-                    y: curYPos,
-                    width: rowWidth,
-                    height: rowHeight,
-                    dataIndex: this.layoutResults.length,
-                };
-            }
-            
-            this.layoutResults.push(data);
-        });
-
-        if (isVertical) {
-            layoutState.currentPosition.x += rowHeight;
-            layoutState.currentPosition.y -= width;
-            layoutState.remainingSize.width -= rowHeight;
-        } else {
-            layoutState.currentPosition.x -= width;
-            layoutState.currentPosition.y += rowHeight;
-            layoutState.remainingSize.height -= rowHeight;
-        }
-    }
-
-    #layoutLastRow(rowValues, remainingItems, width, layoutState)
-    {
-        const isVertical = TreeMapLayout.#getSmallerDimension(layoutState.remainingSize).vertical;
-        if (rowValues.length)
-            this.#layoutRow(rowValues, width, isVertical, layoutState);
-        this.#layoutRow(remainingItems, width, isVertical, layoutState);
-    }
-
-    static #getSmallerDimension(remainingSpace)
-    {
-        if (remainingSpace.height ** 2 > remainingSpace.width ** 2)
-            return { value: remainingSpace.width, vertical: false };
-
-        return { value: remainingSpace.height, vertical: true };
-    }
-}
-
 class StoriesController {
     constructor(stage)
     {
@@ -410,23 +285,31 @@ class StoriesController {
 
             this.items.length = complexity;
         }
-        
+
         this._complexity = complexity;
+
+        const itemWidth = this.stageSize.width / 6;
+        const itemHeight = this.stageSize.height / 3;
         
-        const numericValues = this.items.map((x) => x.value);
-        
-        this.treeMap = new TreeMapLayout(this.stageSize, numericValues);
-        this.treeMap.layout();
-        
-        let i = 0;
-        for (const data of this.treeMap.layoutResults) {
-            const item = this.items[data.dataIndex];
+        const xMax = this.stageSize.width - itemWidth;
+        const yMax = this.stageSize.height - itemHeight;
+
+        for (let i = 0; i < this._complexity; ++i) {
+            const item = this.items[i];
             const element = item.ensureElement();
-            item.applyStyle(data);
+
+            const data = {
+                // FIXME: Do some smarter layout that reduces overlap.
+                x: Stage.randomInt(0, xMax),
+                y: Stage.randomInt(0, yMax),
+                width: itemWidth,
+                height: itemHeight,
+            };
             
+            item.applyStyle(data);
+
             if (!element.parentElement)
                 this.container.appendChild(element);
-            ++i;
         }
     }
     
