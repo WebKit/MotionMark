@@ -380,7 +380,7 @@ class TreeMapLayout {
     }
 }
 
-class FractalBoxesController {
+class StoriesController {
     constructor(stage)
     {
         this.stage = stage;
@@ -444,7 +444,7 @@ class FractalBoxesController {
 }
 
 
-class FractalBoxesStage extends Stage {
+class StoriesStage extends Stage {
     constructor()
     {
         super();
@@ -455,7 +455,7 @@ class FractalBoxesStage extends Stage {
     async initialize(benchmark, options)
     {
         await super.initialize(benchmark, options);
-        this.controller = new FractalBoxesController(this);
+        this.controller = new StoriesController(this);
         
         this.images = [];
         await this.#loadImages()
@@ -500,15 +500,15 @@ class FractalBoxesStage extends Stage {
     }
 }
 
-class FractalBoxesBenchmark extends Benchmark {
+class StoriesBenchmark extends Benchmark {
     constructor(options)
     {
         const stage = document.getElementById('stage');
-        super(new FractalBoxesStage(stage), options);
+        super(new StoriesStage(stage), options);
     }
 }
 
-window.benchmarkClass = FractalBoxesBenchmark;
+window.benchmarkClass = StoriesBenchmark;
 
 class FakeController {
     constructor()
