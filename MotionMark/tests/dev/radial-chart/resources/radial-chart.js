@@ -473,9 +473,9 @@ class RadialChartStage extends Stage {
         this.instanceData = [];
     }
 
-    initialize(benchmark, options)
+    async initialize(benchmark, options)
     {
-        super.initialize(benchmark, options);
+        await super.initialize(benchmark, options);
         
         const dpr = window.devicePixelRatio || 1;
         this.canvasDPR = Math.min(Math.floor(dpr), 2); // Just use 1 or 2.
@@ -488,7 +488,8 @@ class RadialChartStage extends Stage {
         this.canvasSize = new Size(this._canvasObject.width / this.canvasDPR, this._canvasObject.height / this.canvasDPR);
         this._complexity = 0;
 
-        this.#startLoadingData(benchmark);
+        await this.#loadDataJSON();
+        await this.#loadImages();
 
         this.context = this._canvasObject.getContext("2d");
         this.context.scale(this.canvasDPR, this.canvasDPR);
@@ -504,16 +505,6 @@ class RadialChartStage extends Stage {
         this.#setupCharts();
     }
 
-    #startLoadingData(benchmark)
-    {
-        setTimeout(async () => {
-            await this.#loadDataJSON();
-            await this.#loadImages();
-
-            benchmark.readyPromise.resolve();
-        }, 0);
-    }
-    
     async #loadDataJSON()
     {
         const url = "resources/departements-region.json";
@@ -534,9 +525,8 @@ class RadialChartStage extends Stage {
     async #loadImages()
     {
         let promises = [];
-        for (const instance of this.instanceData) {
+        for (const instance of this.instanceData)
             promises.push(instance.loadImage());
-        }
         
         await Promise.all(promises);
     }
@@ -607,12 +597,6 @@ class RadialChartBenchmark extends Benchmark {
         const canvas = document.getElementById('stage-canvas');
         super(new RadialChartStage(canvas), options);
     }
-
-    waitUntilReady()
-    {
-        this.readyPromise = new SimplePromise;
-        return this.readyPromise;
-    }
 }
 
 window.benchmarkClass = RadialChartBenchmark;
@@ -637,12 +621,13 @@ class FakeController {
 }
 
 // Testing
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     if (!(window === window.parent))
         return;
 
     var benchmark = new window.benchmarkClass({ });
     benchmark._controller = new FakeController();
+    await benchmark.initialize({ });
 
     benchmark.run().then(function(testData) {
 
