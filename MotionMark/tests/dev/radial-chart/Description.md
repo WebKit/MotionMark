@@ -18,20 +18,28 @@ Features tested
 * text drawing
 * image drawing
 * lines, arcs, curves
+* dashed lines
 * clipping to a path
 * gradients
+* text with shadowBlur
 
 
-Work per measued frame
+Work per measured frame
 ----------------------
 
 Redraw of the entire canvas
 
 
+Licensing requirements
+----------------------
+
+French departements images, e.g. https://commons.wikimedia.org/wiki/File:Blason_département_fr_Ain.svg
+Creative Commons, requires attribution.
+
+
 Remaining work
 --------------
 
-* Add images for the rest of the deparements
-* Address some overlapping text issues
-
-
+* Add images for the rest of the departements. Maybe use a sprite image.
+* Add some more canvas features?
+* Revisit whether the concentric rings are best for high complexity. Perhaps have multiple, smaller non-overlapping rings.
