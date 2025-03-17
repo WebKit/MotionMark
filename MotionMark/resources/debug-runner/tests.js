@@ -464,6 +464,10 @@ Suites.push(new Suite("Dev suite",
             name: "Stories"
         },
         {
+            url: "dev/map-zoomer/map-zoomer.html",
+            name: "Map Zoomer"
+        },
+        {
             url: "dev/radial-chart/radial-chart.html",
             name: "Canvas Radial Chart"
         }
