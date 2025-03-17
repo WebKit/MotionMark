@@ -462,6 +462,10 @@ Suites.push(new Suite("Dev suite",
         {
             url: "dev/stories/stories.html",
             name: "Stories"
+        },
+        {
+            url: "dev/radial-chart/radial-chart.html",
+            name: "Canvas Radial Chart"
         }
     ]
 ));
