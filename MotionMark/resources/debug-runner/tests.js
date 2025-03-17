@@ -470,6 +470,10 @@ Suites.push(new Suite("Dev suite",
         {
             url: "dev/radial-chart/radial-chart.html",
             name: "Canvas Radial Chart"
+        },
+        {
+            url: "dev/dashboard/dashboard.html",
+            name: "Dashboard"
         }
     ]
 ));

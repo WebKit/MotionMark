@@ -1,0 +1,255 @@
+<!--
+  Copyright (C) 2025 Apple Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../../resources/stage.css">
+    <style>
+        @property --gap {
+            syntax: "<length>";
+            inherits: true;
+            initial-value: 10px;
+        }
+        
+        :root {
+            font-family: "Helvetica Neue", Helvetica, sans-serif;
+            color: #eee;
+            --dark-color: #212121;
+            --foreground-color: #a2e9e9;
+            --light-color: #8ecccc;
+            --light-mid-color: #50717b;
+            --dark-mid-color: #3a4042;
+        }
+
+        #stage {
+            background-color: var(--dark-color);
+            color: var(--foreground-color);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 33fr 17fr 13fr 12fr 25fr;
+            grid-template-rows: 1.5fr 1fr;
+            gap: var(--gap);
+            width: 100%;
+            height: 100%;
+            border: 1px solid black;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .panel {
+            position: relative;
+            padding: 10px;
+            border: 1px solid var(--light-mid-color);
+            background-color: var(--dark-mid-color);
+            box-shadow: 0 0 3px var(--light-mid-color) inset;
+            border-radius: 5px;
+        }
+        
+        .panel > h2 {
+            position: absolute;
+            margin-top: 0;
+            top: 0;
+            left: 1em;
+        }
+
+        #bandwidth {
+            grid-row-start: 1;
+            grid-column: 1 / 2;
+            display: grid;
+            align-content: center;
+        }
+
+        .category {
+            padding: 20px 0;
+            text-align: center;
+        }
+        
+        .category .label {
+            font-size: 32pt;
+        }
+
+        .category .value {
+            font-family: monospace;
+            font-size: 18pt;
+        }
+
+        .category .chart {
+            height: 10vh;
+            width: 90%;
+            margin: 10px auto;
+        }
+
+        #traffic {
+            grid-row-start: 1;
+            grid-column: 2 / 4;
+            display: grid;
+            align-content: center;
+        }
+        
+        #traffic .chart > svg {
+            display: block;
+            margin: 10px auto;
+        }
+        
+        #user-list {
+            grid-row-start: 1;
+            grid-column: 4 / 6;
+        }
+         
+        #user-list table {
+            margin: 50px;
+        }
+        
+        #throughput {
+            grid-row-start: 2;
+            grid-column: 1 / 3;
+            display: grid;
+            align-content: center;
+        }
+        
+        .outbound-data-path {
+            fill: rgba(217, 153, 153, 0.4);
+        }
+
+        .outbound-line {
+            stroke: rgba(217, 153, 153, 0.65);
+        }
+
+        .inbound-data-path {
+            fill: rgba(153, 153, 53, 0.4);
+        }
+
+        .inbound-line {
+            stroke: rgba(153, 153, 53, 0.85);
+        }
+        
+        #utilization {
+            grid-row-start: 2;
+            grid-column: 3 / 5;
+            display: grid;
+            align-content: center;
+        }
+
+        #domains {
+            grid-row-start: 2;
+            grid-column: 5 / 6;
+            display: grid;
+            align-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="stage">
+        <div class="container">
+            <div class="panel" id="bandwidth">
+                <h2>Bandwidth</h2>
+                <div class="category">
+                    <div class="label">
+                        Download
+                    </div>
+                    <div class="download value">
+                        123
+                    </div>
+                    <div class="chart">
+                    </div>
+                </div>
+                <div class="category">
+                    <div class="label">
+                        Upload
+                    </div>
+                    <div class="upload value">
+                        75
+                    </div>
+                    <div class="chart">
+                    </div>
+                </div>
+            </div>
+            <div class="panel" id="traffic">
+                <h2>Traffic</h2>
+                <div class="chart"></div>
+                <div class="chart"></div>
+            </div>
+            <div class="panel" id="user-list">
+                <h2>Users</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <td>User</td>
+                            <td>data</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>User</td>
+                            <td>data</td>
+                        </tr>
+                        <tr>
+                            <td>User</td>
+                            <td>data</td>
+                        </tr>
+                        <tr>
+                            <td>User</td>
+                            <td>data</td>
+                        </tr>
+                        <tr>
+                            <td>User</td>
+                            <td>data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel" id="throughput">
+                <h2>Throughput</h2>
+            </div>
+            <div class="panel" id="utilization">
+                <h2>CPU Utilization</h2>
+            </div>
+            <div class="panel" id="domains">
+                <h2>Domains</h2>
+            </div>
+        </div>
+        
+    </div>
+    <script src="../../../resources/strings.js"></script>
+    <script src="../../../resources/extensions.js"></script>
+    <script src="../../../resources/statistics.js"></script>
+    <script src="../../resources/math.js"></script>
+    <script src="../../resources/benchmark.js"></script>
+    <script src="../../resources/controllers.js"></script>
+    <script src="../../resources/stage.js"></script>
+    <script src="resources/d3.v7.js"></script>
+    <script src="resources/dashboard.js"></script>
+    
+    <script src="resources/throughput-controller.js"></script>
+    <script src="resources/traffic-controller.js"></script>
+    <script src="resources/utilization-controller.js"></script>
+    <script src="resources/bandwidth-controller.js"></script>
+    <script src="resources/domains-controller.js"></script>
+    
+</body>
+</html>
