@@ -1,0 +1,246 @@
+<!--
+  Copyright (C) 2025 Apple Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../../resources/stage.css">
+    <style>
+        @property --photo-size {
+          syntax: "<length>";
+          inherits: true;
+          initial-value: 50px;
+        }
+
+        @property --arrow-size {
+          syntax: "<length>";
+          inherits: true;
+          initial-value: 8px;
+        }
+
+        #stage-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #container {
+            position: absolute;
+            inset: 10px;
+            border: 1px solid black;
+        }
+
+        .map-container {
+            position: absolute;
+            width: 400px;
+            height: 320px;
+            outline: 1px solid black;
+            overflow: clip;
+            will-change: transform;
+        }
+        
+        .tiles-container, .track-container, .photos-container, .controls-overlay {
+            position: absolute;
+            inset: 0;
+            overflow: clip;
+        }
+        
+        .controls-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            width: 26px;
+            height: 52px;
+            background-color: white;
+            border-radius: 2px;
+            border: 2px solid rgba(0,0,0,0.2);
+            background-clip: padding-box;
+        }
+        
+        .zoom-controls > a {
+            display: block;
+            height: 26px;
+            text-decoration: none;
+            color: rgba(0,0,0,0.75);
+            background-position: 0 0;
+            background-size: 26px 260px;
+            background-repeat: no-repeat;
+            opacity: 0.75;
+            text-indent: -999em;
+            /* this image needs editing */
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAIICAMAAAAWgT0mAAAABGdBTUEAALGPC%2FxhBQAAAAFzUkdCAK7OHOkAAABgUExURQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpP6I0AAAAfdFJOUwDYoAgNNvSA4%2Fu3mcTrUb5VQCByjBcoRwJMrs9nfF29SYbmAAAFH0lEQVR42u2c55qrIBCGY8HeYkliC%2Fd%2Fl0cRlRjFgbO7z5b5fiV5fAUGhHEYcrmgUKhfpIDSQBmig%2F44FNAXBeAyRH0epFU97Nz%2FfzRQKBQKhUKhvrnv%2F0t9WBQKhUKhUKhvLdfd%2FyxlKHX3Pp9B85XCRzClwCwXKzH8ckVmolQZTrmXz4d0qqdjCB2T63Su1jDSGrBajwYKhUKhUEoibmo4jpG6BIwkxhqfMhIQkkevYa0oP2eu8TaAFl9PGZ%2B%2ByT%2Bh8pjuKJbXcG3P%2FXK5r%2B2S2u01FLh%2Bk9nQOIIMSZ8K7XipHqXkzGHb07EPkh5DKaRJ2%2BodN8qhR4agzsdCxjFkgAyxgVKQyTeQC%2BrcDUQ%2BdhjpDVitR0PvIdR63PUmFr0pTG%2By1JyWUSgUCgXW46FKVM8mjptnpeBg9xFfpfyoh8zmdhJ6r0uNFya2jLgVqb%2B3fPppcTuEqEQfC%2BVF4OwBTlBI11CrfjdEbQEsuNpDaoFdy5%2FZevanyvtuTax7acis5wTdps15x6xzZnKjvPICrWtpwPvJabo87xoH%2Bwn76Rv3EwqFQqG%2BSnakmJm4pWSXua%2BRrJWCMRtKAr3HKZ9qEGMyHwaJ3xdGAWKM%2F4xUoInJmDWg0MwwGwKhlRkpGCQyAwWC7itztrm9QmPjOXO2jS5Uz4543U7HuHiBfb%2BoQ7Lffhqk9HKnDbmqew3HFOZIoFAo1N8Q6RvPa3qVrTHbnBcLExyOIEK0xAMWZo9MWFdVHY4UrKyhbh7fgbwOvAmq3HD7ZdfyKt%2F8XdQPdVu%2FDTXsAVBDab1%2BqyltANDQDCFGXg0N1IFineq1OoYIP8vk2841NIYR1MMhno5ftD4ahoo3NT6EcRsS7pJp5RR%2Ff0rZtXS13FFM80WhUChQkEA6x2olMn7dbvj7pW2fXJNQDSpY5kKmBHG%2FUgnybQ2I%2BTjPVs0QzKs0FK1nir%2F9BmjjDitDlk5JNx2o%2FtP99Fsg9xgCT7EChG4sCoVC%2FVjZJLudpsVaL4FNqxz3dOPnxXqaknyyOhIoq53PUTi0k5RUUoEq10WnzLJjKKXUu88Framxvp9aspLGtaxaQn3L%2BR1Zilw93ThIHtxH5pJmyVlzYoPTNqYASbOKM2Ls5vhK%2Byqgu5mC8mBsv%2F9GIw%2F72t4u1J0EEfeO%2Ffhn2dW5%2Bd6q06C5G72V5Z%2FmMpL3vGpApDjbUi0oy7J5aZUDTLTMhGbFoIj04yoeZfLOyyGu2Yp180vIvsYtFMzgmNC80aorm9aJjQCWm4pCoVCor9CDlNO51JJAj05ZhbhAFaA5PdmeUwAcnHU18sLMPZfFBJXjt2FHKtKVLaAsfpC6XZfnzjk7SG0xG%2Fj9aOfqnpHRcDk7Zu4d27Bgdx33wztvWakn16w47NOYt7pa%2FnvUsPnZ6viol5mDPKY3NOPivhrOlJ1DL3k9MpZPcY9np5el7JbHvjzbdh%2Fs%2FLywvfrp%2B012tt6YQtcPZ3Impz4b8IcvOfLuTJ7xjZ9VT%2Bcz7Lbs%2FwLiqQ3VdFvLmb1%2FIoMifmePxdevS6Q9k53IN%2FkwG6xlz066ObvrqcyXj8f6jbdt5iY9PJnJp0P77a1mzm4zF9TJ%2F2Sg5e9YrJtIS33zMY%2Fiw2G0ZGvT6eQSGXvLnsZhcTwLeetrDHdF8%2BnlSPJoXBJ%2Ffo2xfaMgpJj9benkUsx1SVSmlpIP0lDpFWV8jb4trYMGVAdT26sdYZPlYMNC%2BFMI4LTM3vN6M4qVFgAU6iv0D5QnfMaZoP9%2FAAAAAElFTkSuQmCC);
+        }
+        
+        .zoom-controls > .zoom-in {
+            background-position: 0 0;
+        }
+
+        .zoom-controls > .zoom-out {
+            background-position: 0 -26px;
+            
+        }
+        
+        .map-container .label {
+            position: absolute;
+            left: 4px;
+            bottom: 4px;
+            color: #666;
+            font-size: 11px;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .map-controls a {
+            display: inline-block;
+            padding: 2px;
+            background-color: white;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+            text-decoration: none;
+            color: darkblue;
+            font-size: 12px;
+        }
+        
+        .zoomer {
+            position: absolute;
+            transform-origin: 50% 50%;
+        }
+        
+        .tiles-wrapper {
+            position: absolute;
+            transform-origin: top left;
+            top: 0;
+            left: 0;
+        }
+        
+        .tiles-wrapper > img {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .path-group > polyline {
+            vector-effect: non-scaling-stroke;
+            fill: none;
+            stroke-width: 4;
+            stroke: rgba(255, 0, 0, 0.8);
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+        
+        a.save-route {
+            background-image: url(resources/images/save-route.svg);
+            background-size: 50px 50px;
+            background-repeat: no-repeat;
+            text-indent: 20px;
+        }
+
+        a.download-gpx {
+            background-image: url(resources/images/gpx-file.svg);
+            background-size: 18px 18px;
+            background-repeat: no-repeat;
+            text-indent: 18px;
+        }
+        
+        .drop-down {
+            position: relative;
+            display: inline-block;
+        }
+
+        a.map-type {
+            padding-right: 12px;
+        }
+
+        a.map-type::after {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 10px;
+            right: 2px;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid black;
+        }
+        
+        .photo-placard {
+            position: absolute;
+            height: 0px;
+            width: 0px;
+            /* This makes it too slow in Safari */
+            filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.3));
+        }
+
+        .photo-container {
+            position: absolute;
+            height: calc(var(--photo-size) + var(--arrow-size));
+            width: var(--photo-size);
+            top: calc(-1 * (var(--photo-size) + var(--arrow-size)));
+            left: calc(var(--photo-size) / -2);
+            background-color: white;
+            box-sizing: border-box;
+            padding: 4px;
+            --arrow-leadin: calc((var(--photo-size) - 2 * var(--arrow-size)) / 2);
+            clip-path: polygon(
+                0 0,
+                var(--photo-size) 0,
+                var(--photo-size) var(--photo-size),
+                calc(var(--photo-size) - var(--arrow-leadin)) var(--photo-size),
+                calc(var(--photo-size) / 2) calc(var(--photo-size) + var(--arrow-size)),
+                var(--arrow-leadin) var(--photo-size),
+                0 var(--photo-size));
+        }
+
+        .photo-container > img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="stage">
+        <div id="container"></div>
+    </div>
+    <script src="../../../resources/strings.js"></script>
+    <script src="../../../resources/extensions.js"></script>
+    <script src="../../../resources/statistics.js"></script>
+    <script src="../../resources/math.js"></script>
+    <script src="../../resources/benchmark.js"></script>
+    <script src="../../resources/controllers.js"></script>
+    <script src="../../resources/stage.js"></script>
+    <script src="resources/map-zoomer.js"></script>
+</body>
+</html>

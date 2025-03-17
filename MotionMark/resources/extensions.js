@@ -247,6 +247,11 @@ class Point {
         this.y = y;
     }
 
+    clone()
+    {
+        return new Point(this.x, this.y);
+    }
+
     // Used when the point object is used as a size object.
     get width()
     {
@@ -289,6 +294,21 @@ class Point {
         if(isNaN(other.x))
             return new Point(this.x * other, this.y * other);
         return new Point(this.x * other.x, this.y * other.y);
+    }
+    
+    min(other)
+    {
+        return new Point(Math.min(this.x, other.x), Math.min(this.y, other.y));
+    }
+
+    max(other)
+    {
+        return new Point(Math.max(this.x, other.x), Math.max(this.y, other.y));
+    }
+
+    scale(factor)
+    {
+        return new Point(this.x * factor, this.y * factor);
     }
 
     move(angle, velocity, timeDelta)
