@@ -456,3 +456,12 @@ Suites.push(new Suite("Basic canvas path suite",
         }
     ]
 ));
+
+Suites.push(new Suite("Dev suite",
+    [
+        {
+            url: "dev/stories/stories.html",
+            name: "Stories"
+        }
+    ]
+));
