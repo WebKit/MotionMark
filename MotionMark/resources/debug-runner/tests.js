@@ -458,7 +458,7 @@ Suites.push(new Suite("Basic canvas path suite",
     ]
 ));
 
-Suites.push(new Suite("Dev suite",
+Suites.push(new Suite("Tentative 1.4 suite",
     [
         {
             url: "dev/stories/stories.html",
