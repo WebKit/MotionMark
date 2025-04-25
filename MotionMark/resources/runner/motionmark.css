@@ -46,7 +46,7 @@ body.showing-results {
     background-size: auto 225%, auto 100%;
     background-repeat: no-repeat;
 
-    animation: background-fade 1s ease-in 1s, background-color 60s linear infinite 2s;
+    animation: background-fade 1s ease-in 6s, background-color 60s linear infinite 7s;
     animation-play-state: paused;
 
     will-change: background-color;
@@ -111,7 +111,7 @@ section.selected {
 
     color: hsl(35, 100%, 50%);
 
-    animation: foreground-color 60s linear infinite 2s;
+    animation: foreground-color 60s linear infinite 7s;
     animation-play-state: paused;
 
     will-change: color;
@@ -185,7 +185,7 @@ button {
 
     transition: 100ms filter ease-in-out;
 
-    animation: background-color 60s linear infinite 2s;
+    animation: background-color 60s linear infinite 7s;
     animation-play-state: paused;
 
     will-change: background-color;
