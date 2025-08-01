@@ -254,8 +254,11 @@ class ScoreCalculator {
             experimentResult[Strings.json.measurements.stdev] = timeComplexity.standardDeviation();
             experimentResult[Strings.json.measurements.percent] = timeComplexity.percentage();
 
+            var frameTypeIndex = regressionResult.samples.fieldMap[Strings.json.frameType];
+            var animationSamplesData = regressionResult.samples.data.filter(
+                (sample) => sample[frameTypeIndex] == Strings.json.animationFrameType);
             const bootstrapIterations = this._runData.options[Strings.json.bootstrapIterations];
-            const bootstrapResult = Regression.bootstrap(regressionResult.samples.data, bootstrapIterations, function(resampleData) {
+            const bootstrapResult = Regression.bootstrap(animationSamplesData, bootstrapIterations, function(resampleData) {
                 const complexityIndex = regressionResult.samples.fieldMap[complexityKey];
                 resampleData.sort(function(a, b) {
                     return a[complexityIndex] - b[complexityIndex];
