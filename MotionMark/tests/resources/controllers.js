@@ -489,6 +489,11 @@ class RampController extends Controller {
                 var nextTierComplexity = Math.max(Math.round(Math.pow(10, this._tier)), currentComplexity + 1);
                 stage.tune(nextTierComplexity - currentComplexity);
 
+                // If the next tier complexity couldn't be set, we've reached the maximum capacity for the test
+                if (stage.complexity() != nextTierComplexity) {
+                   this._maximumStageComplexity = stage.complexity();
+                }
+
                 // Some tests may be unable to go beyond a certain capacity. If so, don't keep moving up tiers
                 if (stage.complexity() - currentComplexity > 0 || nextTierComplexity == 1) {
                     this._tierStartTimestamp = timestamp;
@@ -519,6 +524,12 @@ class RampController extends Controller {
             else {
                 // If the browser is capable of handling the most complex version of the test, use that
                 this._maximumComplexity = currentComplexity;
+            }
+
+            if (this._maximumStageComplexity) {
+                // If we reached the maximum stage complexity, set the maximum such
+                // that the stage complexity is in the middle of the ramp.
+                this._maximumComplexity = Math.round(this._maximumStageComplexity * 1.25);
             }
             
             this._possibleMaximumComplexity = this._maximumComplexity;
@@ -614,6 +625,12 @@ class RampController extends Controller {
         } else {
             // The slowest samples weighed the regression too heavily
             this._maximumComplexity = Math.max(Math.round(.8 * this._maximumComplexity), this._minimumComplexity + 5);
+        }
+
+        if (this._maximumStageComplexity) {
+            // If we reached the maximum stage complexity, set the maximum such
+            // that the stage complexity is in the middle of the ramp.
+            this._maximumComplexity = Math.min(Math.round(this._maximumStageComplexity * 1.25), this._maximumComplexity);
         }
 
         // Next ramp
