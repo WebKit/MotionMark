@@ -170,10 +170,15 @@ class Controller {
     {
         return samples[sampleTimeIndex][i] - samples[sampleTimeIndex][i - 1];
     }
+
+    _getFrameTime(samples, i)
+    {
+        return samples[sampleTimeIndex][i];
+    }
     
     _previousFrameComplexity(samples, i)
     {
-        if (i > 0)
+        if (i > 1)
             return this._getComplexity(samples, i - 1);
 
         return 0;
@@ -399,6 +404,7 @@ class RampController extends Controller {
         super(benchmark, options);
         
         this.targetFPS = targetFPS;
+        this.preferredProfile = options["score-profile"];
 
         // Initially start with a tier test to find the bounds
         // The number of objects in a tier test is 10^|_tier|
@@ -586,10 +592,15 @@ class RampController extends Controller {
         for (var i = this._rampStartIndex; i < this._sampler.sampleCount; ++i) {
             if (this._getFrameType(this._sampler.samples, i) == Strings.json.mutationFrameType)
                 continue;
-            regressionData.push([ this._getComplexity(this._sampler.samples, i), this._getFrameLength(this._sampler.samples, i) ]);
+            regressionData.push(
+                [
+                    this._getComplexity(this._sampler.samples, i), 
+                    this._getFrameLength(this._sampler.samples, i),
+                    this._getFrameTime(this._sampler.samples, i)
+                ]);
         }
 
-        var regression = new Regression(regressionData, this._sampler.sampleCount - 1, this._rampStartIndex, { desiredFrameLength: this.frameLengthDesired });
+        var regression = new Regression(regressionData, this._sampler.sampleCount - 1, this._rampStartIndex, { desiredFrameLength: this.frameLengthDesired, preferredProfile: this.preferredProfile });
         this._rampRegressions.push(regression);
 
         var frameLengthAtMaxComplexity = regression.valueAt(this._maximumComplexity);

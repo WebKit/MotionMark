@@ -78,7 +78,9 @@ var Strings = {
 
         profiles: {
             slope: "slope",
-            flat: "flat"
+            flat: "flat",
+            window: "window",
+            windowStrict: "window-strict",
         },
 
         results: {
