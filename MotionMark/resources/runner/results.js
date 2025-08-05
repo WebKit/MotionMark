@@ -187,6 +187,7 @@ class ScoreCalculator {
 
             const frameTypeIndex = series.fieldMap[Strings.json.frameType];
             const complexityIndex = series.fieldMap[complexityKey];
+            const frameTimeIndex = series.fieldMap[Strings.json.time];
             const frameLengthIndex = series.fieldMap[Strings.json.frameLength];
             const regressionOptions = { desiredFrameLength: desiredFrameLength };
             if (profile)
@@ -194,7 +195,7 @@ class ScoreCalculator {
 
             const regressionSamples = series.slice(minIndex, maxIndex + 1);
             const animationSamples = regressionSamples.data.filter((sample) => sample[frameTypeIndex] == Strings.json.animationFrameType);
-            const regressionData = animationSamples.map((sample) => [ sample[complexityIndex], sample[frameLengthIndex] ]);
+            const regressionData = animationSamples.map((sample) => [ sample[complexityIndex], sample[frameLengthIndex], sample[frameTimeIndex] ]);
 
             const regression = new Regression(regressionData, minIndex, maxIndex, regressionOptions);
             return {
