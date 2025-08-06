@@ -214,7 +214,7 @@ window.optionsManager = new class OptionsManager {
                 options[name] = formElement.checked;
             else if (type == "radio") {
                 var radios = formElements[name];
-                if (radios.constructor === HTMLCollection) {
+                if (radios.constructor === RadioNodeList || radios.constructor === HTMLCollection) {
                     for (var j = 0; j < radios.length; ++j) {
                         var radio = radios[j];
                         if (radio.checked) {
@@ -657,7 +657,8 @@ class DebugBenchmarkController extends BenchmarkController {
     startBenchmark()
     {
         benchmarkController.determineCanvasSize();
-        benchmarkController.options = Utilities.mergeObjects(this.benchmarkDefaultParameters, optionsManager.updateLocalStorageFromUI());
+        const optionsFromUI = optionsManager.updateLocalStorageFromUI();
+        benchmarkController.options = Utilities.mergeObjects(this.benchmarkDefaultParameters, optionsFromUI);
         benchmarkController.suites = suitesManager.updateLocalStorageFromUI();
         this._startBenchmark(benchmarkController.suites, benchmarkController.options, "running-test");
     }

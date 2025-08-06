@@ -180,6 +180,7 @@ class ScoreCalculator {
 
             const frameTypeIndex = series.fieldMap[Strings.json.frameType];
             const complexityIndex = series.fieldMap[complexityKey];
+            const frameTimeIndex = series.fieldMap[Strings.json.time];
             const frameLengthIndex = series.fieldMap[Strings.json.frameLength];
             const regressionOptions = { desiredFrameLength: desiredFrameLength };
             if (profile)
@@ -187,7 +188,7 @@ class ScoreCalculator {
 
             const regressionSamples = series.slice(minIndex, maxIndex + 1);
             const animationSamples = regressionSamples.data.filter((sample) => sample[frameTypeIndex] == Strings.json.animationFrameType);
-            const regressionData = animationSamples.map((sample) => [ sample[complexityIndex], sample[frameLengthIndex] ]);
+            const regressionData = animationSamples.map((sample) => [ sample[complexityIndex], sample[frameLengthIndex], sample[frameTimeIndex] ]);
 
             const regression = new Regression(regressionData, minIndex, maxIndex, regressionOptions);
             return {
@@ -266,6 +267,7 @@ class ScoreCalculator {
 
                 const resample = new SampleData(regressionResult.samples.fieldMap, resampleData);
                 const bootstrapRegressionResult = findRegression(resample, predominantProfile);
+                //console.log('regression', bootstrapRegressionResult.regression);
                 if (bootstrapRegressionResult.regression.t2 < 0) {
                   // A positive slope means the frame rate decreased with increased complexity (which is the expected
                   // benavior). OTOH, a negative slope means the framerate increased as the complexity increased. This
