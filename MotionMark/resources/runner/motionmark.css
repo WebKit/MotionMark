@@ -387,8 +387,10 @@ body.images-loaded #intro {
 .frame-container {
     position: absolute;
 
+    /*
     top: 50%;
     left: 50%;
+    */
 }
 
 .frame-container > iframe {
@@ -400,24 +402,36 @@ body.images-loaded #intro {
 }
 
 body.small .frame-container {
+    /*
     width: 568px;
     height: 320px;
     margin-left: -284px;
     margin-top: -160px;
+    */
+    width: 100%;
+    height: 100%;
 }
 
 body.medium .frame-container {
+    /*
     width: 900px;
     height: 600px;
     margin-left: -450px;
     margin-top: -300px;
+    */
+    width: 100%;
+    height: 100%;
 }
 
 body.large .frame-container {
+    /*
     width: 1600px;
     height: 800px;
     margin-left: -800px;
     margin-top: -400px;
+    */
+    width: 100%;
+    height: 100%;
 }
 
 /* Results section */

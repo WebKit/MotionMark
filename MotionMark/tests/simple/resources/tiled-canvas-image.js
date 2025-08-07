@@ -52,6 +52,7 @@ class TiledCanvasImageStage extends Stage {
     {
         await super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
+        this.context.scale(this.devicePixelRatio, this.devicePixelRatio);
         this._setupTiles();
     }
 
