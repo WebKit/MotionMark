@@ -57,6 +57,7 @@ class TemplateCanvasStage extends Stage {
     {
         await super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
+        this.context.scale(this.devicePixelRatio, this.devicePixelRatio);
         // Define a collection for your objects.
         // await any async work (e.g. image loading).
     }

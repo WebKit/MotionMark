@@ -132,6 +132,7 @@ class ImageDataStage extends Stage {
         for (var i = 0; i < this._offsetIndex; ++i) {
             var element = this.testElements[i];
             var context = element.getContext("2d");
+            context.scale(this.devicePixelRatio, this.devicePixelRatio);
 
             // Get image data
             var imageData = context.getImageData(0, 0, ImageDataStage.imageWidth, ImageDataStage.imageHeight);
@@ -158,7 +159,9 @@ class ImageDataStage extends Stage {
                 context.putImageData(imageData, 0, 0);
             else {
                 this._refreshElement(element);
-                element.getContext("2d").drawImage(Stage.randomElementInArray(this.images), 0, 0, ImageDataStage.imageWidth, ImageDataStage.imageHeight);
+                const context = element.getContext("2d");
+                context.scale(this.devicePixelRatio, this.devicePixelRatio);
+                context.drawImage(Stage.randomElementInArray(this.images), 0, 0, ImageDataStage.imageWidth, ImageDataStage.imageHeight);
             }
         }
     }

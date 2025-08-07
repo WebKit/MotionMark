@@ -97,6 +97,7 @@ class BouncingCanvasParticlesStage extends BouncingParticlesStage {
     {
         await super.initialize(benchmark, options);
         this.context = this.element.getContext("2d");
+        this.context.scale(this.devicePixelRatio, this.devicePixelRatio);
     }
 
     animate(timeDelta)
