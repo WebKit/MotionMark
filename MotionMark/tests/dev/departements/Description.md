@@ -1,4 +1,4 @@
-# Canvas Radial Chart
+# Départements
 
 Goals
 -----
@@ -11,7 +11,6 @@ Design
 
 A radial chart. Unit of work is a chart "segment". With higher complexities, more rings of segments are created.
 
-
 Features tested
 ---------------
 
@@ -23,6 +22,8 @@ Features tested
 * gradients
 * text with shadowBlur
 * canvas-to-canvas draw
+* pattern drawing
+* globalCompositeOperator
 
 
 Work per measured frame
@@ -34,14 +35,11 @@ Redraw of the entire canvas
 Licensing requirements
 ----------------------
 
-French departements images, e.g. https://commons.wikimedia.org/wiki/File:Blason_département_fr_Ain.svg
-Creative Commons <https://creativecommons.org/licenses/by-sa/3.0/>, requires attribution.
-https://mapsvg.com/maps/france-departments
+Départements data from https://www.regions-et-departements.fr/departements-francais
+Map from https://mapsvg.com/maps/france-departments
 
 
 Remaining work
 --------------
 
-* Add images for the rest of the departements. Maybe use a sprite image.
-* Add some more canvas features?
 * Revisit whether the concentric rings are best for high complexity. Perhaps have multiple, smaller non-overlapping rings.
