@@ -22,6 +22,7 @@ Features tested
 * clipping to a path
 * gradients
 * text with shadowBlur
+* canvas-to-canvas draw
 
 
 Work per measured frame
@@ -34,7 +35,8 @@ Licensing requirements
 ----------------------
 
 French departements images, e.g. https://commons.wikimedia.org/wiki/File:Blason_département_fr_Ain.svg
-Creative Commons, requires attribution.
+Creative Commons <https://creativecommons.org/licenses/by-sa/3.0/>, requires attribution.
+https://mapsvg.com/maps/france-departments
 
 
 Remaining work
