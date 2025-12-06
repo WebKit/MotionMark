@@ -71,7 +71,7 @@ class SpriteSheet {
         }, { }, document.body);
         
         for (let i = 0; i < jsonData.length; ++i) {
-            const depName = jsonData[i]['dep_name'];
+            const depName = jsonData[i]['name'];
             const pathElement = deptToPathMap[depName];
             
             if (!pathElement)
