@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2024 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2025 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,6 +25,8 @@
 
 // Move to shared code
 class Size {
+    static zero = new Size(0, 0);
+
     constructor(width, height)
     {
         this.width = width;
@@ -32,6 +34,48 @@ class Size {
     }
 }
 
+class Position {
+    static zero = new Position(0, 0);
+
+    constructor(x, y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    clone()
+    {
+        return new Point(this.x, this.y);
+    }
+}
+
+class Rect {
+    constructor(position, size)
+    {
+        this.position = position;
+        this.size = size;
+    }
+    
+    get x()
+    {
+        return this.position.x;
+    }
+
+    get y()
+    {
+        return this.position.y;
+    }
+
+    get width()
+    {
+        return this.size.width;
+    }
+
+    get height()
+    {
+        return this.size.height;
+    }
+}
 
 // To be moved.
 class MathHelpers {
@@ -173,6 +217,8 @@ class RadialChart {
         this.center = center;
         this.innerRadius = innerRadius;
         this.outerRadius = outerRadius;
+        const endcapFraction = 0.25;
+        this.endcapRadius = outerRadius - endcapFraction * (outerRadius - innerRadius);
         this._values = [];
         this.#computeDimensions();
 
@@ -194,7 +240,7 @@ class RadialChart {
         
         const startIndex = this._values.length;
         for (let i = startIndex; i < this._complexity; ++i)
-            this._values.push(new SmoothWalk(this.innerRadius, this.outerRadius, 1 / 100));
+            this._values.push(new SmoothWalk(this.innerRadius, this.endcapRadius, 1 / 100));
     }
     
     draw(ctx)
@@ -207,7 +253,8 @@ class RadialChart {
             const instance = this.stage.instanceForIndex(i);
 
             this.#drawWedge(ctx, i, instance);
-            this.#drawBadge(ctx, i, instance);
+            //this.#drawBadge(ctx, i, instance);
+            this.#drawMap(ctx, i, instance);
             this.#drawWedgeLabels(ctx, i, instance);
         }
 
@@ -249,14 +296,19 @@ class RadialChart {
         return index * this.wedgeAngleRadians - this.angleOffsetRadians;
     }
     
-    #pathForWedge(index, outerRadius)
+    #wedgeWidthAtRadius(outerRadius)
+    {
+        return 2 * outerRadius * Math.sin(this.wedgeAngleRadians / 2);
+    }
+    
+    #pathForWedge(index, innerRadius, outerRadius)
     {
         const startAngleRadians = this.#wedgeStartAngle(index);
         const endAngleRadians = startAngleRadians + this.wedgeAngleRadians;
 
         const path = new Path2D();
 
-        const firstStartPoint = this.center.add(GeometryHelpers.createPointOnCircle(startAngleRadians, this.innerRadius));
+        const firstStartPoint = this.center.add(GeometryHelpers.createPointOnCircle(startAngleRadians, innerRadius));
         const firstEndPoint = this.center.add(GeometryHelpers.createPointOnCircle(startAngleRadians, outerRadius));
 
         path.moveTo(firstStartPoint.x, firstStartPoint.y);
@@ -264,9 +316,9 @@ class RadialChart {
 
         path.arc(this.center.x, this.center.y, outerRadius, startAngleRadians, endAngleRadians, Clockwise);
 
-        const secondEndPoint = this.center.add(GeometryHelpers.createPointOnCircle(endAngleRadians, this.innerRadius));
+        const secondEndPoint = this.center.add(GeometryHelpers.createPointOnCircle(endAngleRadians, innerRadius));
         path.lineTo(secondEndPoint.x, secondEndPoint.y);
-        path.arc(this.center.x, this.center.y, this.innerRadius, endAngleRadians, startAngleRadians, CounterClockwise);
+        path.arc(this.center.x, this.center.y, innerRadius, endAngleRadians, startAngleRadians, CounterClockwise);
         path.closePath();
 
         return path;
@@ -275,7 +327,7 @@ class RadialChart {
     #drawWedge(ctx, index, instance)
     {
         const outerRadius = this._values[index].nextValue();
-        const wedgePath = this.#pathForWedge(index, outerRadius);
+        const wedgePath = this.#pathForWedge(index, this.innerRadius, outerRadius);
 
         const gradient = ctx.createRadialGradient(this.center.x, this.center.y, this.innerRadius, this.center.x, this.center.y, outerRadius);
         
@@ -333,6 +385,8 @@ class RadialChart {
         else
             outerLabelLocation = outsideMidSegmentPoint.add(new Point(-labelHorizontalOffset, 0));
 
+        const labelSize = ctx.measureText(instance.label);
+
         {
             ctx.save();
 
@@ -343,7 +397,7 @@ class RadialChart {
         
             let textOffset = 0;
             if (!isRightSide)
-                textOffset = -ctx.measureText(instance.label).width;
+                textOffset = -labelSize.width * 1.25; // Not sure why the fudge is needed.
 
             ctx.fillText(instance.label, textOffset, 0);
             ctx.restore();
@@ -351,7 +405,10 @@ class RadialChart {
         
         const wedgeArrowEnd = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius));
         const wedgeArrowEndAngle = MathHelpers.normalizeRadians(midAngleRadians + Math.PI);
-        const arrowPath = this.#pathForArrow(outerLabelLocation, wedgeArrowEnd, wedgeArrowEndAngle);
+        
+        // FIXME: Chrome doens't support labelSize.emHeightAscent.
+        const arrowStart = new Point(outerLabelLocation.x, outerLabelLocation.y - labelSize.actualBoundingBoxAscent / 2);
+        const arrowPath = this.#pathForArrow(arrowStart, wedgeArrowEnd, wedgeArrowEndAngle);
 
         // Arrow.
         {
@@ -389,7 +446,7 @@ class RadialChart {
 
         ctx.save();
 
-        const wedgePath = this.#pathForWedge(index, this.outerRadius);
+        const wedgePath = this.#pathForWedge(index, this.innerRadius, this.outerRadius);
         ctx.clip(wedgePath);
 
         ctx.translate(imageCenterPoint.x, imageCenterPoint.y);
@@ -400,6 +457,38 @@ class RadialChart {
         
         const imageSize = new Size(20, 20);
         ctx.drawImage(instance.image, -imageSize.width / 2, 0, imageSize.width, imageSize.height);
+        ctx.restore();
+    }
+    
+    #drawMap(ctx, index, instance)
+    {
+        const midAngleRadians = this.#wedgeStartAngle(index) + 0.5 * this.wedgeAngleRadians;
+        const imageAngle = midAngleRadians + Math.PI / 2;
+
+        const imageInset = 10;
+        const imageCenterPoint = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius - imageInset));
+
+        ctx.save();
+
+        const wedgePath = this.#pathForWedge(index, this.endcapRadius, this.outerRadius);
+        ctx.clip(wedgePath);
+
+        const color = MathHelpers.rotatingColor(instance.hueOffset, 0, instance.colorSaturation, instance.colorLightness + 0.2);
+        ctx.fillStyle = color;
+        ctx.fill(wedgePath);
+
+        ctx.translate(imageCenterPoint.x, imageCenterPoint.y);
+        ctx.rotate(imageAngle);
+
+        const sizeFactor = 0.7;
+        const horizontalSpace = sizeFactor * this.#wedgeWidthAtRadius(this.outerRadius - imageInset);
+        const padding = 4
+        const verticalSpace = this.outerRadius - this.endcapRadius - padding;
+
+        const mapSize = Math.min(horizontalSpace, verticalSpace);
+
+        const imageSize = new Size(mapSize, mapSize);        
+        this.stage.spriteSheet.drawCellAtIndex(ctx, index, imageSize);
         ctx.restore();
     }
     
@@ -488,8 +577,13 @@ class RadialChartStage extends Stage {
         this.canvasSize = new Size(this._canvasObject.width / this.canvasDPR, this._canvasObject.height / this.canvasDPR);
         this._complexity = 0;
 
-        await this.#loadDataJSON();
+        const jsonData = await this.#loadDataJSON();
         await this.#loadImages();
+        
+        const mapURL = 'resources/france-departments.svg';
+        const canvasSize = new Size(2000, 2000);
+        this.spriteSheet = new SpriteSheet(mapURL, canvasSize);
+        await this.spriteSheet.prepare(jsonData);
 
         this.context = this._canvasObject.getContext("2d");
         this.context.scale(this.canvasDPR, this.canvasDPR);
@@ -520,6 +614,8 @@ class RadialChartStage extends Stage {
             // this.instanceData.push(new ItemData(item['dep_name'], `resources/department-shields${item['dep_name']}.png`));
             this.instanceData.push(new ItemData(item['num_dep'], item['dep_name'], `resources/department-shields/Ain.png`));
         }
+        
+        return jsonData;
     }
 
     async #loadImages()
@@ -583,6 +679,10 @@ class RadialChartStage extends Stage {
         for (const chart of this.charts) {
             chart.draw(context);
         }
+        
+        const debugging = false;
+        if (debugging)
+            context.drawImage(this.spriteSheet.canvas, 0, 0, this.spriteSheet.canvas.width / 2, this.spriteSheet.canvas.height / 2);
     }
 
     complexity()
@@ -604,7 +704,7 @@ window.benchmarkClass = RadialChartBenchmark;
 class FakeController {
     constructor()
     {
-        this.initialComplexity = 200;
+        this.initialComplexity = 134;
         this.startTime = new Date;
     }
 
