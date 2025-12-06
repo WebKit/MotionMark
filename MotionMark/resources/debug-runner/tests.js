@@ -469,8 +469,8 @@ Suites.push(new Suite("Tentative 1.4 suite",
             name: "Map Zoomer"
         },
         {
-            url: "dev/radial-chart/radial-chart.html",
-            name: "Canvas Radial Chart"
+            url: "dev/departements/departements.html",
+            name: "Départements"
         },
         {
             url: "dev/dashboard/dashboard.html",
