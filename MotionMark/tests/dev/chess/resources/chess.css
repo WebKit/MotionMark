@@ -1,0 +1,127 @@
+/*
+  Copyright (C) 2025 Apple Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+:root {
+    --anim-value: 0;
+    
+    /*
+    --palette-color-1: oklch(0.186 0.032 236);
+    --palette-color-2: oklch(0.322 0.04 188);
+    --palette-color-3: oklch(0.886 0.062 81);
+    --palette-color-4: oklch(0.566 0.17 42);
+    --palette-color-5: oklch(0.309 0.051 349);
+    */
+
+    --palette-color-1: oklch(0.346 0.043 237);
+    --palette-color-2: oklch(0.731 0.178 49);
+    --palette-color-3: oklch(0.861 0.153 87);
+    --palette-color-4: oklch(0.771 0.094 130);
+    --palette-color-5: oklch(0.644 0.066 174);
+
+    }
+
+#stage {
+  container-type: size;
+  background-color: var(--palette-color-1);
+}
+
+#container {
+    position: relative;
+    container-type: size;
+    width: 100cqmin;
+    aspect-ratio: 1;
+    margin: 0 auto;
+}
+
+.leaf {
+    position: absolute;
+    overflow: clip;
+    contain: strict;
+    background-color: rgba(128, 0, 255, 0.25);
+    color: white;
+    text-align: center;
+    box-sizing: border-box;
+    
+    --size-factor: calc(1 / pow(2, var(--depth)));
+    font-size: calc(60vh * var(--size-factor));
+    line-height: calc(90vh * var(--size-factor));
+    border-radius: 4px;
+    --anim-input: calc(var(--anim-value) + var(--random));
+    --amplitude: 100;
+    --period: 2s;
+    --pulsing-anim-input: calc(var(--amplitude) * sin(1s / var(--period) * var(--anim-input) / (3 * 3.14159265)));
+}
+        
+.leaf.type-1 {
+    color: var(--palette-color-4);
+    --shadow-color: color-mix(in srgb, var(--palette-color-3) 50%, transparent);;
+    text-shadow: 0 0 calc(2vw * var(--size-factor)) var(--shadow-color);
+    box-shadow: 0 0 calc(10vw * var(--size-factor)) var(--shadow-color) inset, 0 0 30px var(--shadow-color) inset;
+    animation: fade 2s alternate infinite;
+    animation-delay: calc(var(--random) * -2s);
+    
+    --translucent-gray: rgba(0, 0, 0, 0.05);
+    background-image:
+        linear-gradient(45deg, var(--translucent-gray) 25%, transparent 25%, 75%, var(--translucent-gray) 75%, var(--translucent-gray)),
+        linear-gradient(45deg, var(--translucent-gray) 25%, transparent 25%, 75%, var(--translucent-gray) 75%, var(--translucent-gray));
+    background-position: 0px 0px, 10px 10px;
+    background-size: 20px 20px, 20px 20px;
+}
+
+.leaf.type-2 {
+    --position-factor: calc(0.5 + (var(--amplitude) + var(--pulsing-anim-input)) / 400);
+    background-image: radial-gradient(
+            var(--palette-color-3),
+            var(--palette-color-4) calc(50% * var(--position-factor)),
+            var(--palette-color-1) calc(150% * var(--position-factor)));
+    color: rgb(255, 255, 255, 0.5);
+}
+
+.leaf.type-2 > div {
+    mix-blend-mode: screen;
+}
+
+.leaf.type-3 {
+    background: conic-gradient(from calc(mod(var(--anim-input), 400) * 1grad), var(--palette-color-1), var(--palette-color-2), var(--palette-color-3), var(--palette-color-4), var(--palette-color-5)), var(--palette-color-1);
+    background-clip: text, border-box;
+    color: transparent;
+}
+
+.leaf.type-4 {
+    --angle: calc(mod(var(--anim-input), 400) * 1grad);
+    background: linear-gradient(var(--angle), var(--palette-color-3) 50%, var(--palette-color-1) 50%, var(--palette-color-1)),
+        linear-gradient(calc(90deg + var(--angle)), var(--palette-color-3) 0px, 50%, var(--palette-color-1) 50%, var(--palette-color-1));
+    background-blend-mode: difference;
+    color: rgb(255, 255, 255, 0.85);
+}
+        
+@keyframes fade {
+    from {
+        background-color: var(--palette-color-2);
+    }
+    to {
+        background-color: var(--palette-color-5);
+    }
+}

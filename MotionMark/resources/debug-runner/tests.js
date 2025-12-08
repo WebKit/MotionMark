@@ -469,6 +469,10 @@ Suites.push(new Suite("Tentative 1.4 suite",
             name: "Alice"
         },
         {
+            url: "dev/chess/chess.html",
+            name: "Chess"
+        },
+        {
             url: "dev/map-zoomer/map-zoomer.html",
             name: "Map Zoomer"
         },
