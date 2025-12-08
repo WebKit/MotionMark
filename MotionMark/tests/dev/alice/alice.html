@@ -1,0 +1,162 @@
+<!--
+  Copyright (C) 2025 Apple Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../../resources/stage.css">
+    <style>
+        :root {
+            --dropcap-stroke-color: #000080;
+            --dropcap-fill-color: #400080;
+            --text-color-1: #800040;
+            --text-color-2: #6666FE;   
+        }
+
+        @font-face {
+            font-family: "Linden Hill";
+            src: url("resources/fonts/Linden Hill/LindenHill.woff") format("woff2");
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "Linden Hill";
+            src: url("resources/fonts/Linden Hill/LindenHillItalic.woff") format("woff2");
+            font-style: italic;
+        }
+
+        #container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        #container {
+            .item {
+                position: absolute;
+                font-family: "Linden Hill", serif;
+                width: 30vw;
+                border: 1px solid black;
+                padding: 12px;
+                background-color: white;
+                overflow: clip;
+
+                animation: textColor 2s alternate infinite ease-in;
+                animation-delay: calc(-1 * var(--random) * 1ms);
+            }
+
+            .item.one-up {
+                background-color: color-mix(in srgb, white, transparent 10%);
+            }
+                
+            h1.heading {
+                font-weight: 800;
+                font-size: 26pt;
+                margin: 0 0 10pt 0;
+                text-align: center;
+                text-decoration: underline;
+                text-decoration-skip-ink: auto;
+                text-decoration-thickness: 1px;
+                text-underline-offset: 5px;
+                text-rendering: optimizeLegibility;
+                font-variant: small-caps;
+                text-wrap: no-wrap;
+                
+                text-shadow: 3px 3px 0 color-mix(in srgb, currentColor, transparent 94%);
+            }
+            
+            .item p {
+                margin-block-start: 0.6em;
+                margin-inline-start: 0.3em;
+                margin-inline-end: 0.3em;
+                font-size: 14pt;
+                text-rendering: optimizeLegibility;
+            }
+
+            .item p:first-letter {
+                color: var(--dropcap-color);
+                float: inline-start;
+                display: inline-block;
+                line-height: 1;
+                font-family: Georgia; /* FIXME: find a nice florid font */
+                font-size: 300%;
+                line-height: 1em;
+                padding-top: 4px;
+                padding-right: 8px;
+                padding-left: 3px;   
+                -webkit-text-stroke: 1px var(--dropcap-stroke-color);
+                -webkit-text-fill-color: currentColor;
+            }
+        }
+
+        @keyframes textColor {
+            from { color: var(--text-color-1); }
+            to   { color: var(--text-color-2); }
+        }
+
+        #container.picture-wall {
+            perspective: 100vw;
+            perspective-origin: center;
+            transform-style: preserve-3d;
+            display: grid;
+        }
+
+        #container.picture-wall .item {
+            grid-area: 1/1;
+            max-width: 50vw;
+            max-height: 26vh;
+            overflow: clip;
+            place-self: start center;
+            transform-origin: top center;
+        }
+        
+        #container.layout-random .item {
+            opacity: 0.9;
+            grid-area: 1/1;
+            max-width: 40vw;
+            max-height: 30vh;
+            overflow: clip;
+            place-self: start center;
+        }
+        
+        .wrapper {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="stage">
+        <div id="container"></div>
+    </div>
+    <script src="../../../resources/strings.js"></script>
+    <script src="../../../resources/extensions.js"></script>
+    <script src="../../../resources/statistics.js"></script>
+    <script src="../../resources/math.js"></script>
+    <script src="../../resources/benchmark.js"></script>
+    <script src="../../resources/controllers.js"></script>
+    <script src="../../resources/stage.js"></script>
+    <script src="resources/alice.js"></script>
+</body>
+</html>

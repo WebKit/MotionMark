@@ -774,6 +774,19 @@ body.showing-test-graph header, body.showing-test-graph nav {
     fill: rgb(250, 73, 37);
 }
 
+.cursor .mutFPS {
+    fill: rgb(73, 122, 221);
+}
+
+#mutFPS path {
+    stroke: rgba(73, 122, 221, .7);
+    stroke-width: 1px;
+}
+
+#mutFPS circle {
+    fill: rgb(73, 122, 221);
+}
+
 #complexity-graph .regression line {
     stroke: rgba(253, 253, 253, .8);
     stroke-width: 2px;
