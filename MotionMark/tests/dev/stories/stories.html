@@ -38,7 +38,7 @@
         @property --gradient-height {
           syntax: "<length>";
           inherits: true;
-          initial-value: 45px;
+          initial-value: 50px;
         }
 
         @property --radius {
@@ -71,18 +71,19 @@
         
         .badge {
             position: absolute;
+            background-color: white;
             margin: 10px;
             height: 40px;
             width: 40px;
+            padding: 4px;
             border-radius: 100%;
             overflow: hidden;
-            border: 4px solid blue;            
-            filter: drop-shadow(rgba(0, 0, 0, 0.62) 0px 0px 1px);
-            z-index: 1;
+            border: 3px solid #084A97;            
+            filter: drop-shadow(rgba(0, 0, 0, 0.62) 0px 0px 2px);
+            z-index: 2;
         }
         
         .badge > img {
-            background-color: white;
             height: 100%;
             width: 100%;
             object-fit: cover;
@@ -129,7 +130,7 @@
             color: white;
             font-size: larger;
             padding-top: calc((var(--gradient-height) - 1lh) / 2);
-            --overlay-color: rgba(0, 0, 0, 0.25);
+            --overlay-color: rgba(0, 0, 0, 0.35);
             background-image: linear-gradient(to bottom, var(--overlay-color) 0, var(--overlay-color) calc(var(--gradient-height) - 3px), transparent var(--gradient-height));
         }
         
