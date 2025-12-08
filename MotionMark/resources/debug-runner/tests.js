@@ -487,6 +487,10 @@ Suites.push(new Suite("Tentative 1.4 suite",
         {
             url: "dev/dashboard/dashboard.html",
             name: "Dashboard"
+        },
+        {
+            url: "dev/filtering/filtering.html",
+            name: "Filtering"
         }
     ]
 ));
