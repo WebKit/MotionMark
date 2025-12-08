@@ -32,38 +32,6 @@ class RandomAccessSet extends Set {
     }
 }
 
-
-// FIXME: Share
-class Size {
-    static zero = new Size(0, 0);
-
-    constructor(width, height)
-    {
-        this.width = width;
-        this.height = height;
-    }
-
-    clone()
-    {
-        return new Point(this.width, this.height);
-    }
-}
-
-class Position {
-    static zero = new Position(0, 0);
-
-    constructor(x, y)
-    {
-        this.x = x;
-        this.y = y;
-    }
-
-    clone()
-    {
-        return new Point(this.x, this.y);
-    }
-}
-
 class GridPosition {
     constructor(x, y)
     {
@@ -71,35 +39,6 @@ class GridPosition {
         this.y = y;
     }
 }
-
-class Rect {
-    constructor(position, size)
-    {
-        this.position = position;
-        this.size = size;
-    }
-    
-    get x()
-    {
-        return this.position.x;
-    }
-
-    get y()
-    {
-        return this.position.y;
-    }
-
-    get width()
-    {
-        return this.size.width;
-    }
-
-    get height()
-    {
-        return this.size.height;
-    }
-}
-
 
 class TreeNode {
     constructor(parentNode, position)

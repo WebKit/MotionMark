@@ -46,43 +46,6 @@ class MathHelpers {
     }
 }
 
-
-class Rect {
-    constructor(position, size)
-    {
-        this.position = position;
-        this.size = size;
-    }
-    
-    get x()
-    {
-        return this.position.x;
-    }
-
-    get y()
-    {
-        return this.position.y;
-    }
-
-    get width()
-    {
-        return this.size.width;
-    }
-
-    get height()
-    {
-        return this.size.height;
-    }
-}
-
-class Size {
-    constructor(width, height)
-    {
-        this.width = width;
-        this.height = height;
-    }
-}
-
 // FIXME: Move to shared code.
 class Animator {
     constructor(min, max)
