@@ -1,0 +1,358 @@
+{
+  "header_columns": [
+    {
+      "key": "id",
+      "width": "36",
+      "type": "text",
+      "fontSize": "16px",
+      "alignment": "right"
+    },
+    {
+      "key": "species_summary",
+      "width": "36",
+      "type": "text",
+      "fontSize": "16px",
+      "textStyle": "bold",
+      "alignment": "center",
+      "rotation": 270
+    }
+  ],
+  "header_rows": [
+    {
+      "key": "id",
+      "height": "36",
+      "type": "text",
+      "fontSize": "16px",
+      "alignment": "center"
+    }
+  ],
+  "columns": [
+    {
+      "key": "common_name",
+      "title": "Name",
+      "width": "250",
+      "type": "text",
+      "fontSize": "16px",
+      "alignment": "center",
+      "wraps": "true"
+    },
+    {
+      "key": "species_name",
+      "title": "Scientific Name",
+      "width": "200",
+      "type": "text",
+      "fontSize": "16px",
+      "textStyle": "italic",
+      "alignment": "left",
+      "wraps": "true"
+    },
+    {
+      "key": "image",
+      "title": "📷 Picture",
+      "width": "300",
+      "type": "image"
+    },
+    {
+      "key": "height_inches",
+      "title": "📏 Height",
+      "width": "120",
+      "type": "text",
+      "fontSize": "16px",
+      "alignment": "right"
+    },
+    {
+      "key": "price",
+      "title": "💲Price",
+      "width": "100",
+      "type": "currency",
+      "fontSize": "16px",
+      "alignment": "right"
+    },
+    {
+      "key": "location",
+      "title": "☀️ Location",
+      "width": "220",
+      "type": "text",
+      "fontSize": "16px"
+    },
+    {
+      "key": "ease_of_care",
+      "title": "Care",
+      "width": "120",
+      "type": "text",
+      "fontSize": "16px"
+    },
+    {
+      "key": "watering",
+      "title": "💦 Watering ",
+      "width": "140",
+      "type": "text",
+      "fontSize": "16px"
+    },
+    {
+      "key": "soil_type",
+      "title": "Soil Type",
+      "width": "200",
+      "type": "text",
+      "fontSize": "16px",
+      "wraps": "true"
+    },
+    {
+      "key": "pet_toxicity",
+      "title": "🐕 Pet Toxicity",
+      "width": "200",
+      "type": "text",
+      "fontSize": "16px",
+      "wraps": "true"
+    }
+  ],
+  "houseplants": [
+    {
+      "id": 1,
+      "image": "resources/images/agave.jpg",
+      "species_name": "Agave parryi",
+      "common_name": "Agave",
+      "height_inches": 48,
+      "price": 135.99,
+      "location": "Bright sunlight",
+      "ease_of_care": "Easy",
+      "watering": "Occasional",
+      "soil_type": "Well-draining cactus/succulent mix",
+      "pet_toxicity": "Toxic to cats and dogs"
+    },
+    {
+      "id": 2,
+      "image": "resources/images/aglaonema.jpg",
+      "species_name": "Aglaonema sp.",
+      "common_name": "Chinese Evergreen",
+      "height_inches": 6,
+      "price": 15.99,
+      "location": "Partial, full",
+      "ease_of_care": "Easy",
+      "watering": "Moderate",
+      "soil_type": "Well-draining potting mix",
+      "pet_toxicity": "Toxic to cats and dogs"
+    },
+    {
+      "id": 3,
+      "image": "resources/images/monstera.jpg",
+      "species_name": "Monstera deliciosa",
+      "common_name": "Swiss Cheese Plant",
+      "height_inches": 36,
+      "price": 65.99,
+      "location": "Full or partial sun",
+      "ease_of_care": "Easy",
+      "watering": "Moderate",
+      "soil_type": "Well-draining potting mix with perlite",
+      "pet_toxicity": "Toxic to cats and dogs"
+    },
+    {
+      "id": 4,
+      "image": "resources/images/cactus.jpg",
+      "species_name": "Acanthocereus tetragonus",
+      "common_name": "Fairy Castle Cactus",
+      "height_inches": 8,
+      "price": 49.99,
+      "location": "Full or partial sun",
+      "ease_of_care": "Medium",
+      "watering": "Occasional",
+      "soil_type": "Well-draining cactus/succulent mix",
+      "pet_toxicity": "Non-toxic to cats and dogs"
+    },
+    {
+      "id": 5,
+      "image": "resources/images/rubber-plant2.jpg",
+      "species_name": "Ficus elastica",
+      "common_name": "Rubber Plant",
+      "height_inches": 30,
+      "price": 42.99,
+      "location": "Bright indirect light",
+      "ease_of_care": "Medium",
+      "watering": "Occasional",
+      "soil_type": "Well-draining potting mix",
+      "pet_toxicity": "Toxic to cats and dogs"
+    },
+    {
+      "id": 6,
+      "image": "resources/images/fern.jpg",
+      "species_name": "Athyrium filix-femina",
+      "common_name": "Lady in Red Fern",
+      "height_inches": 18,
+      "price": 28.99,
+      "location": "Moderate shade",
+      "ease_of_care": "Difficult",
+      "watering": "Regular",
+      "soil_type": "Moist, well-draining potting mix with peat",
+      "pet_toxicity": "Non-toxic to cats and dogs"
+    },
+    {
+      "id": 7,
+      "image": "resources/images/gasteria.jpg",
+      "species_name": "Gasteria retusa",
+      "common_name": "Hex River ox-tongue",
+      "height_inches": 7,
+      "price": 15.99,
+      "location": "Bright indirect light",
+      "ease_of_care": "Medium",
+      "watering": "Occasional",
+      "soil_type": "Well-draining cactus/succulent mix",
+      "pet_toxicity": "Non-toxic to cats and dogs"
+    },
+    {
+      "id": 8,
+      "image": "resources/images/howarthia.jpg",
+      "species_name": "Howarthia sp.",
+      "common_name": "Howarthia",
+      "height_inches": 13,
+      "price": 38.99,
+      "location": "Bright indirect light",
+      "ease_of_care": "Medium",
+      "watering": "Occasional",
+      "soil_type": "Well-draining cactus/succulent mix",
+      "pet_toxicity": "Non-toxic to cats and dogs"
+    },
+    {
+      "id": 9,
+      "image": "resources/images/palm.jpg",
+      "species_name": "Dypsis lutescens",
+      "common_name": "Areca Palm",
+      "height_inches": 48,
+      "price": 216.99,
+      "location": "Full or partial sunlight",
+      "ease_of_care": "Easy",
+      "watering": "Occasional",
+      "soil_type": "Well-draining potting mix with good moisture retention",
+      "pet_toxicity": "Non-toxic to cats and dogs"
+    },
+    {
+      "id": 10,
+      "image": "resources/images/philodendron.jpg",
+      "species_name": "Philodendron selloum",
+      "common_name": "Tree Philodendron",
+      "height_inches": 36,
+      "price": 122.99,
+      "location": "Bright or indirect light",
+      "ease_of_care": "Easy",
+      "watering": "Occasional",
+      "soil_type": "Well-draining potting mix with perlite",
+      "pet_toxicity": "Toxic to cats and dogs"
+    },
+    {
+      "id": 11,
+      "image": "resources/images/philodendron2.jpg",
+      "species_name": "Philodendron hederaceum",
+      "common_name": "Heart-leaf Philodendron",
+      "height_inches": 12,
+      "price": 75.99,
+      "location": "Bright or indirect light",
+      "ease_of_care": "Moderate",
+      "watering": "Regular",
+      "soil_type": "Well-draining potting mix with perlite",
+      "pet_toxicity": "Toxic to cats and dogs"
+    },
+    {
+      "id": 12,
+      "image": "resources/images/polygonatum.jpg",
+      "species_name": "Polygonatum odoratum",
+      "common_name": "Variegated Solomon's Seal",
+      "height_inches": 24,
+      "price": 54.99,
+      "location": "Full or partial sun",
+      "ease_of_care": "Moderate",
+      "watering": "Regular",
+      "soil_type": "Moist, well-draining garden soil or potting mix",
+      "pet_toxicity": "Mildly toxic to cats and dogs"
+    },
+    {
+      "id": 13,
+      "image": "resources/images/anthurium.jpg",
+      "species_name": "Anthurium clarinervium",
+      "common_name": "Velvet Cardboard Anthurium",
+      "height_inches": 18,
+      "price": 89.99,
+      "location": "Bright indirect light",
+      "ease_of_care": "Difficult",
+      "watering": "Regular",
+      "soil_type": "Well-draining aroid mix with orchid bark and perlite",
+      "pet_toxicity": "Toxic to cats and dogs"
+    },
+    {
+      "id": 14,
+      "image": "resources/images/sedum.jpg",
+      "species_name": "Sedum Sp.",
+      "common_name": "Sedum",
+      "height_inches": 5,
+      "price": 9.99,
+      "location": "Full or partial sun",
+      "ease_of_care": "Easy",
+      "watering": "Frequent",
+      "soil_type": "Well-draining cactus/succulent mix",
+      "pet_toxicity": "Mildly toxic to cats and dogs"
+    },
+    {
+      "id": 15,
+      "image": "resources/images/pilea.jpg",
+      "species_name": "Pilea peperomioides",
+      "common_name": "Chinese Money Plant",
+      "height_inches": 10,
+      "price": 24.99,
+      "location": "Bright indirect light",
+      "ease_of_care": "Easy",
+      "watering": "Moderate",
+      "soil_type": "Well-draining potting mix with perlite",
+      "pet_toxicity": "Non-toxic to cats and dogs"
+    },
+    {
+      "id": 16,
+      "image": "resources/images/asplenium.jpg",
+      "species_name": "Asplenium nidus",
+      "common_name": "Bird's Nest Fern",
+      "height_inches": 24,
+      "price": 32.99,
+      "location": "Bright indirect light",
+      "ease_of_care": "Medium",
+      "watering": "Regular",
+      "soil_type": "Well-draining potting mix with peat and perlite",
+      "pet_toxicity": "Non-toxic to cats and dogs"
+    },
+    {
+      "id": 17,
+      "image": "resources/images/epipremnum.jpg",
+      "species_name": "Epipremnum aureum",
+      "common_name": "Golden Pothos",
+      "height_inches": 8,
+      "price": 18.99,
+      "location": "Low to bright indirect light",
+      "ease_of_care": "Easy",
+      "watering": "Moderate",
+      "soil_type": "Well-draining potting mix",
+      "pet_toxicity": "Toxic to cats and dogs"
+    },
+    {
+      "id": 18,
+      "image": "resources/images/begonia.jpg",
+      "species_name": "Begonia masoniana",
+      "common_name": "Iron Cross Begonia",
+      "height_inches": 14,
+      "price": 36.99,
+      "location": "Bright indirect light",
+      "ease_of_care": "Medium",
+      "watering": "Regular",
+      "soil_type": "Well-draining potting mix with peat moss",
+      "pet_toxicity": "Mildly toxic to cats and dogs"
+    },
+    {
+      "id": 19,
+      "image": "resources/images/sansevieria.jpg",
+      "species_name": "Sansevieria trifasciata",
+      "common_name": "Snake Plant",
+      "height_inches": 24,
+      "price": 32.99,
+      "location": "Low to bright indirect light",
+      "ease_of_care": "Easy",
+      "watering": "Occasional",
+      "soil_type": "Well-draining cactus/succulent mix",
+      "pet_toxicity": "Mildly toxic to cats and dogs"
+    }
+  ]
+}
