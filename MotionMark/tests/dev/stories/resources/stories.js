@@ -46,44 +46,6 @@ class MathHelpers {
     }
 }
 
-const textLabels = [
-    { value: 'design' },
-    { value: 'σχέδιο' },
-    { value: '设计' },
-    { value: 'дизайн' },
-    { value: 'تصميم', rtl: true },
-    { value: '디자인' },
-    { value: 'conception' },
-    { value: 'デザイン' },
-    { value: 'עיצוב', rtl: true },
-    { value: 'diseño' },
-];
-
-const fillImages = [
-  'robert-bye-36K5WckeU3o-unsplash.jpg',
-  'andrey-andreyev-dh8ONmfQyQQ-unsplash.jpg',
-  'fabian-burghardt-A81818EFqGQ-unsplash.jpg',
-  'jonatan-pie-7FfG8zcPcXU-unsplash.jpg',
-  'josh-reid-meOFNlRbHmY-unsplash.jpg',
-  'khamkeo-rBRZLPVLQg0-unsplash.jpg',
-  'luke-stackpoole-eWqOgJ-lfiI-unsplash.jpg',
-  'matt-palmer-gK1s6P92EIE-unsplash.jpg',
-  'redcharlie-O7zkyNkQ1lM-unsplash.jpg',
-  'roan-lavery-hUj3aAg0W3Q-unsplash.jpg',
-];
-
-const paragraphText = [
-    `Iceland[e] is a Nordic island country between the North Atlantic and Arctic Oceans, on the Mid-Atlantic Ridge between North America and Europe. It is culturally and politically linked with Europe and is the region's westernmost and most sparsely populated country.[12] Its capital and largest city is Reykjavík, which is home to about 36% of the country's roughly 380,000 residents (excluding nearby towns/suburbs, which are separate municipalities). The official language of the country is Icelandic.`,
-    `Η Ισλανδία (ισλανδικά: Ísland‎‎) είναι νησιωτική χώρα της Βόρειας Ευρώπης, ευρισκόμενη στον βόρειο Ατλαντικό ωκεανό και ανάμεσα στη Γροιλανδία, τη Σκωτία, τις Νήσους Φερόες και τη Νορβηγία. Ο πληθυσμός της ανέρχεται σε 389.450 κάτοικους,[1] σύμφωνα με επίσημη εκτίμηση για το 2025, και πρωτεύουσά της είναι το Ρέικιαβικ. Κατά μια ερμηνεία, ταυτίζεται με το νησί Θούλη που επισκέφτηκε ο Πυθέας ο Μασσαλιώτης στο ταξίδι που έκανε τον 4ο αιώνα π.Χ., περί τα 332 - 310 π.Χ.. Η Εθνική εορτή στη χώρα είναι ανήμερα της 17ης Ιουνίου.`,
-    `冰岛（冰島語：Ísland，发音：[ˈistlant] （ⓘ））[註 1]，是北大西洋中的一个岛国，位于北大西洋和北冰洋的交汇处，是北歐五國之一[10]。冰岛国土面积为10.3万平方公里，人口为39万，儘管面積不大，卻是欧洲人口密度最低的国家[11]，也是世界范围内人口密度很小的国家之一。冰岛的首都是雷克雅維克，也是冰岛的最大城市[12]，首都附近的西南地区人口占全国的三分之二，即24萬人左右。冰岛地处大西洋中洋脊上[13]，是一个多火山、地质活动频繁的国家。内陆主要是平原地貌，境内多分布沙質地、冷却的熔岩平原和冰川。冰岛虽然位于北极圈边缘，但有北大西洋暖流所以气温适中。`,
-    `Исла́ндия (исл. Ísland, МФА: [ˈistlant]о файле — «страна льдов» или «ледяная страна») — островное государство, расположенное на западе Северной Европы в северной части Атлантического океана (к северо-западу от Великобритании). На севере и северо-востоке омывается Северным Ледовитым океаном. Территория государства состоит из одноимённого острова площадью 103 тыс. км² и небольших островков около него. Самая редконаселённая страна в Европе[6].`,
-    `جمهورية آيسلندا أو إسلندة[14][15] أو أيسلند[16] هي دولة جزرية أوروبية في شمال المحيط الأطلسي على الحافة وسط الأطلسي.[17] يبلغ تعداد سكانها 320,000 نسمة ومساحتها الكلية 103,000 كم2.[18] عاصمتها هي ريكيافيك وهي أكبر مدن البلاد، حيث أنها والمناطق الجنوبية الغربية موطن لأكثر من ثلثي سكان البلاد. آيسلندا بلد نشط بركانياً وجيولوجياً. يتألف بر البلاد من هضبة تتميز بحقول الرمال والجبال والأنهار الجليدية، بينما تصب العديد من الأنهار الجليدية في البحار عبر الأراضي المنخفضة. يقوم تيار الخليج بتلطيف مناخ آيسلندا مما يجعله معتدلاً ومناسباً للحياة رغم موقعها على حدود الدائرة القطبية الشمالية.`,
-    `아이슬란드(아이슬란드어: Ísland 이슬란드 [ˈiːslant], 영어: Iceland, 문화어: 이슬란드)는 북유럽에 위치한 섬나라이다. 그린란드의 남동쪽, 영국과 덴마크의 자치령인 페로 제도의 북서쪽에 위치하고 있으며, 수도는 레이캬비크이다. 대서양 중앙 해령의 위에 위치하고 있기 때문에, 아이슬란드는 화산 활동이 활발하며, 지열의 작용도 거대한 규모로 이뤄진다. 또한 북극권 바로 아래에 국토가 위치하고 있기 때문에, 수목의 생장에 제한을 받으며 빙하의 흐름도 활발하다. 이런 지질학적 특징은, 아이슬란드의 풍경을 다채롭게 만들었다. 황무지와 고원지대가 넓게 펼쳐져 있으며, 화산활동으로 높이 솟은 산들 사이로 형성된 거대한 빙하퇴가 바다를 향해 저지대로 흘러내린다. 멕시코 만류에 의해 위도에 비해 따뜻하다.`,
-    `L'Islande (en islandais : Ísland /ˈistlant/b, littéralement « pays de glace »8,a) est un pays insulaire d'Europe du Nord situé dans l'océan Atlantique9,10. Ayant pour capitale sa plus grande ville Reykjavik, il est gouverné sous la forme d'une république parlementaire.`,
-    `アイスランド（アイスランド語: Ísland [ˈiːstlant] ( 音声ファイル) イーストラント）は、北ヨーロッパの北大西洋上に位置する共和制国家[3]。首都はレイキャヴィーク。総人口は38万7758人。グリーンランドの南東方、ブリテン諸島やデンマークの自治領であるフェロー諸島の北西に位置する。`,
-    `איסלנד (באנגלית : Iceland, באיסלנדית: Ísland) היא מדינת אי בצפון האוקיינוס האטלנטי הממוקמת בין גרינלנד, נורווגיה וסקוטלנד, צפון מערבית לאיי פארו. המדינה שוכנת על אי מרכזי ומספר איים סמוכים. צפיפות האוכלוסייה בה היא מהקטנות בעולם- הואיל ושטחה 103,000 קמ"ר ואוכלוסייתה מונה כ־406,032 איש נכון לינואר 2025.[7] כשבערך מחציתה מתרכזת בעיר הבירה רייקיאוויק.`,
-    `Islandia (en islandés: Ísland, AFI: ['istlant])nota 1​es un país insular europeo, cuyo territorio abarca la isla homónima y algunas pequeñas islas e islotes adyacentes en el océano Atlántico. Su capital es Reikiavik. Cuenta con una población de cerca de 366 425 habitantes y un área de 103 000 km².1​6​ A causa de su localización en la dorsal mesoatlántica, es un país con gran actividad volcánica y geológica, factor que afecta en gran medida al paisaje del territorio islandés. El interior del país consiste en una meseta caracterizada por desiertos, montañas, glaciares y ríos glaciales que fluyen hacia el mar a través de las tierras bajas.`,
-];
 
 class Rect {
     constructor(position, size)
@@ -184,17 +146,19 @@ Array.prototype.sum = function()
 };
 
 class BoxItem {
-    constructor(mainImage)
+    constructor(content, mainImage, badgeSVG)
     {
         this.value = Stage.random(0.1, 1);
         
-        const labelIndex = Math.floor(Stage.random(0, textLabels.length));
-        this.label = textLabels[labelIndex].value;
-        this.isRTL = textLabels[labelIndex].rtl || false;
-        this.paragraphText = paragraphText[labelIndex];
+        this.label = content.title;
+        this.isRTL = content.rtl;
+        this.paragraphText = content.body;
         
         this.mainImage = mainImage.cloneNode();
         this.element = undefined;
+        
+        this.badgeImage = document.createElement('img');
+        this.badgeImage.src = this.#dataURIFromSVG(badgeSVG);
     
         this.animator = new RampAnimator(1, 1.2, 5000, Stage.random(0, 1));
     }
@@ -211,9 +175,7 @@ class BoxItem {
             badgeContainer.className = 'badge';
             const badgeImage = document.createElement('img');
             
-            // FIXME: Need more badge images.
-            badgeImage.src = '../../core/resources/debugger100.png';
-            badgeContainer.appendChild(badgeImage);
+            badgeContainer.appendChild(this.badgeImage);
             this.element.appendChild(badgeContainer);
             this.element.appendChild(this.mainImage);
 
@@ -252,6 +214,24 @@ class BoxItem {
         this.element.style.top = `${data.y.toFixed(2) + edgeInset}px`;
         this.element.style.width = `${Math.max(data.width - 2 * edgeInset, 0).toFixed(2)}px`;
         this.element.style.height = `${Math.max(data.height - 2 * edgeInset, 0).toFixed(2)}px`;        
+    }
+    
+    #dataURIFromSVG(svgMarkup)
+    {
+        // From https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
+        function encodeSvg(svgString)
+        {
+            return svgString.replace('<svg',(~svgString.indexOf('xmlns')?'<svg':'<svg xmlns="http://www.w3.org/2000/svg"'))
+                .replace(/"/g, '\'')
+                .replace(/%/g, '%25')
+                .replace(/#/g, '%23')       
+                .replace(/{/g, '%7B')
+                .replace(/}/g, '%7D')         
+                .replace(/</g, '%3C')
+                .replace(/>/g, '%3E')
+                .replace(/\s+/g,' ');
+        }
+        return `data:image/svg+xml,${encodeSvg(svgMarkup)}`;
     }
 }
 
@@ -315,7 +295,11 @@ class StoriesController {
     
     #createBox(boxIndex)
     {
-        return new BoxItem(this.stage.images[boxIndex % this.stage.images.length]);
+        const boxContent = this.stage.content[boxIndex % this.stage.content.length];
+        const image = this.stage.images[boxIndex % this.stage.images.length];
+        const badgeSVG = this.stage.badges[boxIndex % this.stage.badges.length].svg;
+
+        return new BoxItem(boxContent, image, badgeSVG);
     }
     
     animate()
@@ -339,12 +323,20 @@ class StoriesStage extends Stage {
     {
         await super.initialize(benchmark, options);
         this.controller = new StoriesController(this);
+
+        const response = await fetch('resources/stories-data.json');
+        if (!response.ok)
+            console.error(`Failed to fetch JSON`);
+        
+        const jsonData = await response.json();
+        this.content = jsonData['content'];
+        this.badges = jsonData['badges'];
         
         this.images = [];
-        await this.#loadImages()
+        await this.#loadImages(jsonData['images']);
     }
 
-    async #loadImages()
+    async #loadImages(fillImages)
     {
         const promises = [];
         const imagePrefix = 'resources/images/';
@@ -396,7 +388,7 @@ window.benchmarkClass = StoriesBenchmark;
 class FakeController {
     constructor()
     {
-        this.initialComplexity = 10;
+        this.initialComplexity = 29;
         this.startTime = new Date;
     }
 
