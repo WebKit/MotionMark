@@ -23,16 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Move to shared code
-class Size {
-    constructor(width, height)
-    {
-        this.width = width;
-        this.height = height;
-    }
-}
-
-
 // To be moved.
 class MathHelpers {
     static random(min, max)

@@ -23,60 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Move to shared code
-class Size {
-    static zero = new Size(0, 0);
-
-    constructor(width, height)
-    {
-        this.width = width;
-        this.height = height;
-    }
-}
-
-class Position {
-    static zero = new Position(0, 0);
-
-    constructor(x, y)
-    {
-        this.x = x;
-        this.y = y;
-    }
-
-    clone()
-    {
-        return new Point(this.x, this.y);
-    }
-}
-
-class Rect {
-    constructor(position, size)
-    {
-        this.position = position;
-        this.size = size;
-    }
-    
-    get x()
-    {
-        return this.position.x;
-    }
-
-    get y()
-    {
-        return this.position.y;
-    }
-
-    get width()
-    {
-        return this.size.width;
-    }
-
-    get height()
-    {
-        return this.size.height;
-    }
-}
-
 // To be moved.
 class MathHelpers {
     static random(min, max)

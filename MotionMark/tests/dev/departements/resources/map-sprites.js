@@ -129,7 +129,7 @@ class SpriteSheet {
         const x = col * cellWidth;
         const y = row * cellHeight;
         
-        return new Rect(new Position(x, y), new Size(cellWidth, cellHeight));        
+        return new Rect(new Point(x, y), new Size(cellWidth, cellHeight));        
     }
 }
 
