@@ -1,0 +1,311 @@
+<!--
+  Copyright (C) 2025 Apple Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../../resources/stage.css">
+    <style>
+
+        @font-face {
+            font-family: "Sniglet";
+            src: url("resources/fonts/Sniglet.woff") format("woff2");
+        }
+
+        @font-face {
+            font-family: "Knewave";
+            src: url("resources/fonts/Knewave.woff") format("woff2");
+        }
+        
+        @property --anim-value {
+            syntax: "<integer>";
+            inherits: true;
+            initial-value: 0;
+        }
+
+        @keyframes ValueAnimation {
+            from { --anim-value: 0; }
+            to   { --anim-value: 360; }
+        }
+
+        :root {
+            --fade-level: 0;
+            animation: ValueAnimation 4s alternate infinite linear;
+
+            --hue-angle: mod(var(--anim-value), 360);
+            --color1: hsl(var(--hue-angle) 60 50);
+            --color2: hsl(calc(var(--hue-angle) + 180) 60 50);
+            --color3: orange;
+            --color4: cyan;
+        }
+        
+        svg {
+            position: absolute;
+        }
+
+        #stage {
+            background-color: pink;
+        }
+
+        #container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .unit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            filter: opacity(calc(var(--fade-level) * 100%));
+        }
+
+        .item {
+            display: grid;
+            place-items: center;
+            overflow: clip;
+            font-family: Sniglet, sans-serif;
+            font-size: 10vh;
+        }
+        
+        .item.style-1 {
+        }
+        
+        .item.style-1 .content {
+            font-family: Knewave, sans-serif;
+            filter: url(#zoom);
+            color: var(--color1);
+        }
+
+        .item.style-2 {
+        }
+
+        .item.style-2  .content {
+            filter: url(#static);
+            color: green;
+        }
+
+        .item.style-3 {
+        }
+
+        .item.style-3 .container {
+            --bgcolor: #fcdc9f;
+            /* Hack to get a white inset border, until support for image(<color>) is more widely available */
+            background-image: linear-gradient(var(--bgcolor), var(--bgcolor)), linear-gradient(white, white);
+            background-clip: padding-box, border-box;
+            border-radius: 30px;
+            border: 12px double var(--bgcolor);
+            padding: 24px 20px 0px 20px;
+            rotate: 10deg;
+            box-shadow: 0 0 10px rgb(0, 0, 0, 0.8);
+        }
+
+        .item.style-3 .content {
+            filter: url(#signage);
+            color: var(--color2);
+            text-transform: uppercase;
+            line-height: 1.2lh;
+        }
+
+        .item.style-4 {
+        }
+
+        .item.style-4  .content {
+            filter: url(#watery);
+            color: blue;
+            -webkit-text-stroke-color: #20FEFE;
+            -webkit-text-stroke-width: 0.03lh;
+        }
+
+        .item.style-5 {
+        }
+
+        .item.style-5 .content {
+            -webkit-text-stroke-color: blue;
+            -webkit-text-stroke-width: 0.03lh;
+            color: red;
+            filter: url(#neon);
+        }
+
+        .item.style-6 {
+        }
+        .item.style-6 .content {
+            color: pink;
+            filter: url(#lights);
+        }
+    </style>
+</head>
+<body>
+    <svg width=0 height=0>
+        <defs>
+            <filter id="zoom" primitiveUnits="userSpaceOnUse">
+    			<feFlood flood-color="black" flood-opacity="0" result="backgroundImage"></feFlood>
+
+    			<feGaussianBlur in="SourceGraphic" stdDeviation="15 3" edgeMode="none" result="blurred"></feGaussianBlur>
+    			<feColorMatrix in="blurred" type="saturate" values="1.2" result="desaturated"></feColorMatrix>
+    			<feOffset in="desaturated" dx="10" dy="5" result="offset"></feOffset>
+                <!-- Blend with the background color here (in linear space) to avoid ugly gamma-based blending -->
+    			<feBlend in="backgroundImage" in2="offset" mode="multiply" result="blended"></feBlend>
+    			<feBlend in="SourceGraphic" in2="blended" mode="normal"></feBlend>
+
+            </filter>
+
+            <filter id="static" primitiveUnits="userSpaceOnUse">
+                <feTurbulence type="fractalNoise" baseFrequency=".2">
+                    <animate attributeName="seed" from="2" to="1000" dur="10s" repeatCount="indefinite"/>
+                </feTurbulence>
+                <feColorMatrix type="saturate" values="0" />
+                <feComposite in2="SourceAlpha" operator="in" />
+
+                <feBlend in="SourceGraphic" mode="lighten"></feBlend>
+                <feDropShadow dx="13" dy="13" stdDeviation="5" flood-color="black" flood-opacity="0.2"/>
+            </filter>
+
+            <filter id="signage" primitiveUnits="userSpaceOnUse">
+                <feOffset in="SourceAlpha" dx="3" dy="2" result="offset1"></feOffset>
+                <feOffset in="SourceAlpha" dx="10" dy="8" result="offset2"></feOffset>
+                <feComposite in="offset2" in2="offset1" operator="out" />
+                <feColorMatrix type="matrix" values="
+                      0 0 0 0 0.3
+                      0 0 0 0 0.3
+                      0 0 0 0 0.3
+                      0 0 0 1 0
+                    "/>
+                <feBlend in="SourceGraphic" ></feBlend>
+            </filter>
+
+            <filter id="neon">
+                <!-- Extract the blue outline, turn it into the neon glow -->
+                <feColorMatrix values="0 0 0 0 1
+                                       0 0 0 0 0.5
+                                       0 0 0 0 0.7
+                                       0 0 1 0 0"  />
+               <!--Brighten it up -->
+                <feComponentTransfer>
+                    <feFuncR type="linear" slope="1.6"/>
+                    <feFuncG type="linear" slope="1.6"/>
+                    <feFuncB type="linear" slope="1.6"/>
+                </feComponentTransfer>
+                <!--Big glow -->
+                <feGaussianBlur stdDeviation="10" result="tubeglow" />
+
+                <feColorMatrix in="SourceGraphic" values="0 0 0 0 1
+                                       0 0 0 0 1
+                                       0 0 0 0 1
+                                       0 0 0.1 0 0" />
+               <!-- Soften it slightly -->
+                <feGaussianBlur stdDeviation="1" result="tube" />
+
+                <!-- Extract the red fill, turn it into the background -->
+                <feColorMatrix in="SourceGraphic" values="0 0 0 0 1
+                                       0 0 0 0 0
+                                       0 0 0 0 0
+                                       1 0 0 0 0" />
+                <feColorMatrix type="hueRotate" values="206" />
+                <feOffset dx="10" dy="10" result="background" />
+
+                <feBlend in="tubeglow" in2="background" mode="lighten"/>
+                <feBlend in="tube" mode="normal"/>
+            </filter>
+
+            <filter id="watery" x="-20%" y="-20%" height="140%" width="140%">
+                <feFlood flood-color="#1DD9CD" result="skyblue" />
+
+                <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="1" seed="2" />
+
+                <!-- Animate via a hue rotation to get a smoothly repeating change in the texture -->
+                <feColorMatrix type="hueRotate" values="0" result="turbulence">
+                    <animate attributeName="values" from="0" to="360" dur="10s" repeatCount="indefinite"/>
+                </feColorMatrix>
+
+                <feGaussianBlur stdDeviation="6.5" in="SourceAlpha" result="alpha-blur" />
+
+                <feDisplacementMap scale="40" in="alpha-blur" in2="turbulence" xChannelSelector="B" yChannelSelector="R" result="lower-water"/>
+                <feComposite operator="in" in="skyblue" in2="lower-water" result="colored-lower-water" />
+
+                <feDisplacementMap scale="16" in="SourceGraphic" in2="turbulence" xChannelSelector="G" yChannelSelector="B" result="wavy-foreground"/>
+
+                <!-- Take the green channel of the turbulence into alpha -->
+                <feColorMatrix
+                            in="turbulence"
+                            type="matrix"
+                            values="0 0 0 0 0
+                                    0 0 0 0 0
+                                    0 0 0 0 0
+                                    0 -0.4 0 1 0"
+                            result="alpha"
+                        />
+                <feComposite operator="in" in="wavy-foreground" in2="alpha" result="watery-foreground" />
+
+                <feBlend in=watery-foreground in2="colored-lower-water">
+            </filter>
+
+            <filter id="lights" primitiveUnits="userSpaceOnUse">
+                <feImage width="16" height="16" href="resources/light.svg" result="light" />
+                <feTile in="light" result="light-grid" />
+                <feComposite  in="light-grid" in2="SourceAlpha" operator="in" result="lights" />
+
+                <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilated-alpha" />
+                <feMorphology in="SourceAlpha" operator="erode" radius="3" result="eroded-alpha" />
+                <feComposite in="dilated-alpha" in2="eroded-alpha" operator="out" />
+                <!--Colorize -->
+                <feColorMatrix values=" 1 0 0 0 1
+                                       0 1 0 0 0
+                                       0 0 1 0 0
+                                       0 0 0 1 0" result="border" />
+                <!--Inner shadow -->
+                <feDropShadow dx=0 dy=0 stdDeviation="7" result="shadow" />
+                <!--Clip to the inside -->
+                <feComposite in="SourceAlpha" in2="shadow" operator="in" result="inner-shadow" />
+
+                <feMerge>
+                    <feMergeNode in="inner-shadow"/>
+                    <feMergeNode in="lights"/>
+                    <feMergeNode in="border"/>
+                </feMerge>
+            </filter>
+
+        </defs>
+        
+    </svg>
+
+
+    <div id="stage">
+        <div id="container"></div>
+    </div>
+    <script src="../../../resources/strings.js"></script>
+    <script src="../../../resources/extensions.js"></script>
+    <script src="../../../resources/statistics.js"></script>
+    <script src="../../resources/math.js"></script>
+    <script src="../../resources/benchmark.js"></script>
+    <script src="../../resources/controllers.js"></script>
+    <script src="../../resources/stage.js"></script>
+    <script src="resources/filtering.js"></script>
+</body>
+</html>
