@@ -152,6 +152,13 @@ class Stage {
             + this.randomInt(min, max).toString(16);
     }
 
+    static randomRGBColor(alpha)
+    {
+        var min = 32;
+        var max = 256 - 32;
+        return `rgb(${this.randomInt(min, max)}, ${this.randomInt(min, max)}, ${this.randomInt(min, max)}, ${alpha})`;
+    }
+
     static randomStyleMixBlendMode()
     {
         var mixBlendModeList = [

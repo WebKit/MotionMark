@@ -477,6 +477,10 @@ Suites.push(new Suite("Tentative 1.4 suite",
             name: "Map Zoomer"
         },
         {
+            url: "dev/sheets/sheets.html",
+            name: "Sheets"
+        },
+        {
             url: "dev/departements/departements.html",
             name: "Départements"
         },
