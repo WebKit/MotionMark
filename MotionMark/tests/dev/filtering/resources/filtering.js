@@ -211,14 +211,6 @@ class FilteringBenchmark extends Benchmark {
     constructor(options)
     {
         super(new FilteringStage(), options);
-        
-        // setTimeout(() => {
-        //     this.stage.tune(5);
-        // }, 500);
-        //
-        // setTimeout(() => {
-        //     this.stage.tune(-0);
-        // }, 1000);
     }
 }
 
