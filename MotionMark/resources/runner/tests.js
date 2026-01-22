@@ -32,36 +32,36 @@ var Suites = [];
 Suites.push(new Suite("MotionMark",
     [
         {
-            url: "core/multiply.html",
-            name: "Multiply"
+            url: "dev/stories/stories.html",
+            name: "Stories"
         },
         {
-            url: "core/canvas-stage.html?pathType=arcs",
-            name: "Canvas Arcs"
+            url: "dev/alice/alice.html",
+            name: "Alice"
         },
         {
-            url: "core/leaves.html",
-            name: "Leaves"
+            url: "dev/chess/chess.html",
+            name: "Chess"
         },
         {
-            url: "core/canvas-stage.html?pathType=linePath",
-            name: "Paths"
+            url: "dev/map-zoomer/map-zoomer.html",
+            name: "Map Zoomer"
         },
         {
-            url: "core/canvas-stage.html?pathType=line&lineCap=square",
-            name: "Canvas Lines"
+            url: "dev/sheets/sheets.html",
+            name: "Sheets"
         },
         {
-            url: "core/image-data.html",
-            name: "Images"
+            url: "dev/departements/departements.html",
+            name: "Départements"
         },
         {
-            url: "core/design.html",
-            name: "Design"
+            url: "dev/dashboard/dashboard.html",
+            name: "Dashboard"
         },
         {
-            url: "core/suits.html",
-            name: "Suits"
+            url: "dev/filtering/filtering.html",
+            name: "Filtering"
         },
     ]
 ));
