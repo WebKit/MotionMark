@@ -526,7 +526,7 @@ class MapZoomerStage extends Stage {
             return;
 
         this._complexity += count;
-        console.log(`tune ${count} - complexity is ${this._complexity}`);
+        // console.log(`tune ${count} - complexity is ${this._complexity}`);
         this.#setupMaps();
     }
 
@@ -612,7 +612,7 @@ class MapZoomerStage extends Stage {
             const tileRowImages = [];
             for (let col = firstColumn; col <= lastColumn; ++col) {
                 const tilePath = OpenStreetMap.filePathForTile(col, row, zoom);
-                const tileURL = `https://tile.openstreetmap.org/${tilePath}`; // FIXME: Load from local resource.
+                const tileURL = `resources/images/tiles/${tilePath}`;
                 const tileImage = new Image();
 
                 const loadingPromise = new Promise(resolve => {
