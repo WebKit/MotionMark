@@ -34,6 +34,16 @@ class ItemLayout {
         this._stageSize = stageSize;
     }
     
+    get itemSize()
+    {
+        return _itemSize;
+    }
+    
+    set itemSize(size)
+    {
+        this._itemSize = size;
+    }
+    
     arrangeItems()
     {
     }
@@ -65,6 +75,8 @@ class RandomPlacementLayout extends ItemLayout {
 
             const x = Stage.randomInt(-allowedMinXClip, this._stageSize.width - allowedMaxXClip);
             const y = Stage.randomInt(-allowedMinYClip, this._stageSize.height - allowedMaxYClip);
+            
+            console.log(`allowedMinYClip ${allowedMinYClip} allowedMaxYClip ${allowedMaxYClip} y ${y} item height ${this._itemSize.height}`);
         
             element.style.left = `${x}px`;
             element.style.top = `${y}px`;
@@ -148,7 +160,6 @@ class Grid2DLayout extends ItemLayout {
 
         const cellSize = new Size(this._stageSize.width / columnCount, this._stageSize.height / rowCount);
         const scale = Math.min(cellSize.width / this._itemSize.width, cellSize.height / this._itemSize.height);
-
 
         for (let i = 0; i < this.stage.items.length; ++ i) {
             const child = this.stage.items[i].element;
@@ -319,7 +330,7 @@ class Item {
     }
 }
 
-class NewsletterStage extends Stage {
+class AliceStage extends Stage {
     constructor()
     {
         super();
@@ -351,11 +362,15 @@ class NewsletterStage extends Stage {
         const stageRect = this.element.getBoundingClientRect();
         this._stageRect = new Rect(Point.zero, new Size(stageRect.width, stageRect.height));
         
+        let approximateItemSize = new Size(10, 10);
+        this.layout = new RandomPlacementLayout(this, approximateItemSize, new Size(stageRect.width, stageRect.height));
+
+        // We have to measure the item size after setting up the style for the layout.
         const item = new Item(this.container, this.textData[0]);
-        const approximateItemSize = item.measureSize()
+        approximateItemSize = item.measureSize()
         item.remove();
         
-        this.layout = new RandomPlacementLayout(this, approximateItemSize, new Size(stageRect.width, stageRect.height));
+        this.layout.itemSize = approximateItemSize;
     }
 
     tune(count)
@@ -401,19 +416,19 @@ class NewsletterStage extends Stage {
     }
 }
 
-class NewsletterBenchmark extends Benchmark {
+class AliceBenchmark extends Benchmark {
     constructor(options)
     {
-        super(new NewsletterStage(), options);
+        super(new AliceStage(), options);
     }
 }
 
-window.benchmarkClass = NewsletterBenchmark;
+window.benchmarkClass = AliceBenchmark;
 
 class FakeController {
     constructor()
     {
-        this.initialComplexity = 12;
+        this.initialComplexity = 4;
         this.startTime = new Date;
     }
 
