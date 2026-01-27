@@ -82,15 +82,27 @@ class RandomPlacementLayout extends ItemLayout {
         if (!this._drifting)
             return;
 
-        // FIXME: Gecko doesn't supported the CSS Typed OM.
-        for (const item of this.stage.items) {
-            const leftValue = item.element.attributeStyleMap.get('left');
-            leftValue.value += item.velocity.width;
-            item.element.attributeStyleMap.set('left', leftValue);
+        if (0) {
+            // FIXME: Gecko doesn't supported the CSS Typed OM.
+            for (const item of this.stage.items) {
+                const leftValue = item.element.attributeStyleMap.get('left');
+                leftValue.value += item.velocity.width;
+                item.element.attributeStyleMap.set('left', leftValue);
 
-            const topValue = item.element.attributeStyleMap.get('top');
-            topValue.value += item.velocity.height;
-            item.element.attributeStyleMap.set('top', topValue);
+                const topValue = item.element.attributeStyleMap.get('top');
+                topValue.value += item.velocity.height;
+                item.element.attributeStyleMap.set('top', topValue);
+            }
+        } else {
+            for (const item of this.stage.items) {
+                let leftValue = parseFloat(item.element.style.left);
+                leftValue += item.velocity.width;
+                item.element.style.left = `${leftValue.toFixed(2)}px`;
+
+                let topValue = parseFloat(item.element.style.top);
+                topValue += item.velocity.height;
+                item.element.style.top = `${topValue.toFixed(2)}px`;
+            }
         }
     }
 }
