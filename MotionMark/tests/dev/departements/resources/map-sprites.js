@@ -74,8 +74,10 @@ class SpriteSheet {
             const depName = jsonData[i]['name'];
             const pathElement = deptToPathMap[depName];
             
-            if (!pathElement)
+            if (!pathElement) {
+                console.log(`failed to find element for ${depName}`);
                 continue;
+            }
 
             svgHostElement.appendChild(pathElement);
             const bounds = pathElement.getBBox();
@@ -96,13 +98,14 @@ class SpriteSheet {
 
             ctx.translate(-bounds.x, -bounds.y);
 
-            ctx.fillStyle = 'rgb(0, 0, 128, 0.2)';
+            ctx.fillStyle = 'rgb(100, 100, 128, 1)';
             ctx.fill(canvasPath);
-            
+
             ctx.strokeStyle = 'black';
-            
+
             const lineWidth = 0.5;
             ctx.lineWidth = 2 / scale;
+            ctx.lineJoin = 'round';
             ctx.stroke(canvasPath);
             ctx.restore();
         }

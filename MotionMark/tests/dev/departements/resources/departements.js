@@ -155,11 +155,9 @@ class RadialChart {
         this.center = center;
         this.innerRadius = innerRadius;
         this.outerRadius = outerRadius;
-        const endcapFraction = 0.25;
-        this.endcapRadius = outerRadius - endcapFraction * (outerRadius - innerRadius);
-
         this.complexity = 1;
-        
+        this.firstItemIndex = 0;
+
         this.#setupPattern();
     }
     
@@ -176,14 +174,27 @@ class RadialChart {
     draw(ctx)
     {
         this.numSpokes = this._complexity;
-        this.wedgeAngleRadians = TwoPI / this.numSpokes;
+        this.wedgeAngleRadians = Math.min(TwoPI / this.numSpokes, Math.PI / 8);
         this.angleOffsetRadians = Math.PI / 2; // Start at the top, rather than the right.
 
+        const chordLength = this.#wedgeWidthAtRadius(this.outerRadius);
+        this.endcapRadius = this.outerRadius - chordLength;
+
+        // This dims out labels from inner charts when there's more than one.
+        const donutPath = new Path2D();
+        donutPath.arc(this.center.x, this.center.y, 2 * this.outerRadius, 0, TwoPI, Clockwise);
+        donutPath.arc(this.center.x, this.center.y, this.innerRadius, 0, TwoPI, CounterClockwise);
+        donutPath.closePath();
+
+        ctx.save();
+        ctx.fillStyle = 'rgb(255, 255, 255, 0.6)';
+        ctx.fill(donutPath);
+        ctx.restore();
+
         for (let i = 0; i < this.numSpokes; ++i) {
-            const instance = this.stage.instanceForIndex(i);
+            const instance = this.stage.instanceForIndex(i + this.firstItemIndex);
 
             this.#drawWedge(ctx, i, instance);
-            //this.#drawBadge(ctx, i, instance);
             this.#drawMap(ctx, i, instance);
             this.#drawWedgeLabels(ctx, i, instance);
         }
@@ -382,7 +393,7 @@ class RadialChart {
         const wedgeArrowEnd = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius));
         const wedgeArrowEndAngle = MathHelpers.normalizeRadians(midAngleRadians + Math.PI);
         
-        // FIXME: Chrome doens't support labelSize.emHeightAscent.
+        // FIXME: Chrome doesn't support labelSize.emHeightAscent.
         const arrowStart = new Point(outerLabelLocation.x, outerLabelLocation.y - labelSize.actualBoundingBoxAscent / 2);
         const arrowPath = this.#pathForArrow(arrowStart, wedgeArrowEnd, wedgeArrowEndAngle);
 
@@ -412,36 +423,12 @@ class RadialChart {
         }
     }
     
-    #drawBadge(ctx, index, instance)
-    {
-        const midAngleRadians = this.#wedgeStartAngle(index) + 0.5 * this.wedgeAngleRadians;
-        const imageAngle = midAngleRadians + Math.PI / 2;
-
-        const imageInset = 30;
-        const imageCenterPoint = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius - imageInset));
-
-        ctx.save();
-
-        const wedgePath = this.#pathForWedge(index, this.innerRadius, this.outerRadius);
-        ctx.clip(wedgePath);
-
-        ctx.translate(imageCenterPoint.x, imageCenterPoint.y);
-        ctx.rotate(imageAngle);
-
-        ctx.shadowColor = "black";
-        ctx.shadowBlur = 5;
-        
-        const imageSize = new Size(20, 20);
-        ctx.drawImage(instance.image, -imageSize.width / 2, 0, imageSize.width, imageSize.height);
-        ctx.restore();
-    }
-    
     #drawMap(ctx, index, instance)
     {
         const midAngleRadians = this.#wedgeStartAngle(index) + 0.5 * this.wedgeAngleRadians;
         const imageAngle = midAngleRadians + Math.PI / 2;
 
-        const imageInset = 10;
+        const imageInset = 5;
         const imageCenterPoint = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius - imageInset));
 
         ctx.save();
@@ -463,6 +450,11 @@ class RadialChart {
 
         const mapSize = Math.min(horizontalSpace, verticalSpace);
 
+        ctx.shadowColor = "rgb(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 6;
+        ctx.shadowOffsetY = 8;
+
         const imageSize = new Size(mapSize, mapSize);        
         this.stage.spriteSheet.drawCellAtIndex(ctx, index, imageSize);
         ctx.restore();
@@ -482,7 +474,6 @@ class RadialChart {
             const labelY = verticalEdgeOffset + index * verticalSpacing;
 
             return new Point(labelX, labelY);
-            
         } else {
             // Left side, going up.
             const bottomY = this.center.y + this.outerRadius;
@@ -498,8 +489,8 @@ class RadialChart {
     {
         const arrowPath = new Path2D();
         arrowPath.moveTo(startPoint.x, startPoint.y);
+
         // Compute a bezier path that keeps the line horizontal at the start and end.
-        
         const distance = startPoint.subtract(endPoint).length();
 
         const controlPointProportion = 0.5;
@@ -608,7 +599,7 @@ class RadialChartStage extends Stage {
     
     #setupCharts()
     {
-        const maxSegmentsPerChart = 100;
+        const maxSegmentsPerChart = this.instanceData.length;
         const numCharts = Math.ceil(this._complexity / maxSegmentsPerChart);
 
         const perChartComplexity = Math.ceil(this._complexity / numCharts);
@@ -616,10 +607,14 @@ class RadialChartStage extends Stage {
 
         // FIXME: Outer charts should have more items because there's more space.
         if (numCharts === this.charts.length) {
+            let itemCount = 0;
             for (let i = this.charts.length; i > 0; --i) {
                 const chartComplexity = Math.min(perChartComplexity, remainingComplexity);
                 
                 this.charts[i - 1].complexity = chartComplexity;
+                this.charts[i - 1].firstItemIndex = itemCount;
+                
+                itemCount += chartComplexity;
                 remainingComplexity -= chartComplexity;
             }
             return;
@@ -631,8 +626,9 @@ class RadialChartStage extends Stage {
         
         const outerRadius = this.canvasSize.height * 0.45;
         const annulusRadius = outerRadius / numCharts;
+        let itemCount = 0;
         
-        for (let i = numCharts; i > 0; --i) {
+        for (let i = 1; i <= numCharts; ++i) {
             const outerRadius = i * annulusRadius;
             const innerRadius = outerRadius - (annulusRadius * 0.7)
 
@@ -640,6 +636,9 @@ class RadialChartStage extends Stage {
             const chartComplexity = Math.min(perChartComplexity, remainingComplexity);
 
             chart.complexity = chartComplexity;
+            chart.firstItemIndex = itemCount;
+            itemCount += chartComplexity;
+
             this.charts.push(chart);
             remainingComplexity -= chartComplexity;
         }
@@ -653,11 +652,11 @@ class RadialChartStage extends Stage {
     animate()
     {
         const context = this.context;
-        context.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height);
+        context.fillStyle = 'white';
+        context.fillRect(0, 0, this.canvasSize.width, this.canvasSize.height);
         
-        for (const chart of this.charts) {
+        for (const chart of this.charts)
             chart.draw(context);
-        }
         
         const debugging = false;
         if (debugging) {
@@ -686,14 +685,14 @@ window.benchmarkClass = RadialChartBenchmark;
 class FakeController {
     constructor()
     {
-        this.initialComplexity = 95;
+        this.initialComplexity = 100;
         this.startTime = new Date;
     }
 
     shouldStop()
     {
         const now = new Date();
-        return (now - this.startTime) > 1500;
+        return (now - this.startTime) > 3000;
     }
     
     results()

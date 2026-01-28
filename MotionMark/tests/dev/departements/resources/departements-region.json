@@ -760,19 +760,11 @@
     "population": 1372389
   },
   {
-    "name": "Val-D'Oise",
+    "name": "Val-d'Oise",
     "number": 95,
     "region": "Ile-de-France",
     "capital": "Pontoise",
     "area": 1246,
     "population": 1215390
-  },
-  {
-    "name": "Guadeloupe",
-    "number": 971,
-    "region": "Guadeloupe",
-    "capital": "Basse-Terre",
-    "area": 1628,
-    "population": 397990
   }
 ]
