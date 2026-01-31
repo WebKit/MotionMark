@@ -75,12 +75,10 @@ class RandomPlacementLayout extends ItemLayout {
 
             const x = Stage.randomInt(-allowedMinXClip, this._stageSize.width - allowedMaxXClip);
             const y = Stage.randomInt(-allowedMinYClip, this._stageSize.height - allowedMaxYClip);
-            
-            console.log(`allowedMinYClip ${allowedMinYClip} allowedMaxYClip ${allowedMaxYClip} y ${y} item height ${this._itemSize.height}`);
-        
+
             element.style.left = `${x}px`;
             element.style.top = `${y}px`;
-            
+
             if (this._drifting) {
                 const driftScalarMin = -0.5;
                 const driftScalarMax = 0.5;
