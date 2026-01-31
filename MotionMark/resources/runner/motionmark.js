@@ -177,7 +177,7 @@ class BenchmarkController {
 
     determineCanvasSize()
     {
-        var match = window.matchMedia("(max-device-width: 760px)");
+        let match = window.matchMedia("(max-device-width: 760px)");
         if (match.matches) {
             document.body.classList.add("small");
             return;
