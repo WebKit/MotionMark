@@ -59,7 +59,12 @@
                     <div id="suites">
                         <h2>Suites:</h2>
                         <ul class="tree"></ul>
-                        <div><span id="drop-target">Drop results here</span></div>
+                        <div>
+                            <span id="drop-target">Drop results here</span>
+                            <button id="load-results-button" onclick="benchmarkController.loadResults()">Load results…</button>
+                            <input type="file" id="load-results-input" style="display: none;"
+                                onchange="benchmarkController.handleResultsFile(this)">
+                        </div>
                     </div>
                     <div id="options">
                         <h2>Options:</h2>
