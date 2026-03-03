@@ -708,6 +708,15 @@ class DebugBenchmarkController extends BenchmarkController {
         const confidence = ((scoreCalculator.scoreLowerBound / score - 1) * 100).toFixed(2) +
             "% / +" + ((scoreCalculator.scoreUpperBound / score - 1) * 100).toFixed(2) + "%";
         const fps = scoreCalculator._systemFrameRate;
+
+        const resultsScoreProfileSelector = document.getElementById("results-score-profile");
+        if (resultsScoreProfileSelector)
+            resultsScoreProfileSelector.value = scoreCalculator.scoreProfile;
+
+        const graphScoreProfileSelector = document.getElementById("graph-score-profile");
+        if (graphScoreProfileSelector)
+            graphScoreProfileSelector.value = scoreCalculator.scoreProfile;
+
         sectionsManager.setSectionVersion("results", scoreCalculator.version);
         sectionsManager.setSectionScore("results", score.toFixed(2), confidence, fps);
         sectionsManager.populateTable("results-header", Headers.testName, scoreCalculator);
@@ -720,9 +729,40 @@ class DebugBenchmarkController extends BenchmarkController {
 
     showTestGraph(testName, testResult, testData)
     {
+        this._currentGraphParams = {
+            testName: testName,
+            testResult: testResult,
+            testData: testData
+        };
         sectionsManager.setSectionHeader("test-graph", testName);
         sectionsManager.showSection("test-graph", true);
         this.graphController.updateGraphData(testResult, testData, this.runnerClient.scoreCalculator.options);
+    }
+
+    reloadCurrentGraph() {
+        if (!this._currentGraphParams)
+            return;
+
+        const scoreCalculator = this.runnerClient.scoreCalculator;
+        const testData = this._currentGraphParams.testData;
+        const testName = this._currentGraphParams.testName;
+
+        // find the updated testResult from scoreCalculator
+        let updatedTestResult = null;
+        scoreCalculator.results.forEach(iteration => {
+            for (let suiteName in iteration[Strings.json.results.tests]) {
+                const suite = iteration[Strings.json.results.tests][suiteName];
+                if (suite[testName]) {
+                    updatedTestResult = suite[testName];
+                    return;
+                }
+            }
+        });
+
+        if (updatedTestResult) {
+            this._currentGraphParams.testResult = updatedTestResult;
+            this.showTestGraph(testName, updatedTestResult, testData);
+        }
     }
 }
 

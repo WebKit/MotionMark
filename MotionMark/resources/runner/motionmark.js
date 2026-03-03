@@ -67,6 +67,7 @@ class BenchmarkRunnerClient {
 class SectionsManager {
     showSection(sectionIdentifier, pushState)
     {
+        this.currentSectionIdentifier = sectionIdentifier;
         var sections = document.querySelectorAll("main > section");
         for (var i = 0; i < sections.length; ++i) {
             document.body.classList.remove("showing-" + sections[i].id);
@@ -313,12 +314,29 @@ class BenchmarkController {
         const score = scoreCalculator.score;
         const confidence = "±" + (Statistics.largestDeviationPercentage(scoreCalculator.scoreLowerBound, score, scoreCalculator.scoreUpperBound) * 100).toFixed(2) + "%";
         const fps = scoreCalculator.targetFrameRate;
+
+        const resultsScoreProfileSelector = document.getElementById("results-score-profile");
+        if (resultsScoreProfileSelector)
+            resultsScoreProfileSelector.value = scoreCalculator.scoreProfile;
+
+        const graphScoreProfileSelector = document.getElementById("graph-score-profile");
+        if (graphScoreProfileSelector)
+            graphScoreProfileSelector.value = scoreCalculator.scoreProfile;
+
         sectionsManager.setSectionVersion("results", scoreCalculator.version);
         sectionsManager.setSectionScore("results", score.toFixed(2), confidence, fps);
         sectionsManager.populateTable("results-header", Headers.testName, scoreCalculator);
         sectionsManager.populateTable("results-score", Headers.score, scoreCalculator);
         sectionsManager.populateTable("results-data", Headers.details, scoreCalculator);
         sectionsManager.showSection("results", true);
+    }
+
+    changeScoreProfile(profile) {
+        this.runnerClient.scoreCalculator.recompute(profile);
+        if (sectionsManager.currentSectionIdentifier == "test-graph" && this.reloadCurrentGraph)
+            this.reloadCurrentGraph();
+        else
+            this.showResults();
     }
 
     handleKeyPress(event)

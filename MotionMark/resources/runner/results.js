@@ -108,6 +108,15 @@ class ScoreCalculator {
         this._runData.runs.push(suitesSamplers);
     }
 
+    recompute(profile) {
+        this._preferredProfile = profile;
+        this._processData();
+    }
+
+    get scoreProfile() {
+        return this._preferredProfile || "slope";
+    }
+
     _processData()
     {
         this._results = {};
@@ -132,11 +141,9 @@ class ScoreCalculator {
                 suitesResult[suiteName] = suiteResult;
 
                 for (var testName in suiteData) {
-                    if (!suiteData[testName][Strings.json.result])
-                        this.calculateScore(suiteData[testName]);
+                    this.calculateScore(suiteData[testName]);
 
                     suiteResult[testName] = suiteData[testName][Strings.json.result];
-                    delete suiteData[testName][Strings.json.result];
 
                     testsScores.push(suiteResult[testName][Strings.json.score]);
                     testsLowerBoundScores.push(suiteResult[testName][Strings.json.scoreLowerBound]);
@@ -168,8 +175,8 @@ class ScoreCalculator {
         function findRegression(series, profile) {
             const minIndex = Math.round(.025 * series.length);
             const maxIndex = Math.round(.975 * (series.length - 1));
-            const minComplexity = series.getFieldInDatum(minIndex, complexityKey);
-            const maxComplexity = series.getFieldInDatum(maxIndex, complexityKey);
+            let minComplexity = series.getFieldInDatum(minIndex, complexityKey);
+            let maxComplexity = series.getFieldInDatum(maxIndex, complexityKey);
 
             if (Math.abs(maxComplexity - minComplexity) < 20 && maxIndex - minIndex < 20) {
                 minIndex = 0;
@@ -206,24 +213,30 @@ class ScoreCalculator {
         });
 
         const isRampController = this._runData.options[Strings.json.controller] == "ramp";
-        let predominantProfile = "";
+        let predominantProfile = this._preferredProfile || "";
         if (isRampController) {
-            var profiles = {};
-            data[Strings.json.controller].forEach(function(regression) {
-                if (regression[Strings.json.regressions.profile]) {
-                    var profile = regression[Strings.json.regressions.profile];
-                    profiles[profile] = (profiles[profile] || 0) + 1;
-                }
-            });
+            if (!predominantProfile) {
+                var profiles = {};
+                data[Strings.json.controller].forEach(function (regression) {
+                    if (regression[Strings.json.regressions.profile]) {
+                        var profile = regression[Strings.json.regressions.profile];
+                        profiles[profile] = (profiles[profile] || 0) + 1;
+                    }
+                });
 
-            var maxProfileCount = 0;
-            for (var profile in profiles) {
-                if (profiles[profile] > maxProfileCount) {
-                    predominantProfile = profile;
-                    maxProfileCount = profiles[profile];
+                var maxProfileCount = 0;
+                for (var profile in profiles) {
+                    if (profiles[profile] > maxProfileCount) {
+                        predominantProfile = profile;
+                        maxProfileCount = profiles[profile];
+                    }
                 }
             }
+            data[Strings.json.controller].forEach(function (regression) {
+                regression[Strings.json.regressions.profile] = predominantProfile;
+            });
         }
+        this._preferredProfile = predominantProfile;
 
         const regressionResult = findRegression(samples[complexityKey], predominantProfile);
         const calculation = regressionResult.regression;

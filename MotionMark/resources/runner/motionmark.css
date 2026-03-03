@@ -37,6 +37,7 @@ body {
     cursor: default;
 
     -webkit-user-select: none;
+    user-select: none;
 }
 
 body.showing-intro,
@@ -152,6 +153,7 @@ section .body p {
     max-width: 60vw;
 
     -webkit-user-select: text;
+    user-select: text;
     cursor: text;
 }
 
@@ -428,6 +430,7 @@ body.large .frame-container {
 
 #results .body {
     -webkit-user-select: text;
+    user-select: text;
 }
 
 #results .score-container {
@@ -460,6 +463,24 @@ body.large .frame-container {
     padding-bottom: .3em;
 }
 
+#results .score-profile,
+#test-graph .score-profile {
+    font-size: 0.8em;
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+}
+
+#results .score-profile label,
+#test-graph .score-profile label {
+    display: block;
+}
+
+#results .score-profile select,
+#test-graph .score-profile select {
+    font-family: inherit;
+    font-size: inherit;
+    margin-left: 0.5em;
+}
 #results table {
     border-spacing: 0;
     margin: 0;
@@ -541,10 +562,11 @@ body.large .detail .large {
     background: hsla(0, 0%, 100%, 0.9);
 }
 
-@supports (-webkit-backdrop-filter: blur(10px)) {
+@supports (-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px)) {
     #overlay {
         background: hsla(0, 0%, 100%, 0.7);
         -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
     }
 }
 
@@ -566,10 +588,17 @@ body.large .detail .large {
 
     font-size: 12px;
     -webkit-user-select: text;
+    user-select: text;
     cursor: text;
 
     max-height: 250px;
 
     border: 1px solid hsla(0, 0%, 0%, 0.1);
     padding: 1em;
+}
+
+#load-results-button {
+    margin-left: 1em;
+    min-width: auto;
+    font-size: 0.8em;
 }
