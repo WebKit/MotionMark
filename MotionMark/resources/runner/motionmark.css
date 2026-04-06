@@ -562,6 +562,18 @@ body.large .detail .large {
     background: hsla(0, 0%, 100%, 0.9);
 }
 
+#overlay footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 1.5em;
+}
+
+#overlay footer button {
+    flex: 1;
+    margin: 0;
+    box-sizing: border-box;
+}
+
 @supports (-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px)) {
     #overlay {
         background: hsla(0, 0%, 100%, 0.7);

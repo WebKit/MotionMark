@@ -558,7 +558,7 @@ class DebugBenchmarkController extends BenchmarkController {
         let progressElement = document.querySelector("#frame-rate-detection span");
         await this.detectFrameRate(progressElement);
     }
-    
+
     #setupDropTarget()
     {
         var dropTarget = document.getElementById("drop-target");
@@ -587,34 +587,38 @@ class DebugBenchmarkController extends BenchmarkController {
             }
 
             dropTarget.textContent = 'Processing…';
-
-            var file = e.dataTransfer.files[0];
-
-            var reader = new FileReader();
-            reader.filename = file.name;
-            reader.onload = (e) => {
-                const data = JSON.parse(e.target.result);
-                
-                let results;
-                if (data['debugOutput'] instanceof Array)
-                    results = RunData.resultsDataFromBenchmarkRunnerData(data['debugOutput']);
-                else
-                    results = RunData.resultsDataFromSingleRunData(data);
-
-                this.ensureRunnerClient([ ], { });
-                this.runnerClient.scoreCalculator = new ScoreCalculator(results);
-                this.showResults();
-            };
-
-            reader.readAsText(file);
-            document.title = "File: " + reader.filename;
+            this.handleResultsFile(e.dataTransfer.files[0]);
         }, false);
+    }
+
+    loadResults() {
+        document.getElementById("load-results-input").click();
+    }
+
+    handleResultsFile(fileOrInput) {
+        const file = fileOrInput instanceof File ? fileOrInput : fileOrInput.files[0];
+        if (!file)
+            return;
+
+        const reader = new FileReader();
+        reader.filename = file.name;
+        reader.onload = (e) => {
+            const data = JSON.parse(e.target.result);
+            const results = (data['debugOutput'] instanceof Array) ?
+                RunData.resultsDataFromBenchmarkRunnerData(data['debugOutput']) :
+                RunData.resultsDataFromSingleRunData(data);
+            this.ensureRunnerClient([], {});
+            this.runnerClient.scoreCalculator = new ScoreCalculator(results);
+            this.showResults();
+        };
+        reader.readAsText(file);
+        document.title = "File: " + reader.filename;
     }
 
     frameRateDeterminationComplete(targetFrameRate)
     {
         let frameRateLabelContent = Strings.text.usingFrameRate.replace("%s", targetFrameRate);
-        
+
         if (!targetFrameRate) {
             frameRateLabelContent = Strings.text.frameRateDetectionFailure;
             targetFrameRate = 60;
@@ -635,7 +639,7 @@ class DebugBenchmarkController extends BenchmarkController {
             startButton.disabled = true;
             return;
         }
-        
+
         startButton.disabled = (!suitesManager.isAtLeastOneTestSelected()) || !this.frameRateDetectionComplete;
     }
 

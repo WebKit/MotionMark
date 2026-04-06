@@ -27,7 +27,7 @@ class BenchmarkRunnerClient {
     iterationCount = 1;
     options = null;
     results = null;
-    
+
     constructor(suites, options)
     {
         this.options = options;
@@ -134,7 +134,7 @@ class BenchmarkController {
 
         await this.detectFrameRate();
     }
-    
+
     async detectFrameRate(progressElement = undefined)
     {
         let targetFrameRate;
@@ -145,7 +145,7 @@ class BenchmarkController {
         }
         this.frameRateDeterminationComplete(targetFrameRate);
     }
-    
+
     updateUIStrings()
     {
         document.title = Strings.text.title.replace("%s", Strings.version);
@@ -153,7 +153,7 @@ class BenchmarkController {
             e.textContent = Strings.version;
         });
     }
-    
+
     frameRateDeterminationComplete(frameRate)
     {
         const frameRateLabel = document.getElementById("frame-rate-label");
@@ -164,7 +164,7 @@ class BenchmarkController {
             frameRate = 60;
         } else if (frameRate != 60)
             labelContent = Strings.text.non60FrameRate.replace("%s", frameRate);
-        else 
+        else
             labelContent = Strings.text.usingFrameRate.replace("%s", frameRate);
 
         frameRateLabel.innerHTML = labelContent;
@@ -289,7 +289,7 @@ class BenchmarkController {
 
         sectionsManager.showSection("test-container");
     }
-    
+
     ensureRunnerClient(suites, options)
     {
         this.runnerClient = new benchmarkRunnerClientClass(suites, options);
@@ -349,6 +349,9 @@ class BenchmarkController {
         case 106: // j
             benchmarkController.showDebugInfo();
             break;
+        case 100: // d
+            benchmarkController.downloadDebugInfo();
+            break;
         case 115: // s
             benchmarkController.selectResults(event.target);
             break;
@@ -398,11 +401,41 @@ class BenchmarkController {
             selection.addRange(range);
         };
 
-        var button = Utilities.createElement("button", {}, container);
-        button.textContent = "Done";
-        button.onclick = () => {
+        const footer = Utilities.createElement("footer", {}, container);
+        
+        const doneButton = Utilities.createElement("button", {}, footer);
+        doneButton.textContent = "Done";
+        doneButton.onclick = () => {
             this.hideDebugInfo();
         };
+
+        const downloadButton = Utilities.createElement("button", {}, footer);
+        downloadButton.textContent = "Download";
+        downloadButton.onclick = () => {
+            this.downloadDebugInfo();
+        };
+    }
+
+    downloadDebugInfo()
+    {
+        const output = {
+            version: this.runnerClient.scoreCalculator.version,
+            options: this.runnerClient.scoreCalculator.options,
+            data: this.runnerClient.scoreCalculator.data
+        };
+        const json = JSON.stringify(output, (key, value) => {
+            if (typeof value === 'number')
+                return Utilities.toFixedNumber(value, 3);
+            return value;
+        }, 1);
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'motionmark-results.json';
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     selectResults(target)
