@@ -59,7 +59,12 @@
                     <div id="suites">
                         <h2>Suites:</h2>
                         <ul class="tree"></ul>
-                        <div><span id="drop-target">Drop results here</span></div>
+                        <div>
+                            <span id="drop-target">Drop results here</span>
+                            <button id="load-results-button" onclick="benchmarkController.loadResults()">Load results…</button>
+                            <input type="file" id="load-results-input" style="display: none;"
+                                onchange="benchmarkController.handleResultsFile(this)">
+                        </div>
                     </div>
                     <div id="options">
                         <h2>Options:</h2>
@@ -104,6 +109,16 @@
                                     <label>Target frame rate: <input type="number" id="frame-rate" value="60"> FPS</label>
                                 </li>
                                 <li>
+                                    <label>Score profile:
+                                        <select name="score-profile" id="score-profile">
+                                            <option value="slope">Slope</option>
+                                            <option value="flat">Flat</option>
+                                            <option value="window">Windowed</option>
+                                            <option value="window-strict">Windowed Strict</option>
+                                        </select>
+                                    </label>
+                                    </li>
+                                    <li>
                                     <h3>Time measurement method:</h3>
                                     <ul>
                                         <li><label><input name="time-measurement" type="radio" value="performance" checked> <code>performance.now()</code> (if available)</label></li>
@@ -147,6 +162,16 @@
                 </div>
                 <div>version <span class="version"></span></div>
                 <p class="score" onclick="benchmarkController.showDebugInfo()"></p>
+                <div class="score-profile">
+                    <label>Score profile:
+                        <select id="results-score-profile" onchange="benchmarkController.changeScoreProfile(this.value)">
+                            <option value="slope">Slope</option>
+                            <option value="flat">Flat</option>
+                            <option value="window">Windowed</option>
+                            <option value="window-strict">Windowed Strict</option>
+                        </select>
+                    </label>
+                </div>
                 <p class="confidence"></p>
                 <div id="results-tables" class="table-container">
                     <div>
@@ -169,6 +194,16 @@
                     <button onclick="benchmarkController.showResults()">&lt; Results</button>
                     <h1>Graph:</h1>
                     <p class="score">&nbsp;</p>
+                    <div class="score-profile">
+                        <label>Score profile:
+                            <select id="graph-score-profile" onchange="benchmarkController.changeScoreProfile(this.value)">
+                                <option value="slope">Slope</option>
+                                <option value="flat">Flat</option>
+                                <option value="window">Windowed</option>
+                                <option value="window-strict">Windowed Strict</option>
+                            </select>
+                        </label>
+                    </div>
                     <p class="confidence">&nbsp;</p>
                 </header>
                 <nav>
