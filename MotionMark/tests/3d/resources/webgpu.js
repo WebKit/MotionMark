@@ -23,44 +23,53 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-const whlslShaders = `
+const wgslShaders = `
 struct VertexOutput {
-  float4 position : SV_Position;
-  float4 color : attribute(1);
+    @builtin(position)position : vec4f,
+    @location(0) color : vec4f,
+};
+
+struct Uniforms {
+    scale: f32,
+    offsetX: f32,
+    offsetY: f32,
+    scalar: f32,
+    scalarOffset: f32,
+};
+
+@group(0) @binding(0) var<uniform> timeUniform : f32;
+@group(1) @binding(0) var<uniform> uniforms : Uniforms;
+
+@vertex fn vertexMain(@location(0) position : vec4f,
+                      @location(1) color : vec4f) -> VertexOutput {
+    let scale = uniforms.scale;
+    let offsetX = uniforms.offsetX;
+    let offsetY = uniforms.offsetY;
+    let scalar = uniforms.scalar;
+    let scalarOffset = uniforms.scalarOffset;
+    let time = timeUniform;
+
+    var fade = (scalarOffset + time * scalar / 10.0) % 1.0;
+    if (fade < 0.5) {
+        fade = fade * 2.0;
+    } else {
+        fade = (1.0 - fade) * 2.0;
+    }
+    var xpos = position.x * scale;
+    var ypos = position.y * scale;
+    let angle = 3.14159 * 2.0 * fade;
+    let xrot = xpos * cos(angle) - ypos * sin(angle);
+    let yrot = xpos * sin(angle) + ypos * cos(angle);
+    xpos = xrot + offsetX;
+    ypos = yrot + offsetY;
+
+    return VertexOutput(
+        vec4f(xpos, ypos, 0.0, 1.0),
+        vec4f(fade, 1.0 - fade, 0.0, 1.0) + color,
+    );
 }
 
-vertex VertexOutput vertexMain(float4 position : attribute(0),
-                                float4 color : attribute(1),
-                                constant float[] timeUniform : register(b0, space0),
-                                constant float[] uniforms : register(b0, space1)) {
-  float scale = uniforms[0];
-  float offsetX = uniforms[1];
-  float offsetY = uniforms[2];
-  float scalar = uniforms[3];
-  float scalarOffset = uniforms[4];
-  float time = timeUniform[0];
-
-  float fade = fmod(scalarOffset + time * scalar / 10.0, 1.0);
-  if (fade < 0.5) {
-      fade = fade * 2.0;
-  } else {
-      fade = (1.0 - fade) * 2.0;
-  }
-  float xpos = position.x * scale;
-  float ypos = position.y * scale;
-  float angle = 3.14159 * 2.0 * fade;
-  float xrot = xpos * cos(angle) - ypos * sin(angle);
-  float yrot = xpos * sin(angle) + ypos * cos(angle);
-  xpos = xrot + offsetX;
-  ypos = yrot + offsetY;
-
-  VertexOutput out;
-  out.position = float4(xpos, ypos, 0.0, 1.0);
-  out.color = float4(fade, 1.0 - fade, 0.0, 1.0) + color;
-  return out;
-}
-
-fragment float4 fragmentMain(float4 inColor : attribute(1)) : SV_Target 0 {
+@fragment fn fragmentMain(@location(0) inColor : vec4f) -> @location(0) vec4f {
     return inColor;
 }
 `;
@@ -77,98 +86,68 @@ class WebGPUStage extends Stage {
 
         this._numTriangles = 0;
 
-        const gpuContext = this.element.getContext('gpu');
+        this._gpuContext = this.element.getContext('webgpu');
         const adapter = await navigator.gpu.requestAdapter({ powerPreference: "low-power" });
         const device = await adapter.requestDevice();
         
         this._device = device;
 
-        const swapChainFormat = "bgra8unorm";
-        this._swapChain = gpuContext.configureSwapChain({
+        const swapChainFormat = navigator.gpu.getPreferredCanvasFormat();
+        this._gpuContext.configure({
             device: device,
             format: swapChainFormat,
             usage: GPUTextureUsage.OUTPUT_ATTACHMENT
         });
 
-        this._timeBindGroupLayout = device.createBindGroupLayout({
-            bindings: [
-                { binding: 0, visibility: GPUShaderStageBit.VERTEX, type: "uniform-buffer" },
-            ],
-        });
-
-        this._bindGroupLayout = device.createBindGroupLayout({
-            bindings: [
-                { binding: 0, visibility: GPUShaderStageBit.VERTEX, type: "uniform-buffer" },
-            ],
-        });
-
         const vec4Size = 4 * Float32Array.BYTES_PER_ELEMENT;
 
-        const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [this._timeBindGroupLayout, this._bindGroupLayout] });
-        const shaderModule = device.createShaderModule({ code: whlslShaders, isWHLSL: true });
+        const module = device.createShaderModule({ code: wgslShaders });
 
         const pipelineDesc = {
-            layout: pipelineLayout,
-            vertexStage: {
-                module: shaderModule,
-                entryPoint: "vertexMain",
-            },
-            fragmentStage: {
-                module: shaderModule,
-                entryPoint: "fragmentMain"
-            },
-
-            primitiveTopology: "triangle-list",
-
-            vertexInput: {
-                indexFormat: "uint32",
-                vertexBuffers: [{
+            layout: 'auto',
+            vertex: {
+                module,
+                buffers: [{
                     // vertex buffer
-                    stride: 2 * vec4Size,
-                    stepMode: "vertex",
-                    attributeSet: [{
+                    arrayStride: 2 * vec4Size,
+                    attributes: [{
                         // vertex positions
                         shaderLocation: 0,
                         offset: 0,
-                        format: "float4"
+                        format: "float32x4"
                     }, {
                         // vertex colors
                         shaderLocation: 1,
                         offset: vec4Size,
-                        format: "float4"
+                        format: "float32x4"
                     }],
                 }],
             },
-
-            rasterizationState: {
-                frontFace: 'ccw',
-                cullMode: 'none',
+            fragment: {
+                module,
+                targets: [{ format: swapChainFormat }],
             },
-
-            colorStates: [{
-                format: swapChainFormat,
-                alphaBlend: {},
-                colorBlend: {},
-            }],
         };
 
         this._pipeline = device.createRenderPipeline(pipelineDesc);
 
-        const [vertexBuffer, vertexArrayBuffer] = device.createBufferMapped({
+        const vertexBuffer = device.createBuffer({
+            label: "vertex buffer",
             size: 2 * 3 * vec4Size,
-            usage: GPUBufferUsage.VERTEX
+            usage: GPUBufferUsage.VERTEX,
+            mappedAtCreation: true,
         });
+        const vertexArrayBuffer = vertexBuffer.getMappedRange();
         const vertexWriteBuffer = new Float32Array(vertexArrayBuffer);
         vertexWriteBuffer.set([
-        // position data  /**/ color data
-        0, 0.1, 0, 1,     /**/ 1, 0, 0, 1,
-        -0.1, -0.1, 0, 1, /**/ 0, 1, 0, 1,
-        0.1, -0.1, 0, 1,  /**/ 0, 0, 1, 1,
+            // position data  /**/ color data
+            0, 0.1, 0, 1,     /**/ 1, 0, 0, 1,
+            -0.1, -0.1, 0, 1, /**/ 0, 1, 0, 1,
+            0.1, -0.1, 0, 1,  /**/ 0, 0, 1, 1,
         ]);
         vertexBuffer.unmap();
 
         this._vertexBuffer = vertexBuffer;
-        this._timeMappedBuffers = [];
 
         this._resetIfNecessary();
     }
@@ -187,15 +166,23 @@ class WebGPUStage extends Stage {
 
         const device = this._device;
 
+        this._timeBuffer = device.createBuffer({
+            label: "time buffer",
+            size: Float32Array.BYTES_PER_ELEMENT,
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+        });
+
         // Minimum buffer offset alignment is 256 bytes.
         const uniformBytes = 5 * Float32Array.BYTES_PER_ELEMENT;
         const alignedUniformBytes = Math.ceil(uniformBytes / 256) * 256;
         const alignedUniformFloats = alignedUniformBytes / Float32Array.BYTES_PER_ELEMENT;
 
-        const [uniformBuffer, uniformArrayBuffer] = device.createBufferMapped({
+        const uniformBuffer = device.createBuffer({
             size: numTriangles * alignedUniformBytes + Float32Array.BYTES_PER_ELEMENT,
-            usage: GPUBufferUsage.TRANSFER_DST | GPUBufferUsage.UNIFORM
+            usage: GPUBufferUsage.UNIFORM,
+            mappedAtCreation: true,
         });
+        const uniformArrayBuffer = uniformBuffer.getMappedRange();
         const uniformWriteArray = new Float32Array(uniformArrayBuffer);
 
         this._bindGroups = new Array(numTriangles);
@@ -207,29 +194,27 @@ class WebGPUStage extends Stage {
             uniformWriteArray[alignedUniformFloats * i + 4] = Stage.random(0, 10);      // scalarOffset
 
             this._bindGroups[i] = device.createBindGroup({
-              layout: this._bindGroupLayout,
-              bindings: [{
-                binding: 0,
-                resource: {
-                  buffer: uniformBuffer,
-                  offset: i * alignedUniformBytes,
-                  size: 6 * Float32Array.BYTES_PER_ELEMENT,
-                }
-              }]
+                layout: this._pipeline.getBindGroupLayout(1),
+                entries: [{
+                    binding: 0,
+                    resource: {
+                        buffer: uniformBuffer,
+                        offset: i * alignedUniformBytes,
+                        size: 6 * Float32Array.BYTES_PER_ELEMENT,
+                    }
+                }]
             });
         }
 
         uniformBuffer.unmap();
 
-        this._timeOffset = numTriangles * alignedUniformBytes;
         this._timeBindGroup = device.createBindGroup({
-        layout: this._timeBindGroupLayout,
-        bindings: [{
-            binding: 0,
-            resource: {
-                buffer: uniformBuffer,
-                offset: this._timeOffset,
-                size: Float32Array.BYTES_PER_ELEMENT,
+            layout: this._pipeline.getBindGroupLayout(0),
+            entries: [{
+                binding: 0,
+                resource: {
+                    buffer: this._timeBuffer,
+                    size: Float32Array.BYTES_PER_ELEMENT,
                 }
             }]
         });
@@ -258,50 +243,30 @@ class WebGPUStage extends Stage {
         const elapsedTimeData = new Float32Array([Stage.dateCounterValue(1000) - this._startTime]);
 
         // Update time uniform
-        let mappedBuffer;
-
-        if (this._timeMappedBuffers.length === 0) {
-            mappedBuffer = device.createBufferMapped({
-                size: Float32Array.BYTES_PER_ELEMENT,
-                usage: GPUBufferUsage.TRANSFER_SRC | GPUBufferUsage.MAP_WRITE
-            });
-        } else
-            mappedBuffer = this._timeMappedBuffers.shift();
-
-        const [timeStagingBuffer, timeStagingArrayBuffer] = mappedBuffer;
-
-        const writeArray = new Float32Array(timeStagingArrayBuffer);
-        writeArray.set(elapsedTimeData);
-        timeStagingBuffer.unmap();
+        this._device.queue.writeBuffer(this._timeBuffer, 0, elapsedTimeData);
 
         const commandEncoder = device.createCommandEncoder({});
-        commandEncoder.copyBufferToBuffer(timeStagingBuffer, 0, this._uniformBuffer, this._timeOffset, elapsedTimeData.byteLength);
 
         const renderPassDescriptor = {
             colorAttachments: [{
                 loadOp: "clear",
                 storeOp: "store",
-                clearColor: { r: 1, g: 1, b: 1, a: 1.0 },
-                attachment: this._swapChain.getCurrentTexture().createDefaultView(),
+                clearValue: [1, 1, 1, 1],
+                view: this._gpuContext.getCurrentTexture(),
             }],
         };
 
         const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
         passEncoder.setPipeline(this._pipeline);
-        passEncoder.setVertexBuffers(0, [this._vertexBuffer], [0]);
+        passEncoder.setVertexBuffer(0, this._vertexBuffer);
         passEncoder.setBindGroup(0, this._timeBindGroup);
         for (let i = 0; i < this._numTriangles; ++i) {
             passEncoder.setBindGroup(1, this._bindGroups[i]);
             passEncoder.draw(3, 1, 0, 0);
         }
-        passEncoder.endPass();
+        passEncoder.end();
 
-        device.getQueue().submit([commandEncoder.finish()]);
-
-        timeStagingBuffer.mapWriteAsync().then(arrayBuffer => {
-            mappedBuffer[1] = arrayBuffer;
-            this._timeMappedBuffers.push(mappedBuffer);
-        });
+        device.queue.submit([commandEncoder.finish()]);
     }
 
     complexity()
