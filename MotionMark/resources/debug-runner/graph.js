@@ -633,6 +633,14 @@ class GraphController {
 
     _showOrHideNodes(isShown, selector)
     {
+        if (this.isComparisonMode) {
+            if (selector === "#complexity") selector = "[id^=complexity-]";
+            else if (selector === "#rawFPS") selector = "[id^=rawFPS-]";
+            else if (selector === "#filteredFPS") selector = "[id^=filteredFPS-]";
+            else if (selector === "#mutFPS") selector = "[id^=mutFPS-]";
+            else if (selector === "#regressions") selector = "[id^=regressions]";
+        }
+
         var nodeList = document.querySelectorAll(selector);
         if (isShown) {
             for (var i = 0; i < nodeList.length; ++i)
@@ -666,6 +674,11 @@ class GraphController {
 
     onGraphTypeChanged()
     {
+        if (this.isComparisonMode) {
+            this.onComparisonGraphTypeChanged();
+            return;
+        }
+
         var form = document.forms["graph-type"].elements;
         var testResult = document.getElementById("test-graph-data")._testResult;
         var isTimeSelected = form["graph-type"].value == "time";
@@ -696,7 +709,8 @@ class GraphController {
             mean = mean.join("");
         } else {
             var complexityRegression = testResult[Strings.json.complexity];
-            document.getElementById("complexity-regression-aggregate-raw").textContent = complexityRegression.complexity.toFixed(2) + ", ±" + complexityRegression.stdev.toFixed(2) + "ms";
+            const agg = document.getElementById("complexity-regression-aggregate-raw");
+            if (agg) agg.textContent = complexityRegression.complexity.toFixed(2) + ", ±" + complexityRegression.stdev.toFixed(2) + "ms";
             var bootstrap = complexityRegression[Strings.json.bootstrap];
             if (bootstrap) {
                 score = bootstrap.median.toFixed(2);
@@ -712,4 +726,854 @@ class GraphController {
 
         sectionsManager.setSectionScore("test-graph", score, mean, this._targetFrameRate);
     }
+
+    setupComparisonNav() {
+        const nav = document.querySelector("#test-graph nav");
+        if (!nav || nav.classList.contains("comparison-nav-setup"))
+            return;
+            
+        this._originalNavHTML = nav.innerHTML;
+        
+        const targetClasses = ["time", "complexity", "rawFPS", "filteredFPS", "mutFPS"];
+        
+        targetClasses.forEach(className => {
+            const originalSpan = document.querySelector(`#test-graph nav .${className}`);
+            if (!originalSpan) return;
+            
+            originalSpan.style.display = "none";
+            
+            const parent = originalSpan.parentNode;
+            
+            const spanA = document.createElement("span");
+            spanA.className = `${className}-a comp-teal`;
+            spanA.style.fontWeight = "bold";
+            
+            const separator = document.createElement("span");
+            separator.className = `${className}-sep`;
+            separator.textContent = className === "time" ? " / " : " vs ";
+            separator.style.opacity = "0.5";
+            
+            const spanB = document.createElement("span");
+            spanB.className = `${className}-b comp-orange`;
+            spanB.style.fontWeight = "bold";
+            
+            parent.appendChild(spanA);
+            parent.appendChild(separator);
+            parent.appendChild(spanB);
+        });
+        
+        const originalAgg = document.getElementById("complexity-regression-aggregate-raw");
+        if (originalAgg) {
+            originalAgg.style.display = "none";
+            
+            const parent = originalAgg.parentNode;
+            
+            const divContainer = document.createElement("div");
+            divContainer.id = "complexity-regression-aggregate-raw-comp";
+            divContainer.className = "comp-nav-legend-col";
+            
+            const divA = document.createElement("div");
+            divA.className = "comp-teal";
+            divA.style.fontWeight = "bold";
+            divA.textContent = "A: ";
+            const spanA = document.createElement("span");
+            spanA.id = "complexity-regression-aggregate-raw-a";
+            divA.appendChild(spanA);
+            
+            const divB = document.createElement("div");
+            divB.className = "comp-orange";
+            divB.style.fontWeight = "bold";
+            divB.textContent = "B: ";
+            const spanB = document.createElement("span");
+            spanB.id = "complexity-regression-aggregate-raw-b";
+            divB.appendChild(spanB);
+            
+            divContainer.appendChild(divA);
+            divContainer.appendChild(divB);
+            parent.appendChild(divContainer);
+        }
+        
+        nav.classList.add("comparison-nav-setup");
+    }
+
+    restoreOriginalNav() {
+        const nav = document.querySelector("#test-graph nav");
+        if (nav && nav.classList.contains("comparison-nav-setup")) {
+            const targetClasses = ["time", "complexity", "rawFPS", "filteredFPS", "mutFPS"];
+            
+            targetClasses.forEach(className => {
+                const originalSpan = document.querySelector(`#test-graph nav .${className}`);
+                if (originalSpan) {
+                    originalSpan.style.display = "inline";
+                }
+                
+                const spanA = document.querySelector(`#test-graph nav .${className}-a`);
+                if (spanA) spanA.parentNode.removeChild(spanA);
+                
+                const sep = document.querySelector(`#test-graph nav .${className}-sep`);
+                if (sep) sep.parentNode.removeChild(sep);
+                
+                const spanB = document.querySelector(`#test-graph nav .${className}-b`);
+                if (spanB) spanB.parentNode.removeChild(spanB);
+            });
+            
+            const originalAgg = document.getElementById("complexity-regression-aggregate-raw");
+            if (originalAgg) {
+                originalAgg.style.display = "inline";
+            }
+            
+            const divContainer = document.getElementById("complexity-regression-aggregate-raw-comp");
+            if (divContainer) {
+                divContainer.parentNode.removeChild(divContainer);
+            }
+            
+            nav.classList.remove("comparison-nav-setup");
+        }
+    }
+
+    updateComparisonGraphData(testName, testResultA, testResultB, testDataA, testDataB, optionsA, optionsB)
+    {
+        this.isComparisonMode = true;
+        this._comparisonGraphParams = {
+            testName: testName,
+            testResultA: testResultA,
+            testResultB: testResultB,
+            testDataA: testDataA,
+            testDataB: testDataB,
+            optionsA: optionsA,
+            optionsB: optionsB
+        };
+        
+        var element = document.getElementById("test-graph-data");
+        if (element) {
+            element.innerHTML = "";
+            element._testResult = testResultB;
+            element._options = optionsB;
+        }
+        
+        var margins = new Insets(30, 30, 50, 40);
+        var size = GeometryHelpers.elementClientSize(element);
+
+        var samplesWithPropertiesA = null;
+        if (testDataA) {
+            samplesWithPropertiesA = {};
+            [Strings.json.controller, Strings.json.complexity].forEach(function(seriesName) {
+                var series = testDataA[Strings.json.samples][seriesName];
+                samplesWithPropertiesA[seriesName] = series.toArray();
+            });
+        }
+
+        var samplesWithPropertiesB = null;
+        if (testDataB) {
+            samplesWithPropertiesB = {};
+            [Strings.json.controller, Strings.json.complexity].forEach(function(seriesName) {
+                var series = testDataB[Strings.json.samples][seriesName];
+                samplesWithPropertiesB[seriesName] = series.toArray();
+            });
+        }
+
+        this._targetFrameRate = optionsB ? optionsB["frame-rate"] : 60;
+
+        this.setupComparisonNav();
+
+        // Create comparative overlaid time graph
+        this._createComparisonTimeGraph(
+            testResultA,
+            testResultB,
+            samplesWithPropertiesA ? samplesWithPropertiesA[Strings.json.controller] : null,
+            samplesWithPropertiesB ? samplesWithPropertiesB[Strings.json.controller] : null,
+            testDataA ? testDataA[Strings.json.marks] : null,
+            testDataB ? testDataB[Strings.json.marks] : null,
+            testDataA ? testDataA[Strings.json.controller] : null,
+            testDataB ? testDataB[Strings.json.controller] : null,
+            optionsA,
+            optionsB,
+            margins,
+            size
+        );
+        this.onTimeGraphOptionsChanged();
+
+        // Create comparative overlaid complexity graph
+        this._showOrHideNodes(true, "form[name=graph-type]");
+        document.forms["graph-type"].elements["type"] = "complexity";
+        
+        this._createComparisonComplexityGraph(
+            testResultA,
+            testResultB,
+            testDataA ? testDataA[Strings.json.controller] : null,
+            testDataB ? testDataB[Strings.json.controller] : null,
+            samplesWithPropertiesA,
+            samplesWithPropertiesB,
+            optionsA,
+            optionsB,
+            margins,
+            size
+        );
+        this.onComplexityGraphOptionsChanged();
+
+        this.onGraphTypeChanged();
+    }
+
+    onComparisonGraphTypeChanged()
+    {
+        var form = document.forms["graph-type"].elements;
+        var isTimeSelected = form["graph-type"].value == "time";
+
+        this._showOrHideNodes(isTimeSelected, "#time-graph");
+        this._showOrHideNodes(isTimeSelected, "form[name=time-graph-options]");
+        this._showOrHideNodes(!isTimeSelected, "#complexity-graph");
+        this._showOrHideNodes(!isTimeSelected, "form[name=complexity-graph-options]");
+
+        const testResultA = this._comparisonGraphParams.testResultA;
+        const testResultB = this._comparisonGraphParams.testResultB;
+
+        let scoreA = 0, scoreB = 0;
+        let labelA = "", labelB = "";
+
+        if (isTimeSelected) {
+            if (testResultA) {
+                scoreA = testResultA[Strings.json.score];
+                labelA = `A: ${scoreA.toFixed(2)}`;
+            }
+            if (testResultB) {
+                scoreB = testResultB[Strings.json.score];
+                labelB = `B: ${scoreB.toFixed(2)}`;
+            }
+        } else {
+            // Complexity graph aggregates raw data displays
+            if (testResultA) {
+                const complexityRegressionA = testResultA[Strings.json.complexity];
+                const aggA = document.getElementById("complexity-regression-aggregate-raw-a");
+                if (aggA) aggA.textContent = complexityRegressionA.complexity.toFixed(2) + ", ±" + complexityRegressionA.stdev.toFixed(2) + "ms";
+                
+                const bootstrapA = complexityRegressionA[Strings.json.bootstrap];
+                if (bootstrapA) {
+                    scoreA = bootstrapA.median;
+                    labelA = `A: ${scoreA.toFixed(2)} [${bootstrapA.confidenceLow.toFixed(1)} - ${bootstrapA.confidenceHigh.toFixed(1)}]`;
+                } else {
+                    scoreA = testResultA[Strings.json.score];
+                    labelA = `A: ${scoreA.toFixed(2)}`;
+                }
+            }
+            if (testResultB) {
+                const complexityRegressionB = testResultB[Strings.json.complexity];
+                const aggB = document.getElementById("complexity-regression-aggregate-raw-b");
+                if (aggB) aggB.textContent = complexityRegressionB.complexity.toFixed(2) + ", ±" + complexityRegressionB.stdev.toFixed(2) + "ms";
+
+                const bootstrapB = complexityRegressionB[Strings.json.bootstrap];
+                if (bootstrapB) {
+                    scoreB = bootstrapB.median;
+                    labelB = `B: ${scoreB.toFixed(2)} [${bootstrapB.confidenceLow.toFixed(1)} - ${bootstrapB.confidenceHigh.toFixed(1)}]`;
+                } else {
+                    scoreB = testResultB[Strings.json.score];
+                    labelB = `B: ${scoreB.toFixed(2)}`;
+                }
+            }
+        }
+
+        let changeStr = "";
+        if (scoreA && scoreB) {
+            const diff = scoreB - scoreA;
+            const pct = (diff / scoreA) * 100;
+            changeStr = `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+        }
+
+        const scoreElement = document.querySelector("#test-graph .score");
+        if (scoreElement) {
+            scoreElement.replaceChildren();
+            if (changeStr) {
+                const pctVal = parseFloat(changeStr);
+                const className = pctVal >= 0 ? "comp-badge-better inline-badge" : "comp-badge-worse inline-badge";
+                const badge = document.createElement("span");
+                badge.className = className;
+                badge.textContent = changeStr;
+                scoreElement.appendChild(badge);
+            }
+        }
+
+        const confidenceElement = document.querySelector("#test-graph .confidence");
+        if (confidenceElement) {
+            confidenceElement.replaceChildren();
+            
+            const createTextSpan = (text, className) => {
+                const span = document.createElement("span");
+                span.className = className;
+                span.textContent = text;
+                return span;
+            };
+            
+            const sep = document.createElement("span");
+            sep.className = "separator";
+            sep.textContent = " | ";
+            
+            if (labelA) confidenceElement.appendChild(createTextSpan(labelA, "comp-teal"));
+            confidenceElement.appendChild(sep);
+            if (labelB) confidenceElement.appendChild(createTextSpan(labelB, "comp-orange"));
+        }
+    }
+
+    _createComparisonTimeGraph(resultA, resultB, samplesA, samplesB, marksA, marksB, regressionsA, regressionsB, optionsA, optionsB, margins, size)
+    {
+        const axisWidth = size.width - margins.left - margins.right;
+        const axisHeight = size.height - margins.top - margins.bottom;
+
+        var svg = d3.select("#test-graph-data").append("svg")
+            .attr("id", "time-graph")
+            .attr("width", size.width)
+            .attr("height", size.height)
+            .append("g")
+                .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+
+        const timeMin = Math.min(
+            samplesA ? d3.min(samplesA, s => s.time) : 0,
+            samplesB ? d3.min(samplesB, s => s.time) : 0,
+            0
+        );
+        const timeMax = Math.max(
+            samplesA ? d3.max(samplesA, s => s.time) : 0,
+            samplesB ? d3.max(samplesB, s => s.time) : 0
+        );
+
+        var x = d3.scale.linear()
+                .range([0, axisWidth])
+                .domain([timeMin, timeMax]);
+
+        let complexityMax = 0;
+        if (samplesA) {
+            complexityMax = Math.max(complexityMax, d3.max(samplesA, s => s.time > 0 ? s.complexity : 0));
+        }
+        if (samplesB) {
+            complexityMax = Math.max(complexityMax, d3.max(samplesB, s => s.time > 0 ? s.complexity : 0));
+        }
+        complexityMax *= 1.2;
+
+        const graphTop = 10;
+        var yLeft = d3.scale.linear()
+                .range([axisHeight, graphTop])
+                .domain([0, complexityMax]);
+
+        const targetFPS_A = optionsA ? optionsA["frame-rate"] : 60;
+        const targetFPS_B = optionsB ? optionsB["frame-rate"] : 60;
+
+        const minFrameRate = Math.min(this._minFrameRate(optionsA), this._minFrameRate(optionsB));
+        const maxFrameRate = Math.max(this._maxFrameRate(optionsA), this._maxFrameRate(optionsB));
+
+        const yRightMin = msPerSecond / minFrameRate;
+        const yRightMax = msPerSecond / maxFrameRate;
+
+        var yRight = d3.scale.linear()
+                .range([axisHeight, graphTop])
+                .domain([yRightMin, yRightMax]);
+
+        var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom")
+                .tickFormat(function(d) { return (d / msPerSecond).toFixed(0); });
+        var yAxisLeft = d3.svg.axis()
+                .scale(yLeft)
+                .orient("left");
+
+        var yAxisRight = d3.svg.axis()
+                .scale(yRight)
+                .tickValues(this._tickValuesForFrameRate(this._targetFrameRate, minFrameRate, maxFrameRate))
+                .tickFormat(function(d) { return (msPerSecond / d).toFixed(0); })
+                .orient("right");
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("fill", "rgb(235, 235, 235)")
+            .attr("transform", "translate(0," + axisHeight + ")")
+            .call(xAxis)
+            .append("text")
+                .attr("class", "label")
+                .attr("x", axisWidth)
+                .attr("y", -6)
+                .attr("fill", "rgb(235, 235, 235)")
+                .style("text-anchor", "end")
+                .text("time");
+
+        svg.append("g")
+            .attr("class", "yLeft axis")
+            .attr("fill", "#7ADD49")
+            .call(yAxisLeft)
+            .append("text")
+                .attr("class", "label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("fill", "#7ADD49")
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text(Strings.text.complexity);
+
+        svg.append("g")
+            .attr("class", "yRight axis")
+            .attr("fill", "#FA4925")
+            .attr("transform", "translate(" + axisWidth + ", 0)")
+            .call(yAxisRight)
+            .append("text")
+                .attr("class", "label")
+                .attr("x", 9)
+                .attr("y", -20)
+                .attr("fill", "#FA4925")
+                .attr("dy", ".71em")
+                .style("text-anchor", "start")
+                .text(Strings.text.frameRate);
+
+        var yMin = yRight(yAxisRight.scale().domain()[0]);
+        var yMax = yRight(yAxisRight.scale().domain()[1]);
+        const drawMarks = marksB || marksA;
+        if (drawMarks) {
+            for (var markName in drawMarks) {
+                var mark = drawMarks[markName];
+                var xLocation = x(mark.time);
+
+                var markerGroup = svg.append("g")
+                    .attr("class", "marker")
+                    .attr("transform", "translate(" + xLocation + ", 0)");
+                markerGroup.append("text")
+                    .attr("transform", "translate(10, " + (yMin - 10) + ") rotate(-90)")
+                    .style("text-anchor", "start")
+                    .text(markName);
+                markerGroup.append("line")
+                    .attr("x1", 0)
+                    .attr("x2", 0)
+                    .attr("y1", yMin)
+                    .attr("y2", yMax);
+            }
+        }
+
+        if (resultA && Strings.json.controller in resultA) {
+            var compA = resultA[Strings.json.controller];
+            var regA = svg.append("g").attr("class", "complexity mean comp-run-a");
+            this._addRegressionLine(regA, x, yLeft, [[samplesA[0].time, compA.average], [samplesA[samplesA.length - 1].time, compA.average]], compA.stdev);
+        }
+        if (resultB && Strings.json.controller in resultB) {
+            var compB = resultB[Strings.json.controller];
+            var regB = svg.append("g").attr("class", "complexity mean comp-run-b");
+            this._addRegressionLine(regB, x, yLeft, [[samplesB[0].time, compB.average], [samplesB[samplesB.length - 1].time, compB.average]], compB.stdev);
+        }
+        
+        if (resultA && Strings.json.frameLength in resultA) {
+            var fpsA = resultA[Strings.json.frameLength];
+            var regFpsA = svg.append("g").attr("class", "fps mean comp-run-a");
+            this._addRegressionLine(regFpsA, x, yRight, [[samplesA[0].time, msPerSecond / fpsA.average], [samplesA[samplesA.length - 1].time, msPerSecond / fpsA.average]], fpsA.stdev);
+        }
+        if (resultB && Strings.json.frameLength in resultB) {
+            var fpsB = resultB[Strings.json.frameLength];
+            var regFpsB = svg.append("g").attr("class", "fps mean comp-run-b");
+            this._addRegressionLine(regFpsB, x, yRight, [[samplesB[0].time, msPerSecond / fpsB.average], [samplesB[samplesB.length - 1].time, msPerSecond / fpsB.average]], fpsB.stdev);
+        }
+
+        if (optionsA && optionsA["controller"] == "adaptive") {
+            svg.append("line")
+                .attr("x1", x(0))
+                .attr("x2", axisWidth)
+                .attr("y1", yRight(msPerSecond / targetFPS_A))
+                .attr("y2", yRight(msPerSecond / targetFPS_A))
+                .attr("class", "target-fps marker comp-run-a");
+        }
+        if (optionsB && optionsB["controller"] == "adaptive") {
+            svg.append("line")
+                .attr("x1", x(0))
+                .attr("x2", axisWidth)
+                .attr("y1", yRight(msPerSecond / targetFPS_B))
+                .attr("y2", yRight(msPerSecond / targetFPS_B))
+                .attr("class", "target-fps marker comp-run-b");
+        }
+
+        var cursorGroup = svg.append("g").attr("class", "cursor");
+        cursorGroup.append("line")
+            .attr("x1", 0)
+            .attr("x2", 0)
+            .attr("y1", yMin)
+            .attr("y2", yMin);
+
+        function addDataset(runId, runClass, samples, animData, mutData, filteredData) {
+            function addCurve(name, data, yCoordinateCallback, pointRadius, omitLine) {
+                const compoundId = `${name}-${runId}`;
+                var svgGroup = svg.append("g")
+                    .attr("id", compoundId)
+                    .attr("class", runClass);
+                if (!omitLine) {
+                    svgGroup.append("path")
+                        .datum(data)
+                        .attr("d", d3.svg.line()
+                            .x(function(d) { return x(d.time); })
+                            .y(yCoordinateCallback));
+                }
+                svgGroup.selectAll("circle")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", function(d) { return x(d.time); })
+                    .attr("cy", yCoordinateCallback)
+                    .attr("r", pointRadius);
+
+                cursorGroup.append("circle")
+                    .attr("class", `${name}-${runId} ${runClass}`)
+                    .attr("r", pointRadius + 2);
+            }
+
+            addCurve("complexity", samples, d => yLeft(d.complexity), 2);
+            addCurve("rawFPS", animData, d => yRight(d.frameLength), 1);
+            addCurve("mutFPS", mutData, d => yRight(d.frameLength), 1);
+            addCurve("filteredFPS", filteredData, d => yRight(d.smoothedFrameLength), 2);
+        }
+
+        if (samplesA) {
+            const animA = samplesA.filter(s => s['frameType'] == Strings.json.animationFrameType);
+            const mutA = samplesA.filter(s => s['frameType'] == Strings.json.mutationFrameType);
+            const filtA = animA.filter(s => "smoothedFrameLength" in s);
+            addDataset("a", "comp-run-a-complexity comp-run-a-rawfps comp-run-a-filteredfps", samplesA, animA, mutA, filtA);
+        }
+        
+        if (samplesB) {
+            const animB = samplesB.filter(s => s['frameType'] == Strings.json.animationFrameType);
+            const mutB = samplesB.filter(s => s['frameType'] == Strings.json.mutationFrameType);
+            const filtB = animB.filter(s => "smoothedFrameLength" in s);
+            addDataset("b", "comp-run-b-complexity comp-run-b-rawfps comp-run-b-filteredfps", samplesB, animB, mutB, filtB);
+        }
+
+        var regressionGroup = svg.append("g").attr("id", "regressions");
+        
+        function drawRegressions(regressionsList, runClass) {
+            if (!regressionsList) return;
+            regressionsList.forEach(function (regression) {
+                var regSub = regressionGroup.append("g").attr("class", runClass);
+                if (!isNaN(regression.segment1[0][1]) && !isNaN(regression.segment1[1][1])) {
+                    regSub.append("line")
+                        .attr("x1", x(regression.segment1[0][0]))
+                        .attr("x2", x(regression.segment1[1][0]))
+                        .attr("y1", yRight(regression.segment1[0][1]))
+                        .attr("y2", yRight(regression.segment1[1][1]));
+                }
+                if (!isNaN(regression.segment2[0][1]) && !isNaN(regression.segment2[1][1])) {
+                    regSub.append("line")
+                        .attr("x1", x(regression.segment2[0][0]))
+                        .attr("x2", x(regression.segment2[1][0]))
+                        .attr("y1", yRight(regression.segment2[0][1]))
+                        .attr("y2", yRight(regression.segment2[1][1]));
+                }
+                regSub.append("circle")
+                    .attr("cx", x(regression.segment2[0][0]))
+                    .attr("cy", yRight(regression.segment2[0][1]))
+                    .attr("r", 3);
+                regSub.append("line")
+                    .attr("class", "association")
+                    .attr("stroke-dasharray", "5, 3")
+                    .attr("x1", x(regression.segment2[0][0]))
+                    .attr("x2", x(regression.segment2[0][0]))
+                    .attr("y1", yRight(regression.segment2[0][1]))
+                    .attr("y2", yLeft(regression.complexity));
+                regSub.append("circle")
+                    .attr("cx", x(regression.segment1[1][0]))
+                    .attr("cy", yLeft(regression.complexity))
+                    .attr("r", 5);
+            });
+        }
+
+        drawRegressions(regressionsA, "comp-run-a");
+        drawRegressions(regressionsB, "comp-run-b");
+
+        var area = svg.append("rect")
+            .attr("fill", "transparent")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", axisWidth)
+            .attr("height", axisHeight);
+
+        var timeBisect = d3.bisector(function(d) { return d.time; }).right;
+        var statsToHighlight = ["complexity", "rawFPS", "filteredFPS", "mutFPS"];
+        
+        area.on("mouseover", function() {
+            document.querySelector("#time-graph .cursor").classList.remove("hidden");
+            document.querySelector("#test-graph nav").classList.remove("hide-data");
+        }).on("mouseout", function() {
+            document.querySelector("#time-graph .cursor").classList.add("hidden");
+            document.querySelector("#test-graph nav").classList.add("hide-data");
+        }).on("mousemove", function() {
+            var form = document.forms["time-graph-options"].elements;
+            var mx_domain = x.invert(d3.mouse(this)[0]);
+            
+            var indexA = samplesA ? Math.min(timeBisect(samplesA, mx_domain), samplesA.length - 1) : null;
+            var indexB = samplesB ? Math.min(timeBisect(samplesB, mx_domain), samplesB.length - 1) : null;
+            
+            var dataA = indexA !== null ? samplesA[indexA] : null;
+            var dataB = indexB !== null ? samplesB[indexB] : null;
+            
+            if (dataA) {
+                document.querySelector("#test-graph nav .time-a").textContent = (dataA.time / msPerSecond).toFixed(3) + "s (" + indexA + ")";
+            }
+            if (dataB) {
+                document.querySelector("#test-graph nav .time-b").textContent = (dataB.time / msPerSecond).toFixed(3) + "s (" + indexB + ")";
+            }
+            
+            var cursor_x = x(mx_domain);
+            var ys = [yRight(yAxisRight.scale().domain()[0]), yRight(yAxisRight.scale().domain()[1])];
+
+            statsToHighlight.forEach(function(name) {
+                var elementA = document.querySelector("#test-graph nav ." + name + "-a");
+                var elementB = document.querySelector("#test-graph nav ." + name + "-b");
+                
+                function fillStats(data, element, targetCircleClass, isA) {
+                    if (!data) {
+                        element.textContent = "";
+                        document.querySelector("#time-graph .cursor ." + targetCircleClass).classList.add("hidden");
+                        return;
+                    }
+                    
+                    var content = "";
+                    var data_y = null;
+                    switch (name) {
+                    case "complexity":
+                        content = data.complexity;
+                        data_y = yLeft(data.complexity);
+                        break;
+                    case "rawFPS":
+                        if (data.frameType == Strings.json.animationFrameType) {
+                            content = (msPerSecond / data.frameLength).toFixed(1);
+                            data_y = yRight(data.frameLength);
+                        }
+                        break;
+                    case "filteredFPS":
+                        if ("smoothedFrameLength" in data) {
+                            content = (msPerSecond / data.smoothedFrameLength).toFixed(1);
+                            data_y = yRight(data.smoothedFrameLength);
+                        }
+                        break;
+                    case "mutFPS":
+                        if (data.frameType == Strings.json.mutationFrameType) {
+                            content = (msPerSecond / data.frameLength).toFixed(1);
+                            data_y = yRight(data.frameLength);
+                        }
+                        break;
+                    }
+                    
+                    element.textContent = content;
+                    
+                    if (form[name].checked && data_y !== null) {
+                        ys.push(data_y);
+                        cursorGroup.select("." + targetCircleClass)
+                            .attr("cx", x(data.time))
+                            .attr("cy", data_y);
+                        document.querySelector("#time-graph .cursor ." + targetCircleClass).classList.remove("hidden");
+                    } else {
+                        document.querySelector("#time-graph .cursor ." + targetCircleClass).classList.add("hidden");
+                    }
+                }
+                
+                fillStats(dataA, elementA, name + "-a", true);
+                fillStats(dataB, elementB, name + "-b", false);
+            });
+
+            cursorGroup.select("line")
+                .attr("x1", cursor_x)
+                .attr("x2", cursor_x)
+                .attr("y1", Math.min.apply(null, ys))
+                .attr("y2", Math.max.apply(null, ys));
+        });
+    }
+
+    _createComparisonComplexityGraph(resultA, resultB, regressionsA, regressionsB, samplesA, samplesB, optionsA, optionsB, margins, size)
+    {
+        var svg = d3.select("#test-graph-data").append("svg")
+            .attr("id", "complexity-graph")
+            .attr("class", "hidden")
+            .attr("width", size.width)
+            .attr("height", size.height)
+            .append("g")
+                .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+
+        var timeSamplesA = samplesA ? samplesA[Strings.json.controller] : null;
+        var timeSamplesB = samplesB ? samplesB[Strings.json.controller] : null;
+
+        let xMin = 100000, xMax = 0;
+        
+        function updateMinMax(samples, regressions) {
+            if (!samples) return;
+            if (regressions) {
+                regressions.forEach(function(regression) {
+                    for (var i = regression.startIndex; i <= regression.endIndex; ++i) {
+                        if (samples[i]) {
+                            xMin = Math.min(xMin, samples[i].complexity);
+                            xMax = Math.max(xMax, samples[i].complexity);
+                        }
+                    }
+                });
+            } else {
+                xMin = Math.min(xMin, d3.min(samples, s => s.complexity));
+                xMax = Math.max(xMax, d3.max(samples, s => s.complexity));
+            }
+        }
+        
+        updateMinMax(timeSamplesA, regressionsA);
+        updateMinMax(timeSamplesB, regressionsB);
+
+        const axisWidth = size.width - margins.left - margins.right;
+        const axisHeight = size.height - margins.top - margins.bottom;
+
+        const minFrameRate = Math.min(this._minFrameRate(optionsA), this._minFrameRate(optionsB));
+        const maxFrameRate = Math.max(this._maxFrameRate(optionsA), this._maxFrameRate(optionsB));
+
+        const yMin = msPerSecond / minFrameRate;
+        const yMax = msPerSecond / maxFrameRate;
+
+        var xScale = d3.scale.linear()
+            .range([0, axisWidth])
+            .domain([xMin, xMax]);
+        var yScale = d3.scale.linear()
+            .range([axisHeight, 0])
+            .domain([yMin, yMax]);
+
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .tickValues(this._tickValuesForFrameRate(optionsB ? optionsB["frame-rate"] : 60, minFrameRate, maxFrameRate))
+            .tickFormat(function(d) { return (msPerSecond / d).toFixed(0); })
+            .orient("left");
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + axisHeight + ")")
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+        if (resultA && Strings.json.controller in resultA) {
+            var meanA = svg.append("g").attr("class", "mean complexity comp-run-a");
+            var resA = resultA[Strings.json.controller];
+            this._addRegressionLine(meanA, xScale, yScale, [[resA.average, yMin], [resA.average, yMax]], resA.stdev, true);
+        }
+        if (resultB && Strings.json.controller in resultB) {
+            var meanB = svg.append("g").attr("class", "mean complexity comp-run-b");
+            var resB = resultB[Strings.json.controller];
+            this._addRegressionLine(meanB, xScale, yScale, [[resB.average, yMin], [resB.average, yMax]], resB.stdev, true);
+        }
+
+        if (resultA && resultA[Strings.json.complexity]) {
+            this._addRegression(resultA[Strings.json.complexity], svg.append("g").attr("class", "regression raw comp-run-a"), xScale, yScale);
+        }
+        if (resultB && resultB[Strings.json.complexity]) {
+            this._addRegression(resultB[Strings.json.complexity], svg.append("g").attr("class", "regression raw comp-run-b"), xScale, yScale);
+        }
+
+        function drawBootstrap(result, runClass) {
+            if (!result) return;
+            var bootstrapResult = result[Strings.json.complexity][Strings.json.bootstrap];
+            if (bootstrapResult) {
+                var histogram = d3.layout.histogram().bins(xScale.ticks(100))(bootstrapResult.data);
+                var yBootstrapScale = d3.scale.linear()
+                    .range([axisHeight/2, 0])
+                    .domain([0, d3.max(histogram, function(d) { return d.y; })]);
+                
+                let group = svg.append("g").attr("class", `bootstrap ${runClass}`);
+                var bar = group.selectAll(".bar")
+                    .data(histogram)
+                    .enter().append("g")
+                        .attr("class", "bar")
+                        .attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yBootstrapScale(d.y) + ")"; });
+                bar.append("rect")
+                    .attr("x", 1)
+                    .attr("y", axisHeight/2)
+                    .attr("width", xScale(histogram[1].x) - xScale(histogram[0].x) - 1)
+                    .attr("height", function(d) { return axisHeight/2 - yBootstrapScale(d.y); });
+                
+                group = group.append("g").attr("class", "median");
+                this._addRegressionLine(group, xScale, yScale, [[bootstrapResult.median, yMin], [bootstrapResult.median, yMax]], [bootstrapResult.confidenceLow, bootstrapResult.confidenceHigh], true);
+                
+                const targetFrameRate = optionsB ? optionsB["frame-rate"] : 60;
+                group.append("circle")
+                    .attr("cx", xScale(bootstrapResult.median))
+                    .attr("cy", yScale(msPerSecond / targetFrameRate))
+                    .attr("r", 5);
+            }
+        }
+
+        drawBootstrap.call(this, resultA, "comp-run-a");
+        drawBootstrap.call(this, resultB, "comp-run-b");
+
+        function drawRawSeries(samples, runClass) {
+            if (!samples) return;
+            let group = svg.append("g")
+                .attr("class", `series raw ${runClass}`)
+                .selectAll("line")
+                    .data(samples[Strings.json.complexity])
+                    .enter();
+
+            group.append("line")
+                .attr("x1", d => xScale(d.complexity) - 3)
+                .attr("x2", d => xScale(d.complexity) + 3)
+                .attr("y1", d => yScale(d.frameLength) - 3)
+                .attr("y2", d => yScale(d.frameLength) + 3)
+                .attr("class", d => d.frameType === "m" ? 'mutation' : 'animation');
+            group.append("line") 
+                .attr("x1", d => xScale(d.complexity) - 3)
+                .attr("x2", d => xScale(d.complexity) + 3)
+                .attr("y1", d => yScale(d.frameLength) + 3)
+                .attr("y2", d => yScale(d.frameLength) - 3)
+                .attr("class", d => d.frameType === "m" ? 'mutation' : 'animation');
+        }
+
+        drawRawSeries(samplesA, "comp-run-a");
+        drawRawSeries(samplesB, "comp-run-b");
+
+        var cursorGroup = svg.append("g").attr("class", "cursor hidden");
+        cursorGroup.append("line")
+            .attr("class", "x")
+            .attr("x1", 0)
+            .attr("x2", 0)
+            .attr("y1", yScale(yAxis.scale().domain()[0]) + 10)
+            .attr("y2", yScale(yAxis.scale().domain()[1]));
+        cursorGroup.append("line")
+            .attr("class", "y")
+            .attr("x1", xScale(xAxis.scale().domain()[0]) - 10)
+            .attr("x2", xScale(xAxis.scale().domain()[1]))
+            .attr("y1", 0)
+            .attr("y2", 0);
+        cursorGroup.append("text")
+            .attr("class", "label x")
+            .attr("x", 0)
+            .attr("y", yScale(yAxis.scale().domain()[0]) + 15)
+            .attr("baseline-shift", "-100%")
+            .attr("text-anchor", "middle");
+        cursorGroup.append("text")
+            .attr("class", "label y")
+            .attr("x", xScale(xAxis.scale().domain()[0]) - 15)
+            .attr("y", 0)
+            .attr("baseline-shift", "-30%")
+            .attr("text-anchor", "end");
+
+        var area = svg.append("rect")
+            .attr("fill", "transparent")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", size.width)
+            .attr("height", axisHeight);
+
+        area.on("mouseover", function() {
+            document.querySelector("#complexity-graph .cursor").classList.remove("hidden");
+        }).on("mouseout", function() {
+            document.querySelector("#complexity-graph .cursor").classList.add("hidden");
+        }).on("mousemove", function() {
+            var location = d3.mouse(this);
+            var location_domain = [xScale.invert(location[0]), yScale.invert(location[1])];
+            cursorGroup.select("line.x")
+                .attr("x1", location[0])
+                .attr("x2", location[0]);
+            cursorGroup.select("text.x")
+                .attr("x", location[0])
+                .text(location_domain[0].toFixed(1));
+            cursorGroup.select("line.y")
+                .attr("y1", location[1])
+                .attr("y2", location[1]);
+            cursorGroup.select("text.y")
+                .attr("y", location[1])
+                .text((msPerSecond / location_domain[1]).toFixed(1));
+        });
+    }
 }
+
