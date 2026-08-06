@@ -168,10 +168,15 @@ label.tree-label {
 
 .tree .link {
     cursor: pointer;
-    color: #999;
     font-style: italic;
     margin-left: 2em;
+    text-decoration: none;
 }
+
+#intro .tree .link {
+    color: #999;
+}
+
 
 @media screen and (max-device-width: 414px),
     screen and (max-device-height: 414px) and (orientation: landscape) {

@@ -356,25 +356,29 @@ window.suitesManager = new class SuitesManager {
         span.appendChild(document.createTextNode(" " + test.name + " "));
 
         testElement.appendChild(document.createTextNode(" "));
-        var link = Utilities.createElement("span", {}, testElement);
+        var link = Utilities.createElement("a", {}, testElement);
         link.classList.add("link");
         link.textContent = "link";
         link.suiteName = Utilities.stripUnwantedCharactersForURL(suiteCheckbox.suite.name);
         link.testName = test.name;
-        link.onclick = function(event) {
-            var element = event.target;
-            var title = "Link to run “" + element.testName + "” with current options:";
-            var url = location.href.split(/[?#]/)[0];
+        
+        function updateLinkHref() {
             var options = optionsManager.updateLocalStorageFromUI();
             Utilities.extendObject(options, {
-                "suite-name": element.suiteName,
-                "test-name": Utilities.stripUnwantedCharactersForURL(element.testName)
+                "suite-name": link.suiteName,
+                "test-name": Utilities.stripUnwantedCharactersForURL(link.testName)
             });
-            var complexity = suitesManager._editElement(element.parentNode).value;
-            if (complexity)
-                options.complexity = complexity;
-            prompt(title, url + Utilities.convertObjectToQueryString(options));
-        };
+            var complexityInput = link.parentNode.querySelector("input[type='number']");
+            if (complexityInput && complexityInput.value)
+                options.complexity = complexityInput.value;
+            
+            var url = location.href.split(/[?#]/)[0];
+            link.href = url + Utilities.convertObjectToQueryString(options);
+        }
+        
+        link.addEventListener("mouseenter", updateLinkHref);
+        link.addEventListener("focus", updateLinkHref);
+        link.addEventListener("click", updateLinkHref);
 
         var complexity = Utilities.createElement("input", { type: "number" }, testElement);
         complexity.relatedCheckbox = testCheckbox;
