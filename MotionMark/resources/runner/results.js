@@ -280,6 +280,7 @@ class ScoreCalculator {
 
                 const resample = new SampleData(regressionResult.samples.fieldMap, resampleData);
                 const bootstrapRegressionResult = findRegression(resample, predominantProfile);
+                //console.log('regression', bootstrapRegressionResult.regression);
                 if (bootstrapRegressionResult.regression.t2 < 0) {
                   // A positive slope means the frame rate decreased with increased complexity (which is the expected
                   // benavior). OTOH, a negative slope means the framerate increased as the complexity increased. This
