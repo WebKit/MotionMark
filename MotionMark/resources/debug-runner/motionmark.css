@@ -832,3 +832,436 @@ body.showing-test-graph header, body.showing-test-graph nav {
 #complexity-graph .bootstrap .median polygon {
     fill: hsla(240, 56%, 66%, .4);
 }
+
+/* -------------------------------------------------------------------------- */
+/*                        Comparison & Panel Controls                         */
+/* -------------------------------------------------------------------------- */
+
+.control-panel-container {
+    background: rgba(45, 45, 45, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.2em;
+    margin: 2.5em 0;
+    max-width: 580px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.mode-toggles {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.2em;
+    gap: 0.5em;
+}
+
+.mode-tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 1.05em;
+    padding: 0.6em 1.2em;
+    border-radius: 0;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    display: inline-block !important;
+    min-width: initial !important;
+}
+
+.mode-tab:hover {
+    color: white !important;
+    background: transparent;
+}
+
+.mode-tab.active {
+    color: white !important;
+    border-bottom-color: hsl(20, 95%, 52%) !important;
+    background: transparent;
+}
+
+.control-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.control-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.drop-zone {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 1.5em;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.2s ease;
+    margin-bottom: 1em;
+}
+
+.drop-zone.drag-over {
+    border-color: hsl(20, 95%, 52%);
+    background: rgba(250, 73, 37, 0.08);
+    color: white;
+}
+
+.compare-zones-row {
+    display: flex;
+    gap: 1.2em;
+    margin-bottom: 1.5em;
+}
+
+.compare-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1em;
+}
+
+.compare-col h4 {
+    margin: 0 0 0.8em 0;
+    font-size: 1.05em;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.compare-drop {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1.2em 0.5em;
+    font-size: 0.9em;
+    margin-bottom: 0.8em;
+}
+
+.panel-btn {
+    border: 1.5px solid white !important;
+    color: white !important;
+    background: transparent !important;
+    padding: 0.5em 1.5em !important;
+    font-size: 1.1em !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    display: block !important;
+}
+
+.panel-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.panel-btn-small {
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: transparent !important;
+    padding: 0.4em 1em !important;
+    font-size: 0.85em !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    margin-bottom: 0.6em !important;
+    display: block !important;
+}
+
+.panel-btn-small:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.loaded-file-indicator {
+    font-size: 0.78em;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    word-break: break-all;
+    max-width: 100%;
+}
+
+.loaded-file-indicator.loaded {
+    color: hsl(122, 60%, 65%);
+    font-weight: 500;
+}
+
+.compare-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5em;
+}
+
+.compare-run-btn {
+    border: none !important;
+    background: linear-gradient(135deg, hsl(20, 95%, 52%) 0%, hsl(10, 96%, 56%) 100%) !important;
+    color: white !important;
+    padding: 0.6em 2.2em !important;
+    font-size: 1.25em !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(250, 73, 37, 0.3) !important;
+    transition: all 0.25s ease !important;
+    display: block !important;
+}
+
+.compare-run-btn:hover:not(.disabled) {
+    box-shadow: 0 6px 20px rgba(250, 73, 37, 0.5) !important;
+    transform: translateY(-1px) !important;
+}
+
+.compare-run-btn.disabled, .compare-run-btn:disabled {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+.panel-btn-text {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    font-size: 1em !important;
+    cursor: pointer !important;
+    text-decoration: underline !important;
+    padding: 0.2em !important;
+    display: inline-block !important;
+    min-width: initial !important;
+}
+
+.panel-btn-text:hover {
+    color: white !important;
+}
+
+/* Overall Comparison Results Styling */
+.comparison-badge {
+    padding: 0.15em 0.45em;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    display: inline-block;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.comp-badge-better {
+    background: hsla(122, 55%, 42%, 0.2) !important;
+    border: 1.5px solid hsl(122, 55%, 45%) !important;
+    color: hsl(122, 60%, 65%) !important;
+}
+
+.comp-badge-worse {
+    background: hsla(11, 72%, 45%, 0.2) !important;
+    border: 1.5px solid hsl(11, 72%, 48%) !important;
+    color: hsl(11, 75%, 65%) !important;
+}
+
+.comparison-details-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5em;
+    font-size: 0.95em;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.comparison-details-row .separator {
+    color: rgba(255, 255, 255, 0.15);
+}
+
+/* Delta cells in result tables */
+.diff-better {
+    color: hsl(122, 60%, 65%) !important;
+    font-weight: bold;
+}
+
+.diff-worse {
+    color: hsl(11, 75%, 65%) !important;
+    font-weight: bold;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.sub-stdev {
+    font-size: 0.82em;
+    color: rgba(255, 255, 255, 0.38);
+    margin-left: 0.25em;
+}
+
+.inline-badge {
+    font-size: 0.7em !important;
+    vertical-align: middle;
+    margin-left: 0.6em;
+}
+
+.comp-nav-legend, .comp-nav-values {
+    float: right;
+    font-weight: bold;
+}
+
+.comp-teal {
+    color: hsl(180, 70%, 48%) !important;
+}
+
+.comp-orange {
+    color: hsl(15, 90%, 58%) !important;
+}
+
+.comp-nav-legend-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    float: right;
+    margin-top: -0.8em;
+}
+
+/* Dynamic Graph Comparison Overlays HSL Rules */
+
+/* Baseline (A) HSL Teal */
+.comp-run-a-complexity path {
+    stroke: hsla(180, 70%, 48%, 0.7) !important;
+    stroke-width: 2px !important;
+    stroke-dasharray: 4, 4 !important;
+}
+.comp-run-a-complexity circle {
+    fill: hsl(180, 70%, 48%) !important;
+}
+.comp-run-a-rawfps path {
+    stroke: hsla(200, 70%, 50%, 0.4) !important;
+    stroke-width: 1px !important;
+}
+.comp-run-a-rawfps circle {
+    fill: hsl(200, 70%, 50%) !important;
+}
+.comp-run-a-filteredfps path {
+    stroke: hsla(190, 80%, 48%, 0.8) !important;
+    stroke-width: 2px !important;
+}
+.comp-run-a-filteredfps circle {
+    fill: hsl(190, 80%, 48%) !important;
+}
+.mean.comp-run-a line {
+    stroke: hsla(180, 70%, 45%, 0.8) !important;
+    stroke-width: 2px !important;
+}
+.mean.comp-run-a polygon {
+    fill: hsla(180, 70%, 45%, 0.05) !important;
+}
+
+/* Comparison (B) HSL Coral Orange */
+.comp-run-b-complexity path {
+    stroke: hsla(15, 90%, 58%, 0.85) !important;
+    stroke-width: 2.5px !important;
+}
+.comp-run-b-complexity circle {
+    fill: hsl(15, 90%, 58%) !important;
+}
+.comp-run-b-rawfps path {
+    stroke: hsla(35, 90%, 50%, 0.45) !important;
+    stroke-width: 1px !important;
+}
+.comp-run-b-rawfps circle {
+    fill: hsl(35, 90%, 50%) !important;
+}
+.comp-run-b-filteredfps path {
+    stroke: hsla(20, 95%, 54%, 0.85) !important;
+    stroke-width: 2.5px !important;
+}
+.comp-run-b-filteredfps circle {
+    fill: hsl(20, 95%, 54%) !important;
+}
+.mean.comp-run-b line {
+    stroke: hsla(15, 90%, 50%, 0.8) !important;
+    stroke-width: 2px !important;
+}
+.mean.comp-run-b polygon {
+    fill: hsla(15, 90%, 50%, 0.05) !important;
+}
+
+/* Complexity Graph Comparisons */
+#complexity-graph .regression.comp-run-a line {
+    stroke: hsla(180, 70%, 45%, 0.85) !important;
+    stroke-width: 2px !important;
+}
+#complexity-graph .regression.comp-run-a polygon {
+    fill: hsla(180, 70%, 45%, 0.15) !important;
+}
+#complexity-graph .regression.comp-run-b line {
+    stroke: hsla(15, 90%, 58%, 0.85) !important;
+    stroke-width: 2.5px !important;
+}
+#complexity-graph .regression.comp-run-b polygon {
+    fill: hsla(15, 90%, 58%, 0.2) !important;
+}
+
+#complexity-graph .bootstrap.comp-run-a .bar {
+    fill: hsla(180, 70%, 45%, 0.25) !important;
+}
+#complexity-graph .bootstrap.comp-run-a .median line {
+    stroke: hsla(180, 70%, 40%, 0.8) !important;
+    stroke-width: 2px !important;
+}
+#complexity-graph .bootstrap.comp-run-a .median circle {
+    fill: hsla(180, 70%, 40%) !important;
+}
+#complexity-graph .bootstrap.comp-run-b .bar {
+    fill: hsla(15, 90%, 58%, 0.25) !important;
+}
+#complexity-graph .bootstrap.comp-run-b .median line {
+    stroke: hsla(15, 90%, 50%, 0.8) !important;
+    stroke-width: 2.5px !important;
+}
+#complexity-graph .bootstrap.comp-run-b .median circle {
+    fill: hsla(15, 90%, 50%) !important;
+}
+
+#complexity-graph .series.raw.comp-run-a line {
+    stroke: hsla(180, 70%, 48%, 0.25) !important;
+}
+#complexity-graph .series.raw.comp-run-b line {
+    stroke: hsla(15, 90%, 58%, 0.3) !important;
+}
+#complexity-graph .comp-run-a-rawfps circle {
+    fill: hsl(180, 70%, 45%) !important;
+}
+#complexity-graph .comp-run-b-rawfps circle {
+    fill: hsl(15, 90%, 58%) !important;
+}
+
+.target-fps.comp-run-a {
+    stroke: hsla(180, 70%, 45%, 0.45) !important;
+}
+.target-fps.comp-run-b {
+    stroke: hsla(15, 90%, 58%, 0.5) !important;
+}
+#time-graph .cursor .comp-teal {
+    fill: hsl(180, 70%, 48%) !important;
+}
+#time-graph .cursor .comp-orange {
+    fill: hsl(15, 90%, 58%) !important;
+}
+#results .score-profile {
+    margin-bottom: 0.5em;
+}
+#results .confidence {
+    text-indent: 0 !important;
+}
+
+.compare-col.drag-over {
+    background: rgba(250, 73, 37, 0.08) !important;
+    border-color: hsl(20, 95%, 52%) !important;
+    border-style: solid !important;
+}
+
+.compare-col.drag-over .drop-zone {
+    border-color: hsl(20, 95%, 52%) !important;
+    color: white !important;
+}
+
