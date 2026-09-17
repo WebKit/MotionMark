@@ -526,6 +526,7 @@ class RampController extends Controller {
                 return;
 
             this._finishedTierSampling = true;
+            motionmarkMark("motionmark-ramps-start", timestamp);
             this.isFrameLengthEstimatorEnabled = false;
             this.intervalSamplingLength = 120;
 
@@ -595,6 +596,15 @@ class RampController extends Controller {
         var intervalFrameLengthMean = this._intervalFrameLengthEstimator.mean();
         var intervalFrameLengthStandardDeviation = this._intervalFrameLengthEstimator.standardDeviation();
 
+        // The complexity the ramp is currently attempting, and the frame length
+        // it produced. Emitted per sampling interval so that a trace window can
+        // be attributed to the complexity that was on screen during it.
+        motionmarkMark("motionmark-complexity", timestamp, {
+            complexity: currentComplexity,
+            frameLength: intervalFrameLengthMean,
+            frameLengthStdDev: intervalFrameLengthStandardDeviation
+        });
+
         if (intervalFrameLengthMean < this.frameLengthDesiredThreshold && this._intervalFrameLengthEstimator.cdf(this.frameLengthDesiredThreshold) > .9) {
             this._possibleMinimumComplexity = Math.max(this._possibleMinimumComplexity, currentComplexity);
         } else if (intervalFrameLengthStandardDeviation > 2) {
@@ -631,6 +641,19 @@ class RampController extends Controller {
         this._rampRegressions.push(regression);
 
         var frameLengthAtMaxComplexity = regression.valueAt(this._maximumComplexity);
+
+        // The change point is the complexity at which the fit leaves the desired
+        // frame length, i.e. where the target frame rate stops being met, and is
+        // what the score is derived from. Emitted before the bounds below are
+        // recomputed, so they are the ones this ramp actually used.
+        motionmarkMark("motionmark-ramp-end", timestamp, {
+            changePoint: regression.complexity,
+            profile: regression.profile,
+            frameLengthAtMaxComplexity: frameLengthAtMaxComplexity,
+            minComplexity: this._minimumComplexity,
+            maxComplexity: this._maximumComplexity
+        });
+
         if (frameLengthAtMaxComplexity < this.frameLengthRampLowerThreshold)
             this._possibleMaximumComplexity = Math.floor(Utilities.lerp(Utilities.progressValue(this.frameLengthRampLowerThreshold, frameLengthAtMaxComplexity, this._lastTierFrameLength), this._maximumComplexity, this._lastTierComplexity));
         // If the regression doesn't fit the first segment at all, keep the minimum bound at 1

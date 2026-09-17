@@ -23,6 +23,44 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// User Timing entries delimiting the phases of a subtest run, so that the
+// scored window can be located in a trace. They are pinned to the controller's
+// own timestamps rather than to when the entry was emitted.
+//
+// Guarded because an exception escaping _animateLoop() stops the
+// requestAnimationFrame chain: the run then hangs with the stage frozen and no
+// error reported anywhere.
+const motionmarkSubtestName = location.pathname.split("/").pop().replace(/\.html$/, "");
+
+// `detail` is JSON-serialized into the trace as a debug annotation, and only
+// when the blink.user_timing category is enabled, so it costs nothing in
+// untraced scoring runs. Reading it back requires filter_debug_annotations to
+// be false in the tracing config.
+function motionmarkMark(name, timestamp, detail)
+{
+    try {
+        performance.mark(name + ":" + motionmarkSubtestName, { startTime: timestamp, detail: detail });
+    } catch (e) {
+        console.error("Failed to emit mark " + name + ": " + e);
+    }
+}
+
+function motionmarkMeasure(name, startMark, endMark)
+{
+    var start = startMark + ":" + motionmarkSubtestName;
+
+    // Absent when the controller never reaches that transition, which is the
+    // case for the ramps mark under the fixed and adaptive controllers.
+    if (!performance.getEntriesByName(start, "mark").length)
+        return;
+
+    try {
+        performance.measure(name + ":" + motionmarkSubtestName, start, endMark + ":" + motionmarkSubtestName);
+    } catch (e) {
+        console.error("Failed to emit measure " + name + ": " + e);
+    }
+}
+
 class Benchmark {
     constructor(stage, options)
     {
@@ -104,6 +142,9 @@ class Benchmark {
         this._currentTimestamp = timestamp;
 
         if (this._controller.shouldStop(timestamp)) {
+            motionmarkMark("motionmark-measure-end", timestamp);
+            motionmarkMeasure("motionmark-subtest", "motionmark-measure-start", "motionmark-measure-end");
+            motionmarkMeasure("motionmark-ramps", "motionmark-ramps-start", "motionmark-measure-end");
             this._completionFunction(this._controller.results());
             return;
         }
@@ -114,6 +155,7 @@ class Benchmark {
                 this._benchmarkStartTimestamp = timestamp;
             } else if (timestamp - this._previousTimestamp >= this._warmupLength && this._frameCount >= this._warmupFrameCount) {
                 this._didWarmUp = true;
+                motionmarkMark("motionmark-measure-start", timestamp);
                 this._benchmarkStartTimestamp = timestamp;
                 this._controller.start(timestamp, this._stage);
                 this._previousTimestamp = timestamp;
