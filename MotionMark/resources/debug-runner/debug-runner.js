@@ -193,7 +193,7 @@ window.optionsManager = new class OptionsManager {
                 formElements[name].value = +value;
             else if (type == "checkbox")
                 formElements[name].checked = value == "true";
-            else if (type == "radio")
+            else if (type == "radio" || type == "select-one")
                 formElements[name].value = value;
         }
     }
@@ -212,6 +212,8 @@ window.optionsManager = new class OptionsManager {
                 options[name] = +formElement.value;
             else if (type == "checkbox")
                 options[name] = formElement.checked;
+            else if (type == "select-one")
+                options[name] = formElement.value;
             else if (type == "radio") {
                 var radios = formElements[name];
                 if (radios.constructor === HTMLCollection) {
@@ -661,7 +663,10 @@ class DebugBenchmarkController extends BenchmarkController {
     startBenchmark()
     {
         benchmarkController.determineCanvasSize();
-        benchmarkController.options = Utilities.mergeObjects(this.benchmarkDefaultParameters, optionsManager.updateLocalStorageFromUI());
+        benchmarkController.options = Utilities.mergeObjects(
+            this.benchmarkDefaultParameters,
+            optionsManager.updateLocalStorageFromUI(),
+            Utilities.convertQueryStringToObject(location.search));
         benchmarkController.suites = suitesManager.updateLocalStorageFromUI();
         this._startBenchmark(benchmarkController.suites, benchmarkController.options, "running-test");
     }

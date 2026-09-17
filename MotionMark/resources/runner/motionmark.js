@@ -121,6 +121,7 @@ class BenchmarkController {
         "first-frame-minimum-length": 0,
         "system-frame-rate": 60,
         "frame-rate": 60,
+        "score-profile": "window",
     };
 
     async initialize()
@@ -299,7 +300,9 @@ class BenchmarkController {
     {
         benchmarkController.determineCanvasSize();
 
-        let options = this.benchmarkDefaultParameters;
+        let options = Utilities.mergeObjects(
+            this.benchmarkDefaultParameters,
+            Utilities.convertQueryStringToObject(location.search));
         this._startBenchmark(Suites, options, "test-container");
     }
 
