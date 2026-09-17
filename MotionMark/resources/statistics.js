@@ -178,8 +178,10 @@ class Regression {
     constructor(samples, startIndex, endIndex, options)
     {
         const desiredFrameLength = options.desiredFrameLength;
-        var profile;
+        const kWindowSizeMultiple = 0.1;
 
+        var profile;
+            
         if (!options.preferredProfile || options.preferredProfile == Strings.json.profiles.slope) {
             profile = this._calculateRegression(samples, {
                 shouldClip: true,
@@ -195,6 +197,11 @@ class Regression {
                 t2: 0
             });
             this.profile = Strings.json.profiles.flat;
+        } else if (options.preferredProfile == Strings.json.profiles.window || options.preferredProfile == Strings.json.profiles.windowStrict) {
+            const window_size = Math.max(1, Math.floor(samples.length * kWindowSizeMultiple));
+            const strict = options.preferredProfile == Strings.json.profiles.windowStrict;
+            profile = this._windowedFit(samples, desiredFrameLength, window_size, strict);
+            this.profile = options.preferredProfile;
         }
 
         this.startIndex = Math.min(startIndex, endIndex);
@@ -217,6 +224,111 @@ class Regression {
         if (this.n1 == 1 || complexity > this.complexity)
             return this.s2 + this.t2 * complexity;
         return this.s1 + this.t1 * complexity;
+    }
+
+    _windowedFit(samples, desiredFrameLength, windowSize, strict)
+    {
+        const kAllowedErrorFactor = 0.9;
+
+        const complexityIndex = 0;
+        const frameLengthIndex = 1;
+        const frameTimeIndex = 2;
+
+        const average = array => array.reduce((a, b) => a + b) / array.length;
+
+        var sortedSamples = samples.slice().sort((a, b) => {
+                if (a[complexityIndex] == b[complexityIndex])
+                    return b[frameTimeIndex] - a[frameTimeIndex];
+                return a[complexityIndex] - b[complexityIndex];
+            });
+
+        var cumFrameLength = 0.0;
+        var bestIndex = 0;
+        var bestComplexity = 0;
+        var runningFrameLengths = [];
+        var runningComplexities = [];
+
+        for (var i = 0; i < sortedSamples.length; ++i) {
+            runningFrameLengths.push(sortedSamples[i][frameLengthIndex]);
+            runningComplexities.push(sortedSamples[i][complexityIndex]);
+
+            if (runningFrameLengths.length < windowSize) {
+                continue
+            } else if (runningFrameLengths.length > windowSize) {
+                runningFrameLengths.shift();
+                runningComplexities.shift();
+            }
+
+            let averageFrameLength = average(runningFrameLengths);
+            let averageComplexity = average(runningComplexities);
+            let error = desiredFrameLength / averageFrameLength;
+            let adjustedComplexity = averageComplexity * Math.min(1.0, error);
+
+            if (error >= kAllowedErrorFactor) {
+                if (adjustedComplexity > bestComplexity) {
+                    bestComplexity = adjustedComplexity;
+                }
+            } else if (strict) {
+                break;
+            }
+        }
+
+        for (var i = 0; i < sortedSamples.length; ++i) {
+            if (sortedSamples[i][complexityIndex] <= bestComplexity)
+                bestIndex = i;
+        }
+
+        let complexity = bestComplexity;
+
+        // Calculate slope for remaining points
+        let t_nom = 0.0;
+        let t_denom = 0.0;
+        for (var i = bestIndex + 1; i < sortedSamples.length; i++) {
+            const tx = sortedSamples[i][complexityIndex] - complexity;
+            const ty = sortedSamples[i][frameLengthIndex] - desiredFrameLength;
+            t_nom += tx * ty;
+            t_denom += tx * tx;
+        }
+
+        var s1 = desiredFrameLength;
+        var t1 = 0;
+        var t2 = (t_nom / t_denom) || 0.0;
+        var s2 = desiredFrameLength - t2 * complexity;
+        var n1 = bestIndex + 1;
+        var n2 = sortedSamples.length - bestIndex - 1;
+
+        function getValueAt(at_complexity)
+        {
+            if (at_complexity > complexity)
+                return s2 + t2 * complexity;
+            return s1 + t1 * complexity;
+        }
+
+        let error1 = 0.0;
+        let error2 = 0.0;
+        for (var i = 0; i < n1; ++i) {
+            const frameLengthErr = sortedSamples[i][frameLengthIndex] - getValueAt(sortedSamples[i][complexityIndex]);
+            error1 += frameLengthErr * frameLengthErr;
+        }
+        for (var i = n1; i < sortedSamples.length; ++i) {
+            const frameLengthErr = sortedSamples[i][frameLengthIndex] - getValueAt(sortedSamples[i][complexityIndex]);
+            error2 += frameLengthErr * frameLengthErr;
+        }
+        
+        return {
+            s1: s1,
+            t1: t1,
+            s2: s2,
+            t2: t2,
+            complexity: complexity,
+            // Number of samples included in the first segment, inclusive of bestIndex
+            n1: n1,
+            // Number of samples included in the second segment
+            n2: n2,
+            stdev1: Math.sqrt(error1 / n1),
+            stdev2: Math.sqrt(error2 / n2),
+            error: error1 + error2,
+        };        
     }
 
     // A generic two-segment piecewise regression calculator. Based on Kundu/Ubhaya

@@ -558,7 +558,7 @@ class DebugBenchmarkController extends BenchmarkController {
         let progressElement = document.querySelector("#frame-rate-detection span");
         await this.detectFrameRate(progressElement);
     }
-    
+
     #setupDropTarget()
     {
         var dropTarget = document.getElementById("drop-target");
@@ -587,34 +587,38 @@ class DebugBenchmarkController extends BenchmarkController {
             }
 
             dropTarget.textContent = 'Processing…';
-
-            var file = e.dataTransfer.files[0];
-
-            var reader = new FileReader();
-            reader.filename = file.name;
-            reader.onload = (e) => {
-                const data = JSON.parse(e.target.result);
-                
-                let results;
-                if (data['debugOutput'] instanceof Array)
-                    results = RunData.resultsDataFromBenchmarkRunnerData(data['debugOutput']);
-                else
-                    results = RunData.resultsDataFromSingleRunData(data);
-
-                this.ensureRunnerClient([ ], { });
-                this.runnerClient.scoreCalculator = new ScoreCalculator(results);
-                this.showResults();
-            };
-
-            reader.readAsText(file);
-            document.title = "File: " + reader.filename;
+            this.handleResultsFile(e.dataTransfer.files[0]);
         }, false);
+    }
+
+    loadResults() {
+        document.getElementById("load-results-input").click();
+    }
+
+    handleResultsFile(fileOrInput) {
+        const file = fileOrInput instanceof File ? fileOrInput : fileOrInput.files[0];
+        if (!file)
+            return;
+
+        const reader = new FileReader();
+        reader.filename = file.name;
+        reader.onload = (e) => {
+            const data = JSON.parse(e.target.result);
+            const results = (data['debugOutput'] instanceof Array) ?
+                RunData.resultsDataFromBenchmarkRunnerData(data['debugOutput']) :
+                RunData.resultsDataFromSingleRunData(data);
+            this.ensureRunnerClient([], {});
+            this.runnerClient.scoreCalculator = new ScoreCalculator(results);
+            this.showResults();
+        };
+        reader.readAsText(file);
+        document.title = "File: " + reader.filename;
     }
 
     frameRateDeterminationComplete(targetFrameRate)
     {
         let frameRateLabelContent = Strings.text.usingFrameRate.replace("%s", targetFrameRate);
-        
+
         if (!targetFrameRate) {
             frameRateLabelContent = Strings.text.frameRateDetectionFailure;
             targetFrameRate = 60;
@@ -635,7 +639,7 @@ class DebugBenchmarkController extends BenchmarkController {
             startButton.disabled = true;
             return;
         }
-        
+
         startButton.disabled = (!suitesManager.isAtLeastOneTestSelected()) || !this.frameRateDetectionComplete;
     }
 
@@ -708,6 +712,15 @@ class DebugBenchmarkController extends BenchmarkController {
         const confidence = ((scoreCalculator.scoreLowerBound / score - 1) * 100).toFixed(2) +
             "% / +" + ((scoreCalculator.scoreUpperBound / score - 1) * 100).toFixed(2) + "%";
         const fps = scoreCalculator._systemFrameRate;
+
+        const resultsScoreProfileSelector = document.getElementById("results-score-profile");
+        if (resultsScoreProfileSelector)
+            resultsScoreProfileSelector.value = scoreCalculator.scoreProfile;
+
+        const graphScoreProfileSelector = document.getElementById("graph-score-profile");
+        if (graphScoreProfileSelector)
+            graphScoreProfileSelector.value = scoreCalculator.scoreProfile;
+
         sectionsManager.setSectionVersion("results", scoreCalculator.version);
         sectionsManager.setSectionScore("results", score.toFixed(2), confidence, fps);
         sectionsManager.populateTable("results-header", Headers.testName, scoreCalculator);
@@ -720,9 +733,40 @@ class DebugBenchmarkController extends BenchmarkController {
 
     showTestGraph(testName, testResult, testData)
     {
+        this._currentGraphParams = {
+            testName: testName,
+            testResult: testResult,
+            testData: testData
+        };
         sectionsManager.setSectionHeader("test-graph", testName);
         sectionsManager.showSection("test-graph", true);
         this.graphController.updateGraphData(testResult, testData, this.runnerClient.scoreCalculator.options);
+    }
+
+    reloadCurrentGraph() {
+        if (!this._currentGraphParams)
+            return;
+
+        const scoreCalculator = this.runnerClient.scoreCalculator;
+        const testData = this._currentGraphParams.testData;
+        const testName = this._currentGraphParams.testName;
+
+        // find the updated testResult from scoreCalculator
+        let updatedTestResult = null;
+        scoreCalculator.results.forEach(iteration => {
+            for (let suiteName in iteration[Strings.json.results.tests]) {
+                const suite = iteration[Strings.json.results.tests][suiteName];
+                if (suite[testName]) {
+                    updatedTestResult = suite[testName];
+                    return;
+                }
+            }
+        });
+
+        if (updatedTestResult) {
+            this._currentGraphParams.testResult = updatedTestResult;
+            this.showTestGraph(testName, updatedTestResult, testData);
+        }
     }
 }
 
