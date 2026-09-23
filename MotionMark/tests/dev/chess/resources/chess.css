@@ -44,6 +44,13 @@
 
 #stage {
   container-type: size;
+  --palette-shift: calc(sin(calc(var(--anim-value) * 0.05rad)) * 0.04);
+  --palette-hue-shift: calc(sin(calc(var(--anim-value) * 0.03rad)) * 12);
+  --palette-color-1: oklch(calc(0.346 + var(--palette-shift)) 0.043 calc(237 + var(--palette-hue-shift)));
+  --palette-color-2: oklch(calc(0.731 + var(--palette-shift)) 0.178 calc(49 + var(--palette-hue-shift)));
+  --palette-color-3: oklch(calc(0.861 - var(--palette-shift)) 0.153 calc(87 + var(--palette-hue-shift)));
+  --palette-color-4: oklch(calc(0.771 + var(--palette-shift)) 0.094 calc(130 - var(--palette-hue-shift)));
+  --palette-color-5: oklch(calc(0.644 - var(--palette-shift)) 0.066 calc(174 + var(--palette-hue-shift)));
   background-color: var(--palette-color-1);
 }
 
