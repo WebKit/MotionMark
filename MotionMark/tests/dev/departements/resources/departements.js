@@ -191,6 +191,10 @@ class RadialChart {
         ctx.fill(donutPath);
         ctx.restore();
 
+        this._clipWedgePath = this.#pathForOriginWedge(0, this.wedgeAngleRadians, this.innerRadius, this.endcapRadius);
+        this._mapWedgePath = this.#pathForOriginWedge(0, this.wedgeAngleRadians, this.endcapRadius, this.outerRadius);
+        this._arrowHeadPath ??= this.#pathForArrowHead();
+
         for (let i = 0; i < this.numSpokes; ++i) {
             const instance = this.stage.instanceForIndex(i + this.firstItemIndex);
 
@@ -269,48 +273,49 @@ class RadialChart {
     {
         return 2 * outerRadius * Math.sin(this.wedgeAngleRadians / 2);
     }
-    
-    #pathForWedge(index, innerRadius, outerRadius)
-    {
-        const startAngleRadians = this.#wedgeStartAngle(index);
-        const endAngleRadians = startAngleRadians + this.wedgeAngleRadians;
 
+    #pathForOriginWedge(startAngleRadians, endAngleRadians, innerRadius, outerRadius)
+    {
         const path = new Path2D();
 
-        const firstStartPoint = this.center.add(GeometryHelpers.createPointOnCircle(startAngleRadians, innerRadius));
-        const firstEndPoint = this.center.add(GeometryHelpers.createPointOnCircle(startAngleRadians, outerRadius));
+        const firstStartPoint = GeometryHelpers.createPointOnCircle(startAngleRadians, innerRadius);
+        const firstEndPoint = GeometryHelpers.createPointOnCircle(startAngleRadians, outerRadius);
 
         path.moveTo(firstStartPoint.x, firstStartPoint.y);
         path.lineTo(firstEndPoint.x, firstEndPoint.y);
 
-        path.arc(this.center.x, this.center.y, outerRadius, startAngleRadians, endAngleRadians, Clockwise);
+        path.arc(0, 0, outerRadius, startAngleRadians, endAngleRadians, Clockwise);
 
-        const secondEndPoint = this.center.add(GeometryHelpers.createPointOnCircle(endAngleRadians, innerRadius));
+        const secondEndPoint = GeometryHelpers.createPointOnCircle(endAngleRadians, innerRadius);
         path.lineTo(secondEndPoint.x, secondEndPoint.y);
-        path.arc(this.center.x, this.center.y, innerRadius, endAngleRadians, startAngleRadians, CounterClockwise);
+        path.arc(0, 0, innerRadius, endAngleRadians, startAngleRadians, CounterClockwise);
         path.closePath();
 
         return path;
     }
 
+
     #drawWedge(ctx, index, instance)
     {
-        const wedgePath = this.#pathForWedge(index, this.innerRadius, this.endcapRadius);
+        const startAngleRadians = this.#wedgeStartAngle(index);
+        const padRadians = 0.15 * this.wedgeAngleRadians;
 
         const areaRadius = this.innerRadius + (this.endcapRadius - this.innerRadius) * (instance.area / this.stage.maxArea);
-        const areaWedgePath = this.#pathForWedge(index, this.innerRadius, areaRadius);
+        const areaWedgePath = this.#pathForOriginWedge(-padRadians, this.wedgeAngleRadians + padRadians, this.innerRadius, areaRadius);
 
         const populationRadius = this.innerRadius + (this.endcapRadius - this.innerRadius) * (instance.population / this.stage.maxPopulation);
-        const populationWedgePath = this.#pathForWedge(index, this.innerRadius, populationRadius);
+        const populationWedgePath = this.#pathForOriginWedge(-padRadians, this.wedgeAngleRadians + padRadians, this.innerRadius, populationRadius);
 
-        const gradient = ctx.createRadialGradient(this.center.x, this.center.y, this.innerRadius, this.center.x, this.center.y, areaRadius);
+        const gradient = ctx.createRadialGradient(0, 0, this.innerRadius, 0, 0, areaRadius);
         
         const colorCycleLengthMS = 1200;
         gradient.addColorStop(0, MathHelpers.rotatingColor(instance.hueOffset, colorCycleLengthMS, instance.colorSaturation, instance.colorLightness));
         gradient.addColorStop(0.9, MathHelpers.rotatingColor(instance.hueOffset + 0.4, colorCycleLengthMS, instance.colorSaturation, instance.colorLightness));
 
         ctx.save();
-        ctx.clip(wedgePath);
+        ctx.translate(this.center.x, this.center.y);
+        ctx.rotate(startAngleRadians);
+        ctx.clip(this._clipWedgePath);
 
         ctx.fillStyle = gradient;
         ctx.fill(areaWedgePath);
@@ -319,8 +324,8 @@ class RadialChart {
         ctx.fillStyle = 'rgb(0, 0, 0, 0.2)';
         ctx.fill(populationWedgePath);
 
-        const pattern = ctx.createPattern(this.patternCanvas, 'repeat');
-        ctx.fillStyle = pattern;
+        this._cachedPattern ??= ctx.createPattern(this.patternCanvas, 'repeat');
+        ctx.fillStyle = this._cachedPattern;
         ctx.fill(populationWedgePath);
 
         ctx.restore();
@@ -409,7 +414,7 @@ class RadialChart {
         // Arrowhead.
         {
             ctx.save();
-            const arrowheadPath = this.#pathForArrowHead();
+            const arrowheadPath = this._arrowHeadPath;
 
             ctx.translate(wedgeArrowEnd.x, wedgeArrowEnd.y);
             const arrowheadSize = 12;
@@ -425,23 +430,24 @@ class RadialChart {
     
     #drawMap(ctx, index, instance)
     {
-        const midAngleRadians = this.#wedgeStartAngle(index) + 0.5 * this.wedgeAngleRadians;
+        const startAngleRadians = this.#wedgeStartAngle(index);
+        const midAngleRadians = startAngleRadians + 0.5 * this.wedgeAngleRadians;
         const imageAngle = midAngleRadians + Math.PI / 2;
 
         const imageInset = 5;
-        const imageCenterPoint = this.center.add(GeometryHelpers.createPointOnCircle(midAngleRadians, this.outerRadius - imageInset));
 
         ctx.save();
+        ctx.translate(this.center.x, this.center.y);
+        ctx.rotate(startAngleRadians);
 
-        const wedgePath = this.#pathForWedge(index, this.endcapRadius, this.outerRadius);
-        ctx.clip(wedgePath);
-        
         const color = MathHelpers.rotatingColor(instance.hueOffset, 0, instance.colorSaturation, instance.colorLightness + 0.2);
         ctx.fillStyle = color;
-        ctx.fill(wedgePath);
+        ctx.fill(this._mapWedgePath);
+        ctx.clip(this._mapWedgePath);
 
-        ctx.translate(imageCenterPoint.x, imageCenterPoint.y);
-        ctx.rotate(imageAngle);
+        ctx.rotate(0.5 * this.wedgeAngleRadians);
+        ctx.translate(this.outerRadius - imageInset, 0);
+        ctx.rotate(Math.PI / 2);
 
         const sizeFactor = 0.7;
         const horizontalSpace = sizeFactor * this.#wedgeWidthAtRadius(this.outerRadius - imageInset);
