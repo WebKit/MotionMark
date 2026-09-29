@@ -75,15 +75,16 @@
         
         .badge {
             position: absolute;
-            background-color: white;
+            background: linear-gradient(white, white) padding-box,
+                        conic-gradient(from calc((var(--image-scale) - 1) * 1800deg), #084A97, #3B82F6, #EC4899, #084A97) border-box;
             margin: 10px;
             height: 40px;
             width: 40px;
             padding: 4px;
             border-radius: 100%;
             overflow: hidden;
-            border: 3px solid #084A97;            
-            filter: drop-shadow(rgba(0, 0, 0, 0.62) 0px 0px 2px);
+            border: 3px solid transparent;
+            filter: drop-shadow(rgba(0, 0, 0, 0.62) 0px calc((var(--image-scale) - 1) * 10px) 2px);
             z-index: 2;
         }
         
