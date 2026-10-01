@@ -67,9 +67,9 @@
                 <li><strong>Suits</strong>: SVG clip paths, gradients and transforms</li>
             </ul>
 
-            <p>To achieve consistent results on mobile devices, put the device in landscape orientation. On laptops and desktops, use the default display resolution and make the browser window fullscreen. Make sure that screen automatic display sleep is turned off or set to longer than 8 minutes.</p>
+            <p>To achieve consistent results on mobile devices, put the device in landscape orientation. On laptops and desktops, use the default display resolution and maximize the browser window while keeping system UI visible. Make sure that screen automatic display sleep is turned off or set to longer than 8 minutes.</p>
 
-            <p id="set-display-fps">The MotionMark benchmark relies on the requestAnimationFrame() JavaScript API, which provides callbacks at a consistent frequency related to screen refresh rate. However, browsers have made different choices about whether requestAnimationFrame() should strictly follow screen refresh rate. Safari currently fires requestAnimationFrame() callbacks at 60Hz on 120Hz screens, while other browsers fire it at 120Hz. This affects the benchmark score, so to compare browser scores across browsers, be sure to set the screen refresh rate to 60Hz (for example on macOS, this can be done in the Displays panel in System Settings).</p>
+            <p id="set-display-fps">The MotionMark benchmark relies on the <code>requestAnimationFrame()</code> JavaScript API, which provides callbacks at a consistent frequency related to screen refresh rate. However, browsers have made different choices about whether <code>requestAnimationFrame()</code> should strictly follow screen refresh rate. Safari currently fires <code>requestAnimationFrame()</code> callbacks at 60Hz on 120Hz screens, while other browsers fire it at 120Hz. This affects the benchmark score, so to compare browser scores across browsers, be sure to set the screen refresh rate to 60Hz (for example on macOS, this can be done in the Displays panel in System Settings).</p>
 
             <h3>Version history</h3>
             <ul id="log">

@@ -66,8 +66,8 @@ class BandwidthController extends ChartController {
         const steadyStateDownload = 2400;
         const steadyStateUpload = 750;
         
-        this.downloadGraph = new GraphData(steadyStateDownload, d3.randomLogNormal(4.5, 1));
-        this.uploadGraph = new GraphData(steadyStateUpload, d3.randomLogNormal(4, 0.8));
+        this.downloadGraph = new GraphData(steadyStateDownload, d3.randomLogNormal.source(Pseudo.random)(4.5, 1));
+        this.uploadGraph = new GraphData(steadyStateUpload, d3.randomLogNormal.source(Pseudo.random)(4, 0.8));
     }
 
     set complexity(complexity)

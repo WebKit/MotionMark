@@ -416,10 +416,9 @@ class ChessStage extends Stage {
     {
         super();
 
-       //Pseudo.randomSeed = Date.now();
-
         this._complexity = 0;
         this._animValue = 0;
+        this._startTime = null;
         this._items = [];
     }
 
@@ -444,7 +443,9 @@ class ChessStage extends Stage {
 
     animate()
     {
-        this.element.style.setProperty("--anim-value", ++this._animValue);
+        this._startTime ??= performance.now();
+        this._animValue = (performance.now() - this._startTime) * 0.06;
+        this.element.style.setProperty("--anim-value", this._animValue);
     }
 
     complexity()

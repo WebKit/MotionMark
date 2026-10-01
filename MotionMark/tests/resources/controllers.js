@@ -170,10 +170,15 @@ class Controller {
     {
         return samples[sampleTimeIndex][i] - samples[sampleTimeIndex][i - 1];
     }
+
+    _getFrameTime(samples, i)
+    {
+        return samples[sampleTimeIndex][i];
+    }
     
     _previousFrameComplexity(samples, i)
     {
-        if (i > 0)
+        if (i > 1)
             return this._getComplexity(samples, i - 1);
 
         return 0;
@@ -415,6 +420,7 @@ class RampController extends Controller {
         super(benchmark, options);
         
         this.targetFPS = targetFPS;
+        this.preferredProfile = options["score-profile"];
 
         // Initially start with a tier test to find the bounds
         // The number of objects in a tier test is 10^|_tier|
@@ -505,6 +511,11 @@ class RampController extends Controller {
                 var nextTierComplexity = Math.max(Math.round(Math.pow(10, this._tier)), currentComplexity + 1);
                 stage.tune(nextTierComplexity - currentComplexity);
 
+                // If the next tier complexity couldn't be set, we've reached the maximum capacity for the test
+                if (stage.complexity() != nextTierComplexity) {
+                   this._maximumStageComplexity = stage.complexity();
+                }
+
                 // Some tests may be unable to go beyond a certain capacity. If so, don't keep moving up tiers
                 if (stage.complexity() - currentComplexity > 0 || nextTierComplexity == 1) {
                     this._tierStartTimestamp = timestamp;
@@ -515,6 +526,7 @@ class RampController extends Controller {
                 return;
 
             this._finishedTierSampling = true;
+            motionmarkMark("motionmark-ramps-start", timestamp);
             this.isFrameLengthEstimatorEnabled = false;
             this.intervalSamplingLength = 120;
 
@@ -535,6 +547,12 @@ class RampController extends Controller {
             else {
                 // If the browser is capable of handling the most complex version of the test, use that
                 this._maximumComplexity = currentComplexity;
+            }
+
+            if (this._maximumStageComplexity) {
+                // If we reached the maximum stage complexity, set the maximum such
+                // that the stage complexity is in the middle of the ramp.
+                this._maximumComplexity = Math.round(this._maximumStageComplexity * 1.25);
             }
             
             this._possibleMaximumComplexity = this._maximumComplexity;
@@ -578,6 +596,15 @@ class RampController extends Controller {
         var intervalFrameLengthMean = this._intervalFrameLengthEstimator.mean();
         var intervalFrameLengthStandardDeviation = this._intervalFrameLengthEstimator.standardDeviation();
 
+        // The complexity the ramp is currently attempting, and the frame length
+        // it produced. Emitted per sampling interval so that a trace window can
+        // be attributed to the complexity that was on screen during it.
+        motionmarkMark("motionmark-complexity", timestamp, {
+            complexity: currentComplexity,
+            frameLength: intervalFrameLengthMean,
+            frameLengthStdDev: intervalFrameLengthStandardDeviation
+        });
+
         if (intervalFrameLengthMean < this.frameLengthDesiredThreshold && this._intervalFrameLengthEstimator.cdf(this.frameLengthDesiredThreshold) > .9) {
             this._possibleMinimumComplexity = Math.max(this._possibleMinimumComplexity, currentComplexity);
         } else if (intervalFrameLengthStandardDeviation > 2) {
@@ -602,13 +629,31 @@ class RampController extends Controller {
         for (var i = this._rampStartIndex; i < this._sampler.sampleCount; ++i) {
             if (this._getFrameType(this._sampler.samples, i) == Strings.json.mutationFrameType)
                 continue;
-            regressionData.push([ this._getComplexity(this._sampler.samples, i), this._getFrameLength(this._sampler.samples, i) ]);
+            regressionData.push(
+                [
+                    this._getComplexity(this._sampler.samples, i), 
+                    this._getFrameLength(this._sampler.samples, i),
+                    this._getFrameTime(this._sampler.samples, i)
+                ]);
         }
 
-        var regression = new Regression(regressionData, this._sampler.sampleCount - 1, this._rampStartIndex, { desiredFrameLength: this.frameLengthDesired });
+        var regression = new Regression(regressionData, this._sampler.sampleCount - 1, this._rampStartIndex, { desiredFrameLength: this.frameLengthDesired, preferredProfile: this.preferredProfile });
         this._rampRegressions.push(regression);
 
         var frameLengthAtMaxComplexity = regression.valueAt(this._maximumComplexity);
+
+        // The change point is the complexity at which the fit leaves the desired
+        // frame length, i.e. where the target frame rate stops being met, and is
+        // what the score is derived from. Emitted before the bounds below are
+        // recomputed, so they are the ones this ramp actually used.
+        motionmarkMark("motionmark-ramp-end", timestamp, {
+            changePoint: regression.complexity,
+            profile: regression.profile,
+            frameLengthAtMaxComplexity: frameLengthAtMaxComplexity,
+            minComplexity: this._minimumComplexity,
+            maxComplexity: this._maximumComplexity
+        });
+
         if (frameLengthAtMaxComplexity < this.frameLengthRampLowerThreshold)
             this._possibleMaximumComplexity = Math.floor(Utilities.lerp(Utilities.progressValue(this.frameLengthRampLowerThreshold, frameLengthAtMaxComplexity, this._lastTierFrameLength), this._maximumComplexity, this._lastTierComplexity));
         // If the regression doesn't fit the first segment at all, keep the minimum bound at 1
@@ -630,6 +675,12 @@ class RampController extends Controller {
         } else {
             // The slowest samples weighed the regression too heavily
             this._maximumComplexity = Math.max(Math.round(.8 * this._maximumComplexity), this._minimumComplexity + 5);
+        }
+
+        if (this._maximumStageComplexity) {
+            // If we reached the maximum stage complexity, set the maximum such
+            // that the stage complexity is in the middle of the ramp.
+            this._maximumComplexity = Math.min(Math.round(this._maximumStageComplexity * 1.25), this._maximumComplexity);
         }
 
         // Next ramp

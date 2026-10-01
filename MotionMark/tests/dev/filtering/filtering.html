@@ -40,7 +40,7 @@
         }
         
         @property --anim-value {
-            syntax: "<integer>";
+            syntax: "<number>";
             inherits: true;
             initial-value: 0;
         }
@@ -227,7 +227,9 @@
                                        0 0 0 0 0
                                        0 0 0 0 0
                                        1 0 0 0 0" />
-                <feColorMatrix type="hueRotate" values="206" />
+                <feColorMatrix type="hueRotate" values="206">
+                    <animate attributeName="values" from="0" to="360" dur="10s" repeatCount="indefinite"/>
+                </feColorMatrix>
                 <feOffset dx="10" dy="10" result="background" />
 
                 <feBlend in="tubeglow" in2="background" mode="lighten"/>
@@ -280,7 +282,9 @@
                                        0 0 1 0 0
                                        0 0 0 1 0" result="border" />
                 <!--Inner shadow -->
-                <feDropShadow dx=0 dy=0 stdDeviation="7" result="shadow" />
+                <feDropShadow dx=0 dy=0 stdDeviation="7" result="shadow">
+                    <animate attributeName="stdDeviation" values="4;10;4" dur="6s" repeatCount="indefinite"/>
+                </feDropShadow>
                 <!--Clip to the inside -->
                 <feComposite in="SourceAlpha" in2="shadow" operator="in" result="inner-shadow" />
 

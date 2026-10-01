@@ -458,39 +458,3 @@ Suites.push(new Suite("Basic canvas path suite",
     ]
 ));
 
-Suites.push(new Suite("Tentative 1.4 suite",
-    [
-        {
-            url: "dev/stories/stories.html",
-            name: "Stories"
-        },
-        {
-            url: "dev/alice/alice.html",
-            name: "Alice"
-        },
-        {
-            url: "dev/chess/chess.html",
-            name: "Chess"
-        },
-        {
-            url: "dev/map-zoomer/map-zoomer.html",
-            name: "Map Zoomer"
-        },
-        {
-            url: "dev/sheets/sheets.html",
-            name: "Sheets"
-        },
-        {
-            url: "dev/departements/departements.html",
-            name: "Départements"
-        },
-        {
-            url: "dev/dashboard/dashboard.html",
-            name: "Dashboard"
-        },
-        {
-            url: "dev/filtering/filtering.html",
-            name: "Filtering"
-        }
-    ]
-));

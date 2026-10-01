@@ -27,7 +27,7 @@ class BenchmarkRunnerClient {
     iterationCount = 1;
     options = null;
     results = null;
-    
+
     constructor(suites, options)
     {
         this.options = options;
@@ -67,6 +67,7 @@ class BenchmarkRunnerClient {
 class SectionsManager {
     showSection(sectionIdentifier, pushState)
     {
+        this.currentSectionIdentifier = sectionIdentifier;
         var sections = document.querySelectorAll("main > section");
         for (var i = 0; i < sections.length; ++i) {
             document.body.classList.remove("showing-" + sections[i].id);
@@ -120,6 +121,7 @@ class BenchmarkController {
         "first-frame-minimum-length": 0,
         "system-frame-rate": 60,
         "frame-rate": 60,
+        "score-profile": "window",
     };
 
     async initialize()
@@ -133,7 +135,7 @@ class BenchmarkController {
 
         await this.detectFrameRate();
     }
-    
+
     async detectFrameRate(progressElement = undefined)
     {
         let targetFrameRate;
@@ -144,7 +146,7 @@ class BenchmarkController {
         }
         this.frameRateDeterminationComplete(targetFrameRate);
     }
-    
+
     updateUIStrings()
     {
         document.title = Strings.text.title.replace("%s", Strings.version);
@@ -152,7 +154,7 @@ class BenchmarkController {
             e.textContent = Strings.version;
         });
     }
-    
+
     frameRateDeterminationComplete(frameRate)
     {
         const frameRateLabel = document.getElementById("frame-rate-label");
@@ -163,7 +165,7 @@ class BenchmarkController {
             frameRate = 60;
         } else if (frameRate != 60)
             labelContent = Strings.text.non60FrameRate.replace("%s", frameRate);
-        else 
+        else
             labelContent = Strings.text.usingFrameRate.replace("%s", frameRate);
 
         frameRateLabel.innerHTML = labelContent;
@@ -288,7 +290,7 @@ class BenchmarkController {
 
         sectionsManager.showSection("test-container");
     }
-    
+
     ensureRunnerClient(suites, options)
     {
         this.runnerClient = new benchmarkRunnerClientClass(suites, options);
@@ -298,7 +300,9 @@ class BenchmarkController {
     {
         benchmarkController.determineCanvasSize();
 
-        let options = this.benchmarkDefaultParameters;
+        let options = Utilities.mergeObjects(
+            this.benchmarkDefaultParameters,
+            Utilities.convertQueryStringToObject(location.search));
         this._startBenchmark(Suites, options, "test-container");
     }
 
@@ -313,12 +317,29 @@ class BenchmarkController {
         const score = scoreCalculator.score;
         const confidence = "±" + (Statistics.largestDeviationPercentage(scoreCalculator.scoreLowerBound, score, scoreCalculator.scoreUpperBound) * 100).toFixed(2) + "%";
         const fps = scoreCalculator.targetFrameRate;
+
+        const resultsScoreProfileSelector = document.getElementById("results-score-profile");
+        if (resultsScoreProfileSelector)
+            resultsScoreProfileSelector.value = scoreCalculator.scoreProfile;
+
+        const graphScoreProfileSelector = document.getElementById("graph-score-profile");
+        if (graphScoreProfileSelector)
+            graphScoreProfileSelector.value = scoreCalculator.scoreProfile;
+
         sectionsManager.setSectionVersion("results", scoreCalculator.version);
         sectionsManager.setSectionScore("results", score.toFixed(2), confidence, fps);
         sectionsManager.populateTable("results-header", Headers.testName, scoreCalculator);
         sectionsManager.populateTable("results-score", Headers.score, scoreCalculator);
         sectionsManager.populateTable("results-data", Headers.details, scoreCalculator);
         sectionsManager.showSection("results", true);
+    }
+
+    changeScoreProfile(profile) {
+        this.runnerClient.scoreCalculator.recompute(profile);
+        if (sectionsManager.currentSectionIdentifier == "test-graph" && this.reloadCurrentGraph)
+            this.reloadCurrentGraph();
+        else
+            this.showResults();
     }
 
     handleKeyPress(event)
@@ -330,6 +351,9 @@ class BenchmarkController {
             break;
         case 106: // j
             benchmarkController.showDebugInfo();
+            break;
+        case 100: // d
+            benchmarkController.downloadDebugInfo();
             break;
         case 115: // s
             benchmarkController.selectResults(event.target);
@@ -380,11 +404,41 @@ class BenchmarkController {
             selection.addRange(range);
         };
 
-        var button = Utilities.createElement("button", {}, container);
-        button.textContent = "Done";
-        button.onclick = () => {
+        const footer = Utilities.createElement("footer", {}, container);
+        
+        const doneButton = Utilities.createElement("button", {}, footer);
+        doneButton.textContent = "Done";
+        doneButton.onclick = () => {
             this.hideDebugInfo();
         };
+
+        const downloadButton = Utilities.createElement("button", {}, footer);
+        downloadButton.textContent = "Download";
+        downloadButton.onclick = () => {
+            this.downloadDebugInfo();
+        };
+    }
+
+    downloadDebugInfo()
+    {
+        const output = {
+            version: this.runnerClient.scoreCalculator.version,
+            options: this.runnerClient.scoreCalculator.options,
+            data: this.runnerClient.scoreCalculator.data
+        };
+        const json = JSON.stringify(output, (key, value) => {
+            if (typeof value === 'number')
+                return Utilities.toFixedNumber(value, 3);
+            return value;
+        }, 1);
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'motionmark-results.json';
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     selectResults(target)

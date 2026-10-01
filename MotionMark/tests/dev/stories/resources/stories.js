@@ -123,7 +123,7 @@ class BoxItem {
         this.badgeImage = document.createElement('img');
         this.badgeImage.src = this.#dataURIFromSVG(badgeSVG);
     
-        this.animator = new RampAnimator(1, 1.2, 5000, Stage.random(0, 1));
+        this.animator = new RampAnimator(1, 1.2, 5000, Stage.random(0, 5000));
     }
     
     ensureElement()
@@ -278,7 +278,6 @@ class StoriesStage extends Stage {
     constructor()
     {
         super();
-        Pseudo.randomSeed = Date.now();
         this._complexity = 0;
     }
 

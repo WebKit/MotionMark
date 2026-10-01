@@ -29,6 +29,11 @@ class GraphController {
     updateGraphData(testResult, testData, options)
     {
         var element = document.getElementById("test-graph-data");
+
+        // Remember the latest data so we can re-render when the element is resized.
+        this._lastRenderArgs = { testResult, testData, options };
+        this._observeResize(element);
+
         element.innerHTML = "";
         element._testResult = testResult;
         element._options = options;
@@ -57,6 +62,33 @@ class GraphController {
         this.onComplexityGraphOptionsChanged();
 
         this.onGraphTypeChanged();
+    }
+
+    _observeResize(element)
+    {
+        if (this._resizeObserver)
+            return;
+
+        // Seed with the current size so the initial (synchronous) observer callback,
+        // which fires right after the first render, doesn't trigger a redundant re-render.
+        const initialSize = GeometryHelpers.elementClientSize(element);
+        let lastWidth = initialSize.width;
+        let lastHeight = initialSize.height;
+        this._resizeObserver = new ResizeObserver(() => {
+            if (!this._lastRenderArgs)
+                return;
+
+            const size = GeometryHelpers.elementClientSize(element);
+            // Ignore spurious callbacks (e.g. when the section is hidden) and no-op size changes.
+            if (!size.width || !size.height || (size.width === lastWidth && size.height === lastHeight))
+                return;
+            lastWidth = size.width;
+            lastHeight = size.height;
+
+            const args = this._lastRenderArgs;
+            this.updateGraphData(args.testResult, args.testData, args.options);
+        });
+        this._resizeObserver.observe(element);
     }
 
     _addRegressionLine(parent, xScale, yScale, points, range, isAlongYAxis)

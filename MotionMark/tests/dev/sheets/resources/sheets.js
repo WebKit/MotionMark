@@ -511,49 +511,69 @@ class SheetView {
 
         const ctx = this.canvas.getContext('2d');
         
-        const backingScrollX = (this.scrollOffset.width - oldOffset.width) * this.devicePixelRatio;
-        const backingScrollY = (this.scrollOffset.height - oldOffset.height) * this.devicePixelRatio;
+        const scrollDeltaX = this.scrollOffset.width - oldOffset.width;
+        const scrollDeltaY = this.scrollOffset.height - oldOffset.height;
+        const backingScrollX = scrollDeltaX * this.devicePixelRatio;
+        const backingScrollY = scrollDeltaY * this.devicePixelRatio;
         
         ctx.drawImage(this.canvas, -backingScrollX, -backingScrollY);
 
-        const headerBackingHeight = (this.headerRowsHeight + SheetView.DIVIDER_THICKNESS / 2) * this.devicePixelRatio;
-        const headerBackingWidth = (this.headerColumnsWidth + SheetView.DIVIDER_THICKNESS / 2) * this.devicePixelRatio;
+        const headerWidth = this.headerColumnsWidth + SheetView.DIVIDER_THICKNESS / 2;
+        const headerHeight = this.headerRowsHeight + SheetView.DIVIDER_THICKNESS / 2;
 
-        ctx.save();
-        ctx.beginPath();
-        if (backingScrollX > 0)
-            ctx.rect(this.backingSize.width - backingScrollX, 0, backingScrollX, this.backingSize.height);
-        else if (backingScrollX < 0)
-            ctx.rect(headerBackingWidth, 0, -backingScrollX, this.backingSize.height);
-        
-        if (backingScrollY > 0)
-            ctx.rect(0, this.backingSize.height - backingScrollY, this.backingSize.width, backingScrollY);
-        else if (backingScrollY < 0)
-            ctx.rect(0, headerBackingHeight, this.backingSize.width, -backingScrollY);
+        if (scrollDeltaX !== 0) {
+            const dirtyXLeft = scrollDeltaX > 0 ? this.canvasSize.width - scrollDeltaX : headerWidth;
+            const dirtyX = new Rect(new Point(dirtyXLeft, headerHeight), new Size(Math.abs(scrollDeltaX), this.canvasSize.height - headerHeight));
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(dirtyX.x * this.devicePixelRatio, dirtyX.y * this.devicePixelRatio, dirtyX.width * this.devicePixelRatio, dirtyX.height * this.devicePixelRatio);
+            ctx.clip();
+            this.#drawBodyCells(ctx, dirtyX);
+            ctx.restore();
+        }
 
-        ctx.closePath();
-        ctx.clip('nonzero');
-
-        this.#drawBodyCells(ctx);
-        ctx.restore();
+        if (scrollDeltaY !== 0) {
+            const dirtyYMinX = scrollDeltaX < 0 ? headerWidth - scrollDeltaX : headerWidth;
+            const dirtyYMaxX = scrollDeltaX > 0 ? this.canvasSize.width - scrollDeltaX : this.canvasSize.width;
+            const dirtyYTop = scrollDeltaY > 0 ? this.canvasSize.height - scrollDeltaY : headerHeight;
+            const dirtyY = new Rect(new Point(dirtyYMinX, dirtyYTop), new Size(dirtyYMaxX - dirtyYMinX, Math.abs(scrollDeltaY)));
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(dirtyY.x * this.devicePixelRatio, dirtyY.y * this.devicePixelRatio, dirtyY.width * this.devicePixelRatio, dirtyY.height * this.devicePixelRatio);
+            ctx.clip();
+            this.#drawBodyCells(ctx, dirtyY);
+            ctx.restore();
+        }
         
         this.#drawHeaders(ctx);
     }
     
-    #drawBodyCells(ctx)
+    #drawBodyCells(ctx, dirtyRect = null)
     {
         ctx.save();
 
         ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
         
+        const headerWidth = this.headerColumnsWidth + SheetView.DIVIDER_THICKNESS / 2;
+        const headerHeight = this.headerRowsHeight + SheetView.DIVIDER_THICKNESS / 2;
+        const clipRect = dirtyRect || new Rect(new Point(headerWidth, headerHeight), new Size(this.canvasSize.width - headerWidth, this.canvasSize.height - headerHeight));
         ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-        ctx.fillRect(0, 0, this.canvasSize.width, this.canvasSize.height);
+        ctx.fillRect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
 
-        ctx.translate(this.headerColumnsWidth - this.scrollOffset.width, this.headerRowsHeight - this.scrollOffset.height);
+        const offsetX = this.headerColumnsWidth - this.scrollOffset.width;
+        const offsetY = this.headerRowsHeight - this.scrollOffset.height;
+        ctx.translate(offsetX, offsetY);
 
-        this.#drawColumnBackgrounds(ctx);
-        this.#drawCells(ctx);
-        this.#drawGrid(ctx);
+        const contentBounds = {
+            minX: clipRect.x - offsetX,
+            maxX: clipRect.x + clipRect.width - offsetX,
+            minY: clipRect.y - offsetY,
+            maxY: clipRect.y + clipRect.height - offsetY,
+        };
+
+        this.#drawColumnBackgrounds(ctx, contentBounds);
+        this.#drawCells(ctx, contentBounds);
+        this.#drawGrid(ctx, contentBounds);
 
         ctx.restore();
     }
@@ -593,7 +613,6 @@ class SheetView {
 
     #drawHeaderRows(ctx)
     {
-        let currX = this.headerColumnsWidth - this.scrollOffset.width;
         let currY = 0;
         const gridPath = new Path2D();
         
@@ -601,12 +620,18 @@ class SheetView {
             const row = this.headerRows[rowIndex];
             const rowHeight = row.height;
 
+            let currX = this.headerColumnsWidth - this.scrollOffset.width;
+
             const headerRect = new Rect(new Point(0, currY), new Size(this.canvasSize.width, rowHeight));
             ctx.fillStyle = 'rgba(255, 255, 255, 1)';
             ctx.fillRect(headerRect.x, headerRect.y, headerRect.width, headerRect.height);
 
             for (let colIndex = 0; colIndex < this.columns.length; ++colIndex) {
                 const col = this.columns[colIndex];
+                if (currX + col.width <= this.headerColumnsWidth || currX >= this.canvasSize.width) {
+                    currX += col.width;
+                    continue;
+                }
 
                 gridPath.moveTo(currX, 0);
                 gridPath.lineTo(currX, rowHeight);
@@ -617,9 +642,9 @@ class SheetView {
                 const cellRect = new Rect(new Point(currX, rowHeight), cellSize);
 
                 ctx.translate(cellRect.x, cellRect.y);
-                const clipPath = new Path2D();
-                clipPath.rect(0, -cellRect.height, cellRect.width, cellRect.height);
-                ctx.clip(clipPath, 'evenodd');
+                ctx.beginPath();
+                ctx.rect(0, -cellRect.height, cellRect.width, cellRect.height);
+                ctx.clip();
 
                 const cell = this.headerRowCells[rowIndex][colIndex];
                 cell.draw(ctx, cellSize);
@@ -652,6 +677,10 @@ class SheetView {
 
             for (let rowIndex = 0; rowIndex < this.rows.length; ++rowIndex) {
                 const row = this.rows[rowIndex];
+                if (currY <= this.headerRowsHeight || currY - row.height >= this.canvasSize.height) {
+                    currY += row.height;
+                    continue;
+                }
 
                 gridPath.moveTo(currX, currY);
                 gridPath.lineTo(currX + columnWidth, currY);
@@ -662,9 +691,9 @@ class SheetView {
                 const cellRect = new Rect(new Point(currX, currY), cellSize);
 
                 ctx.translate(cellRect.x, cellRect.y);
-                const clipPath = new Path2D();
-                clipPath.rect(0, -cellRect.height, cellRect.width, cellRect.height);
-                ctx.clip(clipPath, 'evenodd');
+                ctx.beginPath();
+                ctx.rect(0, -cellRect.height, cellRect.width, cellRect.height);
+                ctx.clip();
 
                 const cell = this.headerColumnCells[colIndex][rowIndex];
                 cell.draw(ctx, cellSize);
@@ -676,54 +705,58 @@ class SheetView {
 
             currX += col.width;
 
-            gridPath.moveTo(currX, this.headerRowsHeight - this.scrollOffset.height);
-            gridPath.lineTo(currX, currY);
+            gridPath.moveTo(currX, Math.max(0, this.headerRowsHeight - this.scrollOffset.height));
+            gridPath.lineTo(currX, Math.min(this.canvasSize.height, currY));
         }
 
         this.#strokeGridPath(ctx, gridPath);
     }
     
-    #drawColumnBackgrounds(ctx)
+    #drawColumnBackgrounds(ctx, contentBounds)
     {
-        const minX = 0;
-        const maxX = this.contentsSize.width;
-        const minY = 0;
-        const maxY = this.contentsSize.height
+        const minY = Math.max(0, contentBounds.minY);
+        const maxY = Math.min(this.contentsSize.height, contentBounds.maxY);
+        if (maxY <= minY)
+            return;
 
-        let currX = minX;
+        let currX = 0;
 
         for (let column of this.columns) {
-            const columnRect = new Rect(new Point(currX, minY), new Size(column.width, maxY - minY));
-            ctx.fillStyle = column.fillColor;
-            ctx.fillRect(columnRect.x, columnRect.y, columnRect.width, columnRect.height);
-
+            if (currX + column.width > contentBounds.minX && currX < contentBounds.maxX) {
+                ctx.fillStyle = column.fillColor;
+                ctx.fillRect(currX, minY, column.width, maxY - minY);
+            }
             currX += column.width;
         }
     }
 
-    #drawGrid(ctx)
+    #drawGrid(ctx, contentBounds)
     {
-        const minX = 0;
-        const maxX = this.contentsSize.width;
-        const minY = 0;
-        const maxY = this.contentsSize.height
+        const minX = Math.max(0, contentBounds.minX);
+        const maxX = Math.min(this.contentsSize.width, contentBounds.maxX);
+        const minY = Math.max(0, contentBounds.minY);
+        const maxY = Math.min(this.contentsSize.height, contentBounds.maxY);
 
-        let currX = minX;
+        let currX = 0;
 
         ctx.save();
 
         const gridPath = new Path2D();
 
         for (let column of this.columns) {
-            gridPath.moveTo(currX, minY);
-            gridPath.lineTo(currX, maxY);
+            if (currX >= minX && currX <= maxX) {
+                gridPath.moveTo(currX, minY);
+                gridPath.lineTo(currX, maxY);
+            }
             currX += column.width;
         }
         
         let currY = 0;
         for (let row of this.rows) {
-            gridPath.moveTo(0, currY);
-            gridPath.lineTo(maxX, currY);
+            if (currY >= minY && currY <= maxY) {
+                gridPath.moveTo(minX, currY);
+                gridPath.lineTo(maxX, currY);
+            }
             currY += row.height;
         }
 
@@ -750,18 +783,25 @@ class SheetView {
         ctx.stroke(path);
     }
     
-    #drawCells(ctx)
+    #drawCells(ctx, contentBounds)
     {
         // FIXME: Google Sheets doesn't clip per cell, and draws all the images, and then all the text.
         
         let currY = 0;
         for (let rowIndex = 0; rowIndex < this.rows.length; ++rowIndex) {
             const row = this.rows[rowIndex];
+            const rowTop = currY;
             currY += row.height;
+            if (currY <= contentBounds.minY || rowTop >= contentBounds.maxY)
+                continue;
 
             let currX = 0;
             for (let colIndex = 0; colIndex < this.columns.length; ++colIndex) {
                 const col = this.columns[colIndex];
+                if (currX + col.width <= contentBounds.minX || currX >= contentBounds.maxX) {
+                    currX += col.width;
+                    continue;
+                }
                 
                 ctx.save();
                 
@@ -769,9 +809,9 @@ class SheetView {
                 const cellRect = new Rect(new Point(currX, currY), cellSize);
 
                 ctx.translate(cellRect.x, cellRect.y);
-                const clipPath = new Path2D();
-                clipPath.rect(0, -cellRect.height, cellRect.width, cellRect.height);
-                ctx.clip(clipPath, 'evenodd');
+                ctx.beginPath();
+                ctx.rect(0, -cellRect.height, cellRect.width, cellRect.height);
+                ctx.clip();
 
                 const cell = this.cells[colIndex][rowIndex];
                 cell.draw(ctx, cellSize);
@@ -788,8 +828,6 @@ class SheetsStage extends Stage {
     constructor()
     {
         super();
-
-        Pseudo.randomSeed = Date.now();
 
         this._complexity = 0;
         this._sheetViews = [];

@@ -325,6 +325,66 @@ const mapHeight = 320;
 const tileWidth = 256;
 const tileHeight = 256;
 
+class MapRouteOverlay {
+    constructor(map, index)
+    {
+        this.map = map;
+        this.stage = map.stage;
+
+        // First route sits at (0, 0); subsequent routes get a deterministic/random offset
+        // chosen once at creation time so existing overlays never jump during tune().
+        if (index === 0) {
+            this.offsetX = 0;
+            this.offsetY = 0;
+            this.strokeColor = 'rgba(255, 0, 0, 0.8)';
+        } else {
+            const maxOffsetX = this.stage.mapWidth * 0.3;
+            const maxOffsetY = this.stage.mapHeight * 0.3;
+            this.offsetX = Stage.random(-maxOffsetX, maxOffsetX);
+            this.offsetY = Stage.random(-maxOffsetY, maxOffsetY);
+            this.strokeColor = Stage.randomRGBColor(0.8);
+        }
+
+        this.polyline = Utilities.createSVGElement('polyline', {
+            points: this.stage.computeSVGPolyline(this.offsetX, this.offsetY),
+            style: `stroke: ${this.strokeColor};`
+        }, {}, this.map.pathGroup);
+
+        this.placards = [];
+        const initialScale = 1;
+        for (const imageData of this.stage.photoData) {
+            const placard = this.map.createPhotoPlacard(imageData.image.src);
+            const photoGPS = new Point(imageData.location[0], imageData.location[1]);
+            const baseCoords = this.stage.gpsToContainerPoint(photoGPS, 1);
+            const x = baseCoords.x + this.offsetX;
+            const y = baseCoords.y + this.offsetY;
+
+            placard.baseX = x;
+            placard.baseY = y;
+            placard.style.left = `${(x * initialScale).toFixed(2)}px`;
+            placard.style.top = `${(y * initialScale).toFixed(2)}px`;
+
+            this.map.photosContainer.appendChild(placard);
+            this.placards.push(placard);
+        }
+    }
+
+    repositionPhotos(scale)
+    {
+        for (const placard of this.placards) {
+            placard.style.left = `${(placard.baseX * scale).toFixed(2)}px`;
+            placard.style.top = `${(placard.baseY * scale).toFixed(2)}px`;
+        }
+    }
+
+    remove()
+    {
+        this.polyline.remove();
+        for (const placard of this.placards)
+            placard.remove();
+    }
+}
+
 class ZoomableMap {
     constructor(stage)
     {
@@ -374,8 +434,8 @@ class ZoomableMap {
         this.container.appendChild(labelContainer);
         
         this.#setupTiles();
-        this.#setupTrack();
-        this.#setupPhotos();
+        this.#setupTrackContainer();
+        this.#setupPhotosContainer();
     }
     
     #setupTiles()
@@ -387,9 +447,7 @@ class ZoomableMap {
             const tileRow = this.stage.tileGridImages[row];
             for (let col = 0; col < tileRow.length; ++col) {
                 const preloadedImage = tileRow[col];
-                // Each map needs its own copy of the images.
                 const tileImage = new Image();
-                // We assume that the images are loaded already.
                 tileImage.src = preloadedImage.src;
                 tileImage.style.translate = `${col * tileWidth}px ${row * tileHeight}px`;
                 tilesWrapper.appendChild(tileImage);
@@ -406,7 +464,7 @@ class ZoomableMap {
         this.tilesContainer.appendChild(this.tilesZoomer);
     }
     
-    #setupTrack()
+    #setupTrackContainer()
     {
         this.trackContainer = document.createElement('div');
         this.trackContainer.className = 'track-container';
@@ -414,39 +472,20 @@ class ZoomableMap {
         
         const svgElement = Utilities.createSVGElement('svg', {
             'xmlns' : 'http://www.w3.org/2000/svg',
-            'viewBox': `0 0 ${mapWidth} ${mapHeight}`,
+            'viewBox': `0 0 ${this.stage.mapWidth} ${this.stage.mapHeight}`,
         }, { }, this.trackContainer);
         
-        const group = Utilities.createSVGElement('g', { class: 'path-group' }, { }, svgElement);
-        const polyline = Utilities.createSVGElement('polyline', { }, { }, group);
-
-        polyline.setAttribute('points', this.stage.trackPointString);
+        this.pathGroup = Utilities.createSVGElement('g', { class: 'path-group' }, { }, svgElement);
     }
     
-    #setupPhotos()
+    #setupPhotosContainer()
     {
         this.photosContainer = document.createElement('div');
         this.photosContainer.className = 'photos-container';
         this.container.appendChild(this.photosContainer);
-        
-        const initialScale = 1;
-
-        for (let imageData of this.stage.photoData) {
-            const placard = this.#createPhotoPlacard(imageData.image.src);
-            
-            const photoGPS = new Point(imageData.location[0], imageData.location[1]);
-            const photoCoords = this.stage.gpsToContainerPoint(photoGPS, initialScale);
-
-            placard.setAttribute('data-coordinates', `${photoGPS.x} ${photoGPS.y}`);
-
-            placard.style.left = `${photoCoords.x.toFixed(2)}px`;
-            placard.style.top = `${photoCoords.y.toFixed(2)}px`;
-            
-            this.photosContainer.appendChild(placard);
-        }
     }
 
-    #createPhotoPlacard(photoURL)
+    createPhotoPlacard(photoURL)
     {
         const photoImg = new Image();
         photoImg.src = photoURL;
@@ -461,36 +500,15 @@ class ZoomableMap {
         placard.appendChild(photoContainer);
         return placard;
     }
-    
-    #repositionPhotos(scale)
-    {
-        const photosContainer = this.container.querySelector('.photos-container');
-        for (const placard of photosContainer.children) {
-            const gpsString = placard.getAttribute('data-coordinates');
-            const splitGPS = gpsString.split(' ');
-            
-            const photoGPS = new Point(parseFloat(splitGPS[0]), parseFloat(splitGPS[1]));
-            const photoCoords = this.stage.gpsToContainerPoint(photoGPS, scale);
 
-            placard.style.left = `${photoCoords.x.toFixed(2)}px`;
-            placard.style.top = `${photoCoords.y.toFixed(2)}px`;
-        }
-    }
-    
-    remove()
-    {
-        this.container.remove();
-    }
-
-    animate(timestamp)
+    animate(timestamp, overlays)
     {
         const scale = this.animator.valueForTime(timestamp);
         this.tilesZoomer.style.scale = scale;
-
-        const pathGroup = this.container.querySelector('.path-group');
-        pathGroup.setAttribute('transform', `scale(${scale})`);
+        this.pathGroup.setAttribute('transform', `scale(${scale})`);
         
-        this.#repositionPhotos(scale);
+        for (const overlay of overlays)
+            overlay.repositionPhotos(scale);
     }   
 }
 
@@ -499,16 +517,18 @@ class MapZoomerStage extends Stage {
     {
         super();
 
-        Pseudo.randomSeed = Date.now();
         this.container = document.getElementById('container');
         this.container.innerText = '';
 
         const stageClientRect = this.container.getBoundingClientRect();
         this.stageSize = new Size(stageClientRect.width, stageClientRect.height);
+        this.mapWidth = this.stageSize.width || mapWidth;
+        this.mapHeight = this.stageSize.height || mapHeight;
 
         this.tileImages = [];
         this.photoData = [];
         this.items = [];
+        this.map = null;
         this._complexity = 0;
     }
 
@@ -516,8 +536,16 @@ class MapZoomerStage extends Stage {
     {
         await super.initialize(benchmark, options);
 
+        const stageClientRect = this.container.getBoundingClientRect();
+        this.stageSize = new Size(stageClientRect.width, stageClientRect.height);
+        this.mapWidth = this.stageSize.width || mapWidth;
+        this.mapHeight = this.stageSize.height || mapHeight;
+
         await this.#loadDataJSON();
         await this.#loadImages();
+
+        this.map = new ZoomableMap(this);
+        this.container.appendChild(this.map.container);
     }
 
     tune(count)
@@ -526,8 +554,7 @@ class MapZoomerStage extends Stage {
             return;
 
         this._complexity += count;
-        // console.log(`tune ${count} - complexity is ${this._complexity}`);
-        this.#setupMaps();
+        this.#setupOverlays();
     }
 
     async #loadDataJSON()
@@ -535,15 +562,15 @@ class MapZoomerStage extends Stage {
         const edgePaddingDegrees = 0.2;
         this.gpsTrack = new GPSTrack('resources/metadata/ride-gps.json', edgePaddingDegrees);
         await this.gpsTrack.initialize();
-        this.trackPointString = this.#computeSVGPolyline();
+        this.trackPointString = this.computeSVGPolyline(0, 0);
     }
 
-    #computeSVGPolyline()
+    computeSVGPolyline(offsetX = 0, offsetY = 0)
     {
         const coordsRange = this.gpsTrack.projectedMaxCoord.subtract(this.gpsTrack.projectedMinCoord);
 
-        const xScale = mapWidth / coordsRange.x;
-        const yScale = mapHeight / coordsRange.y;
+        const xScale = this.mapWidth / coordsRange.x;
+        const yScale = this.mapHeight / coordsRange.y;
 
         const scaleFactor = Math.min(xScale, yScale);
 
@@ -554,7 +581,7 @@ class MapZoomerStage extends Stage {
                 this.gpsTrack.projectedMaxCoord.y - coord.y // This is a Y-flip.
             );
             const point = coordOffset.scale(scaleFactor);
-            polylinePoints += ' ' + point.x.toFixed(2) + ',' + point.y.toFixed(2);
+            polylinePoints += ' ' + (point.x + offsetX).toFixed(2) + ',' + (point.y + offsetY).toFixed(2);
         }
 
         return polylinePoints;        
@@ -566,8 +593,8 @@ class MapZoomerStage extends Stage {
 
         const coordsRange = this.gpsTrack.projectedMaxCoord.subtract(this.gpsTrack.projectedMinCoord);
 
-        const xScale = mapWidth / coordsRange.x;
-        const yScale = mapHeight / coordsRange.y;
+        const xScale = this.mapWidth / coordsRange.x;
+        const yScale = this.mapHeight / coordsRange.y;
 
         const scaleFactor = Math.min(xScale, yScale) * scale;
 
@@ -602,9 +629,9 @@ class MapZoomerStage extends Stage {
 
         const tilesAreaSize = bottomRightTile.subtract(topLeftTile).scale(tileWidth);
 
-        const xScale = mapWidth / tilesAreaSize.x;
-        const yScale = mapHeight / tilesAreaSize.y;
-        this.tilesScaleFactor = Math.min(xScale, yScale);
+        const xScale = this.mapWidth / tilesAreaSize.x;
+        const yScale = this.mapHeight / tilesAreaSize.y;
+        this.tilesScaleFactor = Math.max(xScale, yScale);
         this.tilesFractionalOffset = new Point(tileWidth * (topLeftTile.x % 1), tileHeight * (topLeftTile.y % 1));
 
         this.tileGridImages = [];
@@ -613,7 +640,6 @@ class MapZoomerStage extends Stage {
             for (let col = firstColumn; col <= lastColumn; ++col) {
                 const tilePath = OpenStreetMap.filePathForTile(col, row, zoom);
                 const tileURL = `resources/images/tiles/${tilePath}`;
-                const tileImage = new Image();
 
                 const loadingPromise = new Promise(resolve => {
                     const image = new Image();
@@ -644,51 +670,27 @@ class MapZoomerStage extends Stage {
         await Promise.all(promises);
     }
 
-    #setupMaps()
+    #setupOverlays()
     {
         if (this._complexity > this.items.length) {
             const oldLength = this.items.length;
             this.items.length = this._complexity;
           
-            for (let i = oldLength; i < this.items.length; ++i) {
-                this.items[i] = this.#createMap(i);
-                this.container.appendChild(this.items[i].container);
-            }
+            for (let i = oldLength; i < this.items.length; ++i)
+                this.items[i] = new MapRouteOverlay(this.map, i);
         } else {
             for (let i = this._complexity; i < this.items.length; ++i)
                 this.items[i].remove();
 
             this.items.length = this._complexity;
         }
-        
-        const xMax = this.stageSize.width - mapWidth;
-        const yMax = this.stageSize.height - mapHeight;
-
-        for (const item of this.items) {
-
-            const x = Stage.randomInt(0, xMax);
-            const y = Stage.randomInt(0, yMax);
-
-            item.container.style.left = `${x}px`;
-            item.container.style.top = `${y}px`;
-
-            item.container.width = `${mapWidth}px`;
-            item.container.height = `${mapHeight}px`;
-        }
-    }
-
-    #createMap(index)
-    {
-        const mapZoomer = new ZoomableMap(this);
-        
-        return mapZoomer;
     }
 
     animate()
     {
         const timestamp = Date.now();
-        for (const item of this.items)
-            item.animate(timestamp);
+        if (this.map)
+            this.map.animate(timestamp, this.items);
     }
 
     complexity()
