@@ -517,7 +517,6 @@ class MapZoomerStage extends Stage {
     {
         super();
 
-        Pseudo.randomSeed = Date.now();
         this.container = document.getElementById('container');
         this.container.innerText = '';
 

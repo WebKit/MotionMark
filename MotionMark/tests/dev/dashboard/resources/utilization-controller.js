@@ -33,7 +33,7 @@ class UtilizationController extends ChartController {
     async initialize()
     {
         await super.initialize();
-        this.generator = d3.randomLogNormal(0, 1);
+        this.generator = d3.randomLogNormal.source(Pseudo.random)(0, 1);
     }
 
     set complexity(complexity)
@@ -141,7 +141,7 @@ class UtilizationController extends ChartController {
 
     animate(timestamp)
     {
-        const normalGenerator = d3.randomNormal(0, 0.1);
+        const normalGenerator = d3.randomNormal.source(Pseudo.random)(0, 0.1);
         for (const item of this.data)
             item.usage = Math.max(item.usage + normalGenerator(), 0);
 

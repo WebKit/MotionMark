@@ -36,7 +36,7 @@ class DomainsController extends ChartController {
     {
         await super.initialize();
         
-        this.valueGenerator = d3.randomLogNormal(0, 1);
+        this.valueGenerator = d3.randomLogNormal.source(Pseudo.random)(0, 1);
         
     }
 
@@ -56,7 +56,7 @@ class DomainsController extends ChartController {
         const randomDomainComponent = () => {
             const alphabet = 'abcdefghijklmnopqrstuvwxyz';
             const len = alphabet.length;
-            const generator = d3.randomInt(0, len);
+            const generator = d3.randomInt.source(Pseudo.random)(0, len);
             return `${alphabet[generator()]}${alphabet[generator()]}${alphabet[generator()]}`;
         };
 
@@ -95,7 +95,7 @@ class DomainsController extends ChartController {
             insertNode(childNode, path);
         };
 
-        const pathGenerator = d3.randomInt(0, maxBreadth);
+        const pathGenerator = d3.randomInt.source(Pseudo.random)(0, maxBreadth);
         for (let i = 0; i < complexity; ++i) {
             const path = [];
             for (let p = 0; p < maxDepth; ++p)
@@ -179,7 +179,7 @@ class DomainsController extends ChartController {
     {
         // Mutate some leaf nodes
         const numLeafMutations = Math.floor(this.leafNodes.length / 20);
-        const generator = d3.randomInt(this.leafNodes.length);
+        const generator = d3.randomInt.source(Pseudo.random)(this.leafNodes.length);
         for (let i = 0; i < numLeafMutations; ++i) {
             const targetNode = this.leafNodes[generator()];
             targetNode.value = this.valueGenerator();

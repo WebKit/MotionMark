@@ -416,8 +416,6 @@ class ChessStage extends Stage {
     {
         super();
 
-       //Pseudo.randomSeed = Date.now();
-
         this._complexity = 0;
         this._animValue = 0;
         this._startTime = null;
