@@ -789,8 +789,6 @@ class SheetsStage extends Stage {
     {
         super();
 
-        Pseudo.randomSeed = Date.now();
-
         this._complexity = 0;
         this._sheetViews = [];
     }

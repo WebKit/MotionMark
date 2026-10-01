@@ -35,8 +35,8 @@ class ThroughputController extends ChartController {
     {
         await super.initialize();
 
-        this.randomGenerator = d3.randomPoisson(10);
-        this.deltaRandomSource = d3.randomLogNormal(0, 1);
+        this.randomGenerator = d3.randomPoisson.source(Pseudo.random)(10);
+        this.deltaRandomSource = d3.randomLogNormal.source(Pseudo.random)(0, 1);
         this.deltaRandomGenerator = () => {
             return Math.min(0.3 * Math.abs(this.deltaRandomSource()), 1);
         };
