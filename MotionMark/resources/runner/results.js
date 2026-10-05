@@ -273,13 +273,25 @@ class ScoreCalculator {
             var animationSamplesData = regressionResult.samples.data.filter(
                 (sample) => sample[frameTypeIndex] == Strings.json.animationFrameType);
             const bootstrapIterations = this._runData.options[Strings.json.bootstrapIterations];
-            const bootstrapResult = Regression.bootstrap(animationSamplesData, bootstrapIterations, function(resampleData) {
-                const complexityIndex = regressionResult.samples.fieldMap[complexityKey];
-                resampleData.sort(function(a, b) {
-                    return a[complexityIndex] - b[complexityIndex];
-                });
+            const complexityIndex = regressionResult.samples.fieldMap[complexityKey];
 
-                const resample = new SampleData(regressionResult.samples.fieldMap, resampleData);
+            // Every resample is drawn from animationSamplesData, so rank its distinct complexities once and
+            // sort each resample with a stable counting sort, which is much faster than a comparison sort.
+            const distinctComplexities = Array.from(new Set(animationSamplesData.map((sample) => sample[complexityIndex]))).sort((a, b) => a - b);
+            const complexityRanks = new Map(distinctComplexities.map((complexity, rank) => [complexity, rank]));
+            const rankOffsets = new Uint32Array(distinctComplexities.length + 1);
+            const sortedResampleData = new Array(animationSamplesData.length);
+
+            const bootstrapResult = Regression.bootstrap(animationSamplesData, bootstrapIterations, function(resampleData) {
+                rankOffsets.fill(0);
+                for (const sample of resampleData)
+                    ++rankOffsets[complexityRanks.get(sample[complexityIndex]) + 1];
+                for (let i = 1; i < rankOffsets.length; ++i)
+                    rankOffsets[i] += rankOffsets[i - 1];
+                for (const sample of resampleData)
+                    sortedResampleData[rankOffsets[complexityRanks.get(sample[complexityIndex])]++] = sample;
+
+                const resample = new SampleData(regressionResult.samples.fieldMap, sortedResampleData);
                 const bootstrapRegressionResult = findRegression(resample, predominantProfile);
                 if (bootstrapRegressionResult.regression.t2 < 0) {
                   // A positive slope means the frame rate decreased with increased complexity (which is the expected
