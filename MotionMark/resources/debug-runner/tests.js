@@ -456,3 +456,153 @@ Suites.push(new Suite("Basic canvas path suite",
         }
     ]
 ));
+
+Utilities.extendObject(Headers, {
+    comparisonScore: [
+        {
+            title: "Baseline A",
+            text: function(testResultA, testResultB) {
+                if (!testResultA) return "N/A";
+                return testResultA[Strings.json.score].toFixed(2);
+            },
+            className: "right pad-left pad-right"
+        },
+        {
+            title: "Comp B",
+            text: function(testResultA, testResultB) {
+                if (!testResultB) return "N/A";
+                return testResultB[Strings.json.score].toFixed(2);
+            },
+            className: "right pad-left pad-right"
+        },
+        {
+            title: "Change %",
+            text: function(testResultA, testResultB) {
+                if (!testResultA || !testResultB) return "N/A";
+                const scoreA = testResultA[Strings.json.score];
+                const scoreB = testResultB[Strings.json.score];
+                const diff = scoreB - scoreA;
+                const percent = (diff / scoreA) * 100;
+                const percentStr = (percent >= 0 ? "+" : "") + percent.toFixed(2) + "%";
+                const className = percent >= 0 ? "diff-better" : "diff-worse";
+                
+                const span = document.createElement("span");
+                span.className = className;
+                span.textContent = `${percentStr} (${(diff >= 0 ? "+" : "") + diff.toFixed(1)})`;
+                return span;
+            },
+            className: "right pad-left pad-right font-bold"
+        }
+    ],
+    comparisonDetails: [
+        {
+            title: Strings.text.graph
+        },
+        {
+            title: "Complexity Baseline (A)",
+            text: function(testResultA, testResultB, optionsA, optionsB) {
+                if (!testResultA) return "N/A";
+                const complexityVal = testResultA[Strings.json.complexity];
+                if (!complexityVal) return "N/A";
+                
+                const bootstrap = complexityVal[Strings.json.bootstrap];
+                if (bootstrap) {
+                    const fragment = document.createDocumentFragment();
+                    const medianText = document.createTextNode(bootstrap.median.toFixed(1) + " ");
+                    const subSpan = document.createElement("span");
+                    subSpan.className = "sub-stdev";
+                    subSpan.textContent = `[${bootstrap.confidenceLow.toFixed(1)} - ${bootstrap.confidenceHigh.toFixed(1)}]`;
+                    fragment.appendChild(medianText);
+                    fragment.appendChild(subSpan);
+                    return fragment;
+                }
+                
+                const controllerData = testResultA[Strings.json.controller];
+                if (controllerData) {
+                    const fragment = document.createDocumentFragment();
+                    const avgText = document.createTextNode(controllerData[Strings.json.measurements.average].toFixed(1) + " ");
+                    const subSpan = document.createElement("span");
+                    subSpan.className = "sub-stdev";
+                    subSpan.textContent = `±${controllerData[Strings.json.measurements.percent].toFixed(1)}%`;
+                    fragment.appendChild(avgText);
+                    fragment.appendChild(subSpan);
+                    return fragment;
+                }
+                return "N/A";
+            },
+            className: "center pad-left pad-right"
+        },
+        {
+            title: "Complexity Comp (B)",
+            text: function(testResultA, testResultB, optionsA, optionsB) {
+                if (!testResultB) return "N/A";
+                const complexityVal = testResultB[Strings.json.complexity];
+                if (!complexityVal) return "N/A";
+                
+                const bootstrap = complexityVal[Strings.json.bootstrap];
+                if (bootstrap) {
+                    const fragment = document.createDocumentFragment();
+                    const medianText = document.createTextNode(bootstrap.median.toFixed(1) + " ");
+                    const subSpan = document.createElement("span");
+                    subSpan.className = "sub-stdev";
+                    subSpan.textContent = `[${bootstrap.confidenceLow.toFixed(1)} - ${bootstrap.confidenceHigh.toFixed(1)}]`;
+                    fragment.appendChild(medianText);
+                    fragment.appendChild(subSpan);
+                    return fragment;
+                }
+                
+                const controllerData = testResultB[Strings.json.controller];
+                if (controllerData) {
+                    const fragment = document.createDocumentFragment();
+                    const avgText = document.createTextNode(controllerData[Strings.json.measurements.average].toFixed(1) + " ");
+                    const subSpan = document.createElement("span");
+                    subSpan.className = "sub-stdev";
+                    subSpan.textContent = `±${controllerData[Strings.json.measurements.percent].toFixed(1)}%`;
+                    fragment.appendChild(avgText);
+                    fragment.appendChild(subSpan);
+                    return fragment;
+                }
+                return "N/A";
+            },
+            className: "center pad-left pad-right"
+        },
+        {
+            title: "FPS Baseline (A)",
+            text: function(testResultA, testResultB, optionsA, optionsB) {
+                if (!testResultA) return "N/A";
+                const frameLength = testResultA[Strings.json.frameLength];
+                if (frameLength) {
+                    const fragment = document.createDocumentFragment();
+                    const avgText = document.createTextNode(frameLength[Strings.json.measurements.average].toFixed(1) + " ");
+                    const subSpan = document.createElement("span");
+                    subSpan.className = "sub-stdev";
+                    subSpan.textContent = `±${frameLength[Strings.json.measurements.percent].toFixed(1)}%`;
+                    fragment.appendChild(avgText);
+                    fragment.appendChild(subSpan);
+                    return fragment;
+                }
+                return "N/A";
+            },
+            className: "center pad-left pad-right"
+        },
+        {
+            title: "FPS Comp (B)",
+            text: function(testResultA, testResultB, optionsA, optionsB) {
+                if (!testResultB) return "N/A";
+                const frameLength = testResultB[Strings.json.frameLength];
+                if (frameLength) {
+                    const fragment = document.createDocumentFragment();
+                    const avgText = document.createTextNode(frameLength[Strings.json.measurements.average].toFixed(1) + " ");
+                    const subSpan = document.createElement("span");
+                    subSpan.className = "sub-stdev";
+                    subSpan.textContent = `±${frameLength[Strings.json.measurements.percent].toFixed(1)}%`;
+                    fragment.appendChild(avgText);
+                    fragment.appendChild(subSpan);
+                    return fragment;
+                }
+                return "N/A";
+            },
+            className: "center pad-left pad-right"
+        }
+    ]
+});
