@@ -89,6 +89,7 @@ class ScoreCalculator {
         this._results = null;
         this._targetFrameRate = runData.options["frame-rate"];
         this._systemFrameRate = runData.options["system-frame-rate"];
+        this._preferredProfile = runData.options["score-profile"];
 
         const defaultBootstrapIterations = 2500;
         if (!Object.hasOwn(this._runData.options, Strings.json.bootstrapIterations))
@@ -114,7 +115,7 @@ class ScoreCalculator {
     }
 
     get scoreProfile() {
-        return this._preferredProfile || "slope";
+        return this._preferredProfile || Strings.json.profiles.window;
     }
 
     _processData()

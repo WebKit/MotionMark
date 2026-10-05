@@ -195,6 +195,8 @@ window.optionsManager = new class OptionsManager {
                 formElements[name].checked = value == "true";
             else if (type == "radio")
                 formElements[name].value = value;
+            else if (type == "select-one" && [...formElement.options].some((option) => option.value == value))
+                formElement.value = value;
         }
     }
 
@@ -225,6 +227,11 @@ window.optionsManager = new class OptionsManager {
                 } else
                     options[name] = formElements[name].value;
             }
+            else if (type == "select-one")
+                options[name] = formElement.value;
+
+            if (options[name] === undefined)
+                continue;
 
             try {
                 localStorage.setItem(name, options[name]);
