@@ -29,7 +29,7 @@ class CanvasLineSegment {
     constructor(stage)
     {
         var circle = Stage.randomInt(0, 3);
-        this._color = ["#e01040", "#10c030", "#744CBA", "#e05010"][circle];
+        this._color = ["#e01040FE", "#10c030FE", "#744CBAFE", "#e05010FE"][circle];
         this._lineWidth = Math.pow(Pseudo.random(), 12) * 20 + 3;
         this._omega = Pseudo.random() * 3 + 0.2;
         var theta = Stage.randomAngle();
@@ -72,8 +72,8 @@ class CanvasArc {
         this._endAngle = Stage.randomAngle();
         this._omega = (Pseudo.random() - 0.5) * 0.3;
         this._counterclockwise = Stage.randomBool();
-        var colors = ["#101010", "#808080", "#c0c0c0"];
-        colors.push(["#e01040", "#10c030", "#e05010"][(randX + Math.ceil(randY / 2)) % 3]);
+        var colors = ["#101010FE", "#808080FE", "#c0c0c0FE"];
+        colors.push(["#e01040FE", "#10c030FE", "#e05010FE"][(randX + Math.ceil(randY / 2)) % 3]);
         this._color = colors[Math.floor(Pseudo.random() * colors.length)];
         this._lineWidth = 1 + Math.pow(Pseudo.random(), 5) * 30;
         this._doStroke = Stage.randomInt(0, 3) != 0;
@@ -117,7 +117,7 @@ class CanvasLinePoint {
             new Point(1, 2),
         ];
         
-        var colors = ["#101010", "#808080", "#c0c0c0", "#101010", "#808080", "#c0c0c0", "#e01040"];
+        var colors = ["#101010FE", "#808080FE", "#c0c0c0FE", "#101010FE", "#808080FE", "#c0c0c0FE", "#e01040FE"];
         this.color = Stage.randomElementInArray(colors);
         this.width = Math.pow(Pseudo.random(), 5) * 20 + 1;
         this.isSplit = Pseudo.random() > 0.5;
@@ -250,8 +250,8 @@ class CanvasLineSegmentStage extends CanvasStage {
 
         context.lineWidth = 15;
         for(var i = 0; i < 4; i++) {
-            context.strokeStyle = ["#e01040", "#10c030", "#744CBA", "#e05010"][i];
-            context.fillStyle = ["#70051d", "#016112", "#2F0C6E", "#702701"][i];
+            context.strokeStyle = ["#e01040FE", "#10c030FE", "#744CBAFE", "#e05010FE"][i];
+            context.fillStyle = ["#70051dFE", "#016112FE", "#2F0C6EFE", "#702701FE"][i];
             context.beginPath();
                 context.arc(this.circleX[i], this.circleY[i], this.circleRadius, 0, Math.PI*2);
                 context.stroke();
