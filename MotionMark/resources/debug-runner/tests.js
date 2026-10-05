@@ -161,6 +161,43 @@ Utilities.extendObject(Headers, {
 ///////////
 // Suites
 
+Suites.splice(Suites.findIndex((suite) => suite.name == "MotionMark"), 1, new Suite("MotionMark 1.3",
+    [
+        {
+            url: "core/multiply.html",
+            name: "Multiply"
+        },
+        {
+            url: "core/canvas-stage.html?pathType=arcs",
+            name: "Canvas Arcs"
+        },
+        {
+            url: "core/leaves.html",
+            name: "Leaves"
+        },
+        {
+            url: "core/canvas-stage.html?pathType=linePath",
+            name: "Paths"
+        },
+        {
+            url: "core/canvas-stage.html?pathType=line&lineCap=square",
+            name: "Canvas Lines"
+        },
+        {
+            url: "core/image-data.html",
+            name: "Images"
+        },
+        {
+            url: "core/design.html",
+            name: "Design"
+        },
+        {
+            url: "core/suits.html",
+            name: "Suits"
+        },
+    ]
+));
+
 Suites.push(new Suite("HTML suite",
     [
         {
@@ -458,7 +495,7 @@ Suites.push(new Suite("Basic canvas path suite",
     ]
 ));
 
-Suites.push(new Suite("Tentative 1.4 suite",
+Suites.unshift(new Suite("MotionMark 2.0 dev",
     [
         {
             url: "dev/stories/stories.html",
@@ -492,5 +529,6 @@ Suites.push(new Suite("Tentative 1.4 suite",
             url: "dev/filtering/filtering.html",
             name: "Filtering"
         }
-    ]
+    ],
+    { enabledByDefault: true }
 ));

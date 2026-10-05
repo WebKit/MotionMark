@@ -22,9 +22,10 @@ var Headers = {
     ]
 };
 
-var Suite = function(name, tests) {
+var Suite = function(name, tests, options = {}) {
     this.name = name;
     this.tests = tests;
+    this.enabledByDefault = !!options.enabledByDefault;
 };
 
 var Suites = [];

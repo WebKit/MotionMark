@@ -396,8 +396,11 @@ window.suitesManager = new class SuitesManager {
             var suiteCheckbox = this._checkboxElement(suiteElement);
 
             suite.tests.forEach(function(test) {
-                this._createTestElement(listElement, test, suiteCheckbox);
+                var testElement = this._createTestElement(listElement, test, suiteCheckbox);
+                this._checkboxElement(testElement).checked = suite.enabledByDefault;
             }, this);
+
+            this._updateSuiteCheckboxState(suiteCheckbox);
         }, this);
     }
 

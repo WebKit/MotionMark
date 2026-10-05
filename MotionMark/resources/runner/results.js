@@ -114,7 +114,7 @@ class ScoreCalculator {
     }
 
     get scoreProfile() {
-        return this._preferredProfile || "slope";
+        return this._preferredProfile || Strings.json.profiles.window;
     }
 
     _processData()

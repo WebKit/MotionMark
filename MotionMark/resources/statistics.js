@@ -181,15 +181,16 @@ class Regression {
         const kWindowSizeMultiple = 0.1;
 
         var profile;
-            
-        if (!options.preferredProfile || options.preferredProfile == Strings.json.profiles.slope) {
+        const preferredProfile = options.preferredProfile || Strings.json.profiles.window;
+
+        if (preferredProfile == Strings.json.profiles.slope) {
             profile = this._calculateRegression(samples, {
                 shouldClip: true,
                 s1: desiredFrameLength,
                 t1: 0
             });
             this.profile = Strings.json.profiles.slope;
-        } else if (options.preferredProfile == Strings.json.profiles.flat) {
+        } else if (preferredProfile == Strings.json.profiles.flat) {
             profile = this._calculateRegression(samples, {
                 shouldClip: true,
                 s1: desiredFrameLength,
@@ -197,11 +198,11 @@ class Regression {
                 t2: 0
             });
             this.profile = Strings.json.profiles.flat;
-        } else if (options.preferredProfile == Strings.json.profiles.window || options.preferredProfile == Strings.json.profiles.windowStrict) {
+        } else if (preferredProfile == Strings.json.profiles.window || preferredProfile == Strings.json.profiles.windowStrict) {
             const window_size = Math.max(1, Math.floor(samples.length * kWindowSizeMultiple));
-            const strict = options.preferredProfile == Strings.json.profiles.windowStrict;
+            const strict = preferredProfile == Strings.json.profiles.windowStrict;
             profile = this._windowedFit(samples, desiredFrameLength, window_size, strict);
-            this.profile = options.preferredProfile;
+            this.profile = preferredProfile;
         }
 
         this.startIndex = Math.min(startIndex, endIndex);

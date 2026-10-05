@@ -113,6 +113,7 @@ class BenchmarkController {
         "display": "minimal",
         "tiles": "big",
         "controller": "ramp",
+        "score-profile": "window",
         "kalman-process-error": 1,
         "kalman-measurement-error": 4,
         "time-measurement": "performance",
