@@ -227,6 +227,46 @@ class Regression {
         return this.s1 + this.t1 * complexity;
     }
 
+    static _isSortedByComplexity(samples, complexityIndex)
+    {
+        for (let i = 1; i < samples.length; ++i) {
+            if (!(samples[i - 1][complexityIndex] <= samples[i][complexityIndex]))
+                return false;
+        }
+        return true;
+    }
+
+    // `samples` must already be in increasing complexity order. Stable-sorts each run of
+    // samples with equal complexity, which gives the same order as stable-sorting the
+    // whole array with `compare`, but much faster.
+    static _sortRunsOfEqualComplexity(samples, complexityIndex, compare)
+    {
+        const kMaxInsertionSortLength = 16;
+
+        for (let start = 0; start < samples.length;) {
+            const complexity = samples[start][complexityIndex];
+            let end = start + 1;
+            while (end < samples.length && samples[end][complexityIndex] == complexity)
+                ++end;
+
+            if (end - start <= kMaxInsertionSortLength) {
+                for (let i = start + 1; i < end; ++i) {
+                    const sample = samples[i];
+                    let j = i - 1;
+                    for (; j >= start && compare(samples[j], sample) > 0; --j)
+                        samples[j + 1] = samples[j];
+                    samples[j + 1] = sample;
+                }
+            } else {
+                const run = samples.slice(start, end).sort(compare);
+                for (let i = 0; i < run.length; ++i)
+                    samples[start + i] = run[i];
+            }
+
+            start = end;
+        }
+    }
+
     _windowedFit(samples, desiredFrameLength, windowSize, strict)
     {
         const kAllowedErrorFactor = 0.9;
@@ -235,33 +275,39 @@ class Regression {
         const frameLengthIndex = 1;
         const frameTimeIndex = 2;
 
-        const average = array => array.reduce((a, b) => a + b) / array.length;
+        const compareSamples = (a, b) => {
+            if (a[complexityIndex] == b[complexityIndex])
+                return b[frameTimeIndex] - a[frameTimeIndex];
+            return a[complexityIndex] - b[complexityIndex];
+        };
 
-        var sortedSamples = samples.slice().sort((a, b) => {
-                if (a[complexityIndex] == b[complexityIndex])
-                    return b[frameTimeIndex] - a[frameTimeIndex];
-                return a[complexityIndex] - b[complexityIndex];
-            });
+        var sortedSamples = samples.slice();
+        if (Regression._isSortedByComplexity(sortedSamples, complexityIndex))
+            Regression._sortRunsOfEqualComplexity(sortedSamples, complexityIndex, compareSamples);
+        else
+            sortedSamples.sort(compareSamples);
 
-        var cumFrameLength = 0.0;
         var bestIndex = 0;
         var bestComplexity = 0;
-        var runningFrameLengths = [];
-        var runningComplexities = [];
+
+        // Maintain running sums over the window so each step is O(1).
+        var windowFrameLengthSum = 0.0;
+        var windowComplexitySum = 0.0;
 
         for (var i = 0; i < sortedSamples.length; ++i) {
-            runningFrameLengths.push(sortedSamples[i][frameLengthIndex]);
-            runningComplexities.push(sortedSamples[i][complexityIndex]);
+            windowFrameLengthSum += sortedSamples[i][frameLengthIndex];
+            windowComplexitySum += sortedSamples[i][complexityIndex];
 
-            if (runningFrameLengths.length < windowSize) {
-                continue
-            } else if (runningFrameLengths.length > windowSize) {
-                runningFrameLengths.shift();
-                runningComplexities.shift();
+            if (i >= windowSize) {
+                windowFrameLengthSum -= sortedSamples[i - windowSize][frameLengthIndex];
+                windowComplexitySum -= sortedSamples[i - windowSize][complexityIndex];
             }
 
-            let averageFrameLength = average(runningFrameLengths);
-            let averageComplexity = average(runningComplexities);
+            if (i < windowSize - 1)
+                continue;
+
+            let averageFrameLength = windowFrameLengthSum / windowSize;
+            let averageComplexity = windowComplexitySum / windowSize;
             let error = desiredFrameLength / averageFrameLength;
             let adjustedComplexity = averageComplexity * Math.min(1.0, error);
 
@@ -274,9 +320,11 @@ class Regression {
             }
         }
 
+        // sortedSamples is in increasing complexity order, so stop at the first sample above bestComplexity.
         for (var i = 0; i < sortedSamples.length; ++i) {
-            if (sortedSamples[i][complexityIndex] <= bestComplexity)
-                bestIndex = i;
+            if (sortedSamples[i][complexityIndex] > bestComplexity)
+                break;
+            bestIndex = i;
         }
 
         let complexity = bestComplexity;
