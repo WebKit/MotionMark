@@ -25,11 +25,18 @@
 
 // === PAINT OBJECTS ===
 
+function maybeTranslucentColor(hexColor)
+{
+    if (Pseudo.random() >= 0.2)
+        return hexColor;
+    return hexColor + "80";
+}
+
 class CanvasLineSegment {
     constructor(stage)
     {
         var circle = Stage.randomInt(0, 3);
-        this._color = ["#e01040", "#10c030", "#744CBA", "#e05010"][circle];
+        this._color = maybeTranslucentColor(["#e01040", "#10c030", "#744CBA", "#e05010"][circle]);
         this._lineWidth = Math.pow(Pseudo.random(), 12) * 20 + 3;
         this._omega = Pseudo.random() * 3 + 0.2;
         var theta = Stage.randomAngle();
@@ -74,7 +81,7 @@ class CanvasArc {
         this._counterclockwise = Stage.randomBool();
         var colors = ["#101010", "#808080", "#c0c0c0"];
         colors.push(["#e01040", "#10c030", "#e05010"][(randX + Math.ceil(randY / 2)) % 3]);
-        this._color = colors[Math.floor(Pseudo.random() * colors.length)];
+        this._color = maybeTranslucentColor(colors[Math.floor(Pseudo.random() * colors.length)]);
         this._lineWidth = 1 + Math.pow(Pseudo.random(), 5) * 30;
         this._doStroke = Stage.randomInt(0, 3) != 0;
     }
@@ -118,7 +125,7 @@ class CanvasLinePoint {
         ];
         
         var colors = ["#101010", "#808080", "#c0c0c0", "#101010", "#808080", "#c0c0c0", "#e01040"];
-        this.color = Stage.randomElementInArray(colors);
+        this.color = maybeTranslucentColor(Stage.randomElementInArray(colors));
         this.width = Math.pow(Pseudo.random(), 5) * 20 + 1;
         this.isSplit = Pseudo.random() > 0.5;
 
