@@ -53,11 +53,9 @@
 
         .map-container {
             position: absolute;
-            width: 400px;
-            height: 320px;
+            inset: 0;
             outline: 1px solid black;
             overflow: clip;
-            will-change: transform;
         }
         
         .tiles-container, .track-container, .photos-container, .controls-overlay {
@@ -136,6 +134,7 @@
         .zoomer {
             position: absolute;
             transform-origin: 50% 50%;
+            will-change: transform;
         }
         
         .tiles-wrapper {
