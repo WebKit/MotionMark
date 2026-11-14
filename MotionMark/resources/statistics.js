@@ -289,6 +289,7 @@ class Regression {
 
         var bestIndex = 0;
         var bestComplexity = 0;
+        const minComplexity = sortedSamples.length ? sortedSamples[0][complexityIndex] : 0;
 
         // Maintain running sums over the window so each step is O(1).
         var windowFrameLengthSum = 0.0;
@@ -311,13 +312,16 @@ class Regression {
             let error = desiredFrameLength / averageFrameLength;
             let adjustedComplexity = averageComplexity * Math.min(1.0, error);
 
-            if (error >= kAllowedErrorFactor) {
+            // Allow windows at minComplexity to seed bestComplexity when no window reaches
+            // kAllowedErrorFactor; bestComplexity == 0 covers inputs with fewer than windowSize
+            // samples at minComplexity so the first full window still seeds a non-zero score.
+            if (error >= kAllowedErrorFactor || sortedSamples[i][complexityIndex] <= minComplexity || bestComplexity == 0) {
                 if (adjustedComplexity > bestComplexity) {
                     bestComplexity = adjustedComplexity;
                 }
-            } else if (strict) {
-                break;
             }
+            if (error < kAllowedErrorFactor && strict)
+                break;
         }
 
         // sortedSamples is in increasing complexity order, so stop at the first sample above bestComplexity.
