@@ -59,11 +59,51 @@
                     <div id="suites">
                         <h2>Suites:</h2>
                         <ul class="tree"></ul>
-                        <div>
-                            <span id="drop-target">Drop results here</span>
-                            <button id="load-results-button" onclick="benchmarkController.loadResults()">Load results…</button>
-                            <input type="file" id="load-results-input" style="display: none;"
-                                onchange="benchmarkController.handleResultsFile(this)">
+                        <!-- File Upload and Comparison Panel -->
+                        <div class="control-panel-container">
+                            <div class="mode-toggles">
+                                <button type="button" id="btn-mode-run" class="mode-tab active" onclick="benchmarkController.switchPanelMode('run')">Run Benchmark</button>
+                                <button type="button" id="btn-mode-compare" class="mode-tab" onclick="benchmarkController.switchPanelMode('compare')">Compare Results</button>
+                            </div>
+                            
+                            <!-- Run Benchmark Panel -->
+                            <div id="panel-run" class="control-panel active">
+                                <div id="drop-target" class="drop-zone">Drop results here</div>
+                                <div class="button-row">
+                                    <button class="panel-btn" id="load-results-button" onclick="benchmarkController.loadResults()">Load results…</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Compare Results Panel -->
+                            <div id="panel-compare" class="control-panel">
+                                <div class="compare-zones-row">
+                                    <!-- Baseline Column (A) -->
+                                    <div id="drop-target-a" class="compare-col">
+                                        <h4>Baseline (A)</h4>
+                                        <div class="drop-zone compare-drop">Drop Baseline A here</div>
+                                        <button class="panel-btn-small" onclick="benchmarkController.loadResultsA()">Select A…</button>
+                                        <div class="loaded-file-indicator" id="file-indicator-a">No file loaded</div>
+                                    </div>
+                                    
+                                    <!-- Comparison Column (B) -->
+                                    <div id="drop-target-b" class="compare-col">
+                                        <h4>Comparison (B)</h4>
+                                        <div class="drop-zone compare-drop">Drop Comparison B here</div>
+                                        <button class="panel-btn-small" onclick="benchmarkController.loadResultsB()">Select B…</button>
+                                        <div class="loaded-file-indicator" id="file-indicator-b">No file loaded</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="compare-actions">
+                                    <button id="compare-btn" class="compare-run-btn disabled" disabled onclick="benchmarkController.triggerComparison()">Compare A vs B</button>
+                                    <button id="clear-compare-btn" class="panel-btn-text" onclick="benchmarkController.clearComparison()">Clear Files</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden inputs for file loaders -->
+                            <input type="file" id="load-results-input" style="display: none;" onchange="benchmarkController.handleResultsFile(this)">
+                            <input type="file" id="load-results-input-a" style="display: none;" onchange="benchmarkController.handleResultsFileA(this)">
+                            <input type="file" id="load-results-input-b" style="display: none;" onchange="benchmarkController.handleResultsFileB(this)">
                         </div>
                     </div>
                     <div id="options">
