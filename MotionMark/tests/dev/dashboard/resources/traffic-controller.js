@@ -39,7 +39,7 @@ class TrafficController extends ChartController {
     {
         await super.initialize();
         
-        this.generator = d3.randomUniform(0, 100);
+        this.generator = d3.randomUniform.source(Pseudo.random)(0, 100);
     }
 
     set complexity(complexity)
@@ -58,7 +58,7 @@ class TrafficController extends ChartController {
         {
             const alphabet = 'abcdefghijklmnopqrstuvwxyz';
             const len = alphabet.length;
-            const generator = d3.randomInt(0, len);
+            const generator = d3.randomInt.source(Pseudo.random)(0, len);
             return `${alphabet[generator()]}${alphabet[generator()]}${alphabet[generator()]}`;
         }
 
@@ -127,7 +127,7 @@ class TrafficController extends ChartController {
 
     animate(timestamp)
     {
-        const generator = d3.randomNormal(0, 2);
+        const generator = d3.randomNormal.source(Pseudo.random)(0, 2);
         for (const datum of this.data) {
             datum.value = Math.max(datum.value + generator(), 0);
         }

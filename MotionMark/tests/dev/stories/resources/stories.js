@@ -278,7 +278,6 @@ class StoriesStage extends Stage {
     constructor()
     {
         super();
-        Pseudo.randomSeed = Date.now();
         this._complexity = 0;
     }
 
