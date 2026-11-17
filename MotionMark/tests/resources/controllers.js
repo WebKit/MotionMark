@@ -576,7 +576,9 @@ class RampController extends Controller {
             return;
 
         this._rampDidWarmup = true;
-        this._currentRampLength = this._rampStartTimestamp + this._rampLength - timestamp;
+        // A slow frame during warm-up can use up the rest of the ramp. Keep at least two intervals of ramp left,
+        // otherwise progress goes negative and the complexity is extrapolated past the maximum.
+        this._currentRampLength = Math.max(this._rampStartTimestamp + this._rampLength - timestamp, 2 * this.intervalSamplingLength);
         // Start timestamp represents start of ramp down, after warm up
         this._rampStartTimestamp = timestamp;
         this._rampStartIndex = this._sampler.sampleCount;
